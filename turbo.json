@@ -12,6 +12,10 @@
     "test": {
       "dependsOn": ["build"],
       "outputs": ["coverage/**"]
+    },
+    "generate:config": {
+      "dependsOn": ["@mf-mono/monorepo-tools#build"],
+      "outputs": ["apps/website/public/remotes.config.json"]
     }
   }
 }

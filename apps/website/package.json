@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vp dev",
     "build": "tsc && vp build",
+    "prebuild": "pnpm run generate:config",
+    "generate:config": "tsx ../../scripts/generate-config.ts",
     "preview": "vp preview"
   },
   "devDependencies": {

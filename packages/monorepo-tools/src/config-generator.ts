@@ -1,26 +1,58 @@
+import { validateRemoteConfig } from "@mf-mono/remote-config";
 import type { MicroFrontend, RemoteConfig, ConfigGenerationOptions } from "./types.js";
 
 /**
  * Generate remote configuration from discovered micro-frontends
  *
- * This function will be implemented in Phase 2 (mfe-discovery-and-generation)
- * For now, it's a placeholder that returns an empty config.
+ * Takes an array of discovered micro-frontends and generates a RemoteConfig
+ * object with environment-specific URLs.
+ *
+ * @param microFrontends - Array of discovered micro-frontends
+ * @param options - Configuration options (environment, gitHash, baseUrl, outputPath)
+ * @returns RemoteConfig object validated against JSON Schema
  */
 export async function generateConfig(
-  _microFrontends: MicroFrontend[],
-  _options: ConfigGenerationOptions,
+  microFrontends: MicroFrontend[],
+  options: ConfigGenerationOptions,
 ): Promise<RemoteConfig> {
-  // TODO: Implement in Phase 2
-  // - Map MicroFrontend[] to RemoteConfigEntry[]
-  // - Generate environment-specific URLs
-  //   - dev: http://localhost:{port}/assets/remoteEntry.js
-  //   - prod: /mfe-{name}/v{gitHash}/assets/remoteEntry.js
-  // - Add $schema reference
-  // - Validate against JSON Schema
-  // - Return RemoteConfig object
+  const { environment, gitHash, baseUrl } = options;
 
-  return {
+  const remotes = microFrontends.map((mfe) => {
+    // Generate entry URL based on environment
+    let entryUrl: string;
+
+    if (environment === "development") {
+      // Development: http://localhost:{port}/remoteEntry.js
+      entryUrl = `http://localhost:${mfe.port}/remoteEntry.js`;
+    } else {
+      // Production: {baseUrl}/mfe-{shortName}/v{gitHash}/remoteEntry.js
+      const hash = gitHash || "latest";
+      const base = baseUrl || "";
+      entryUrl = `${base}/mfe-${mfe.shortName}/v${hash}/remoteEntry.js`;
+    }
+
+    return {
+      name: mfe.shortName,
+      entryUrl,
+      scope: mfe.scope,
+      version: gitHash || mfe.version,
+      enabled: true,
+    };
+  });
+
+  const config: RemoteConfig = {
     $schema: "../node_modules/@mf-mono/remote-config/schema.json",
-    remotes: [],
+    remotes,
   };
+
+  // Validate against JSON Schema
+  try {
+    validateRemoteConfig(config);
+  } catch (error) {
+    throw new Error(
+      `Generated config failed validation: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+
+  return config;
 }

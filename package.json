@@ -13,10 +13,12 @@
     "build": "turbo build",
     "build:host": "turbo build --filter website",
     "build:remote": "turbo build --filter '@mf-mono/mfe-widget'",
+    "generate:config": "tsx scripts/generate-config.ts",
     "prepare": "vp config"
   },
   "devDependencies": {
     "@module-federation/vite": "catalog:",
+    "tsx": "catalog:",
     "turbo": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"

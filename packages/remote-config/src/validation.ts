@@ -1,4 +1,5 @@
 import Ajv, { type ValidateFunction } from "ajv";
+import addFormats from "ajv-formats";
 import type { RemoteConfig } from "./types.js";
 
 // Import the schema - will be available after build
@@ -76,6 +77,7 @@ let validateFn: ValidateFunction | null = null;
 function getValidator(): ValidateFunction {
   if (!validateFn) {
     const ajv = new Ajv({ allErrors: true });
+    addFormats(ajv); // Add format validation (uri, email, etc.)
     validateFn = ajv.compile(schema);
   }
   return validateFn;

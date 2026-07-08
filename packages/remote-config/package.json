@@ -17,7 +17,8 @@
     "dev": "vp pack --watch"
   },
   "dependencies": {
-    "ajv": "catalog:"
+    "ajv": "catalog:",
+    "ajv-formats": "catalog:"
   },
   "devDependencies": {
     "typescript": "~6.0.2",

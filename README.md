@@ -1,14 +1,32 @@
 # Vite+ Monorepo with Module Federation
 
-A Vite+ monorepo demonstrating **microfrontend architecture** using Module Federation.
+A Vite+ monorepo demonstrating **microfrontend architecture** using Module Federation with **auto-discovery and config generation**.
 
 ## Architecture
 
 This monorepo contains:
 
 - **Host Application** (`apps/website`) - Main application that loads remote microfrontends
-- **Remote Widget** (`apps/remote-widget`) - Standalone microfrontend exposing a CounterWidget component
-- **Shared Packages** (`packages/utils`) - Common utilities
+- **Micro-Frontends** (`apps/mfe-*`) - Standalone microfrontends (convention-based discovery)
+  - `apps/mfe-widget` - Sample widget exposing a CounterWidget component
+- **Shared Packages**:
+  - `packages/utils` - Common utilities
+  - `packages/monorepo-tools` - Auto-discovery and config generation
+  - `packages/remote-config` - JSON Schema and validation for remote config
+
+### Auto-Discovery & Config Generation
+
+Micro-frontends are automatically discovered by scanning `apps/mfe-*` directories. The system generates `apps/website/public/remotes.config.json` automatically during build:
+
+```bash
+# Config is auto-generated before each build
+pnpm build
+
+# Or generate manually
+pnpm generate:config
+```
+
+**Note**: `remotes.config.json` is gitignored and regenerated on every build from the filesystem.
 
 ### Microfrontend Architecture
 
