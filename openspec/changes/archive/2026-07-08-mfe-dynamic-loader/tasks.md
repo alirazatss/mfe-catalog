@@ -10,6 +10,7 @@
 - [ ] 1.6 Export DynamicLoader class from `index.ts`
 
 **Depends on**: mfe-convention-and-packages complete  
+**Skill**: Use #file:/Users/ali.raza/.agents/skills/frontend-developer/SKILL.md  
 **Estimate**: 1 hour
 
 ## 2. Implement Config Fetching
@@ -24,6 +25,7 @@
 - [ ] 2.8 Write unit tests for config fetching
 
 **Depends on**: Section 1  
+**Skill**: Use #file:/Users/ali.raza/.agents/skills/frontend-developer/SKILL.md  
 **Estimate**: 3-4 hours
 
 ## 3. Implement Event System
@@ -35,6 +37,7 @@
 - [ ] 3.5 Write unit tests for events
 
 **Depends on**: Section 1  
+**Skill**: Use #file:/Users/ali.raza/.agents/skills/frontend-developer/SKILL.md  
 **Estimate**: 1-2 hours
 
 ## 4. Implement Core Loader Class
@@ -51,6 +54,7 @@
 - [ ] 4.10 Write unit tests for loader (20+ scenarios)
 
 **Depends on**: Sections 2 and 3  
+**Skill**: Use #file:/Users/ali.raza/.agents/skills/frontend-developer/SKILL.md (implementation) and #file:/Users/ali.raza/.agents/skills/tester/SKILL.md (unit tests)  
 **Estimate**: 6-8 hours
 
 ---

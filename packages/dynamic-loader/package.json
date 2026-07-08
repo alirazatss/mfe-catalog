@@ -1,0 +1,37 @@
+{
+  "name": "@mf-mono/dynamic-loader",
+  "version": "0.1.0",
+  "description": "Runtime dynamic loader for Module Federation micro-frontends",
+  "keywords": [
+    "dynamic-loader",
+    "micro-frontends",
+    "module-federation",
+    "runtime-config"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts --dts --format esm --clean",
+    "dev": "tsdown src/index.ts --dts --format esm --watch",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@mf-mono/remote-config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "jsdom": "^26.0.0",
+    "tsdown": "catalog:",
+    "typescript": "~6.0.2",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  }
+}

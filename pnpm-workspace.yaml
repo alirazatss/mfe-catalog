@@ -11,11 +11,13 @@ catalog:
   ajv: ^8.17.1
   ajv-formats: ^3.0.1
   glob: ^11.0.0
+  tsdown: ^0.22.4
   turbo: ^2.10.4
   tsx: ^4.19.2
   typescript: ^5
   vite: npm:@voidzero-dev/vite-plus-core@0.2.4
   vite-plus: 0.2.4
+  vitest: ^3.2.0
 overrides:
   vite: "catalog:"
 peerDependencyRules:
@@ -34,5 +36,6 @@ minimumReleaseAgeExclude:
   - "@voidzero-dev/vite-plus-win32-arm64-msvc@0.2.4"
   - "@voidzero-dev/vite-plus-win32-x64-msvc@0.2.4"
   - vite-plus@0.2.4
+  - tsdown@0.22.4
 allowBuilds:
   esbuild: set this to true or false

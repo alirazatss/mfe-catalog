@@ -13,6 +13,7 @@ This monorepo contains:
   - `packages/utils` - Common utilities
   - `packages/monorepo-tools` - Auto-discovery and config generation
   - `packages/remote-config` - JSON Schema and validation for remote config
+  - `packages/dynamic-loader` - Runtime dynamic loader for Module Federation remotes
 
 ### Auto-Discovery & Config Generation
 
