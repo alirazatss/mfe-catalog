@@ -1,5 +1,5 @@
 {
-  "name": "remote-widget",
+  "name": "@mf-mono/mfe-widget",
   "version": "0.0.0",
   "private": true,
   "type": "module",

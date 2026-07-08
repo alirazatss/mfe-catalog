@@ -179,6 +179,8 @@ vp run -r test
 - ✅ Error boundaries with fallback UI
 - ✅ Loading states
 - ✅ Standalone remote development
+- ✅ Environment-based URL configuration for production
+- ✅ Multiple deployment architecture support
 
 ### CounterWidget Component
 
@@ -199,7 +201,8 @@ vp run -r test
 ## Documentation
 
 - [Remote Widget README](./apps/remote-widget/README.md) - Remote application docs
-- [OpenSpec Changes](./openspec/changes/module-federation-microfrontend/) - Feature specification
+- [Production Deployment Guide](./docs/PRODUCTION_DEPLOYMENT.md) - Production URL configuration and deployment strategies
+- [OpenSpec Specifications](./openspec/specs/) - Living documentation for microfrontend architecture
 
 ## Troubleshooting
 

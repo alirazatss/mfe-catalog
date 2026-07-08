@@ -1,0 +1,26 @@
+{
+  "name": "@mf-mono/monorepo-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch"
+  },
+  "dependencies": {
+    "@mf-mono/remote-config": "workspace:*",
+    "glob": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite-plus": "catalog:"
+  }
+}

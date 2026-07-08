@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mf-mono.local/schemas/remote-config.json",
+  "title": "Remote Configuration",
+  "description": "Configuration file for dynamically loaded micro-frontends",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this JSON Schema"
+    },
+    "remotes": {
+      "type": "array",
+      "description": "Array of remote micro-frontend configurations",
+      "items": {
+        "$ref": "#/definitions/remote"
+      }
+    }
+  },
+  "required": ["remotes"],
+  "additionalProperties": false,
+  "definitions": {
+    "remote": {
+      "type": "object",
+      "description": "Configuration for a single remote micro-frontend",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique identifier for the remote (e.g., 'mfe-widget')",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "entryUrl": {
+          "type": "string",
+          "description": "URL to the remoteEntry.js file",
+          "format": "uri"
+        },
+        "scope": {
+          "type": "string",
+          "description": "Module Federation scope (e.g., 'mfeWidget')",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9]*$"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version identifier (semver or git hash)"
+        },
+        "fallbackUrls": {
+          "type": "array",
+          "description": "Fallback URLs to try if primary URL fails",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this remote is enabled (defaults to true)",
+          "default": true
+        }
+      },
+      "required": ["name", "entryUrl", "scope", "version"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -7,12 +7,12 @@
     "ready": "vp check && turbo test && turbo build",
     "dev": "turbo dev --filter website",
     "dev:host": "turbo dev --filter website",
-    "dev:remote": "turbo dev --filter remote-widget",
+    "dev:remote": "turbo dev --filter '@mf-mono/mfe-widget'",
     "dev:all": "turbo dev",
     "dev:mfe": "turbo dev --filter 'mfe-*'",
     "build": "turbo build",
     "build:host": "turbo build --filter website",
-    "build:remote": "turbo build --filter remote-widget",
+    "build:remote": "turbo build --filter '@mf-mono/mfe-widget'",
     "prepare": "vp config"
   },
   "devDependencies": {
