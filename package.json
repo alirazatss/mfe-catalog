@@ -6,9 +6,16 @@
   "scripts": {
     "ready": "vp check && vp run -r test && vp run -r build",
     "dev": "vp run website#dev",
+    "dev:host": "vp run website#dev",
+    "dev:remote": "vp run remote-widget#dev",
+    "dev:all": "pnpm run dev:remote & pnpm run dev:host",
+    "build": "vp run -r build",
+    "build:host": "vp run website#build",
+    "build:remote": "vp run remote-widget#build",
     "prepare": "vp config"
   },
   "devDependencies": {
+    "@module-federation/vite": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   },

@@ -3,6 +3,7 @@ import typescriptLogo from "./assets/typescript.svg";
 import viteLogo from "./assets/vite.svg";
 import heroImg from "./assets/hero.png";
 import { setupCounter } from "./counter.ts";
+import { loadRemoteWidget } from "./RemoteWidgetLoader.ts";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 <section id="center">
@@ -12,10 +13,20 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <img src="${viteLogo}" class="vite" alt="Vite logo" />
   </div>
   <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
+    <h1>Module Federation Demo</h1>
+    <p>Host application with <strong>Microfrontend</strong> integration</p>
   </div>
   <button id="counter" type="button" class="counter"></button>
+</section>
+
+<div class="ticks"></div>
+
+<section id="microfrontend-section" style="padding: 2rem 0;">
+  <h2 style="text-align: center; margin-bottom: 1rem; color: #4c1d95;">Remote Microfrontend Widget</h2>
+  <p style="text-align: center; margin-bottom: 2rem; color: #6b7280;">
+    This widget is loaded from a separate application via Module Federation
+  </p>
+  <div id="remote-widget-container"></div>
 </section>
 
 <div class="ticks"></div>
@@ -38,6 +49,14 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
           Learn more
         </a>
       </li>
+      <li>
+        <a href="https://module-federation.io/" target="_blank">
+          <svg class="button-icon" role="presentation" aria-hidden="true" style="width: 20px; height: 20px;">
+            <circle cx="10" cy="10" r="8" fill="#667eea"/>
+          </svg>
+          Module Federation
+        </a>
+      </li>
     </ul>
   </div>
   <div id="social">
@@ -58,3 +77,12 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 `;
 
 setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
+
+// Load the remote widget
+const remoteContainer = document.querySelector<HTMLDivElement>("#remote-widget-container");
+if (remoteContainer) {
+  void loadRemoteWidget(remoteContainer, {
+    initialValue: 10,
+    theme: "light",
+  });
+}
