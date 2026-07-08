@@ -4,18 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "ready": "vp check && vp run -r test && vp run -r build",
-    "dev": "vp run website#dev",
-    "dev:host": "vp run website#dev",
-    "dev:remote": "vp run remote-widget#dev",
-    "dev:all": "pnpm run dev:remote & pnpm run dev:host",
-    "build": "vp run -r build",
-    "build:host": "vp run website#build",
-    "build:remote": "vp run remote-widget#build",
+    "ready": "vp check && turbo test && turbo build",
+    "dev": "turbo dev --filter website",
+    "dev:host": "turbo dev --filter website",
+    "dev:remote": "turbo dev --filter remote-widget",
+    "dev:all": "turbo dev",
+    "dev:mfe": "turbo dev --filter 'mfe-*'",
+    "build": "turbo build",
+    "build:host": "turbo build --filter website",
+    "build:remote": "turbo build --filter remote-widget",
     "prepare": "vp config"
   },
   "devDependencies": {
     "@module-federation/vite": "catalog:",
+    "turbo": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   },
