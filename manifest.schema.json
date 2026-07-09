@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Micro-Frontend Manifest",
+  "description": "Manifest file describing deployed micro-frontends and their versions",
+  "type": "object",
+  "required": ["version", "timestamp", "environment", "microfrontends"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Manifest schema version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this manifest was generated"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["development", "staging", "production"],
+      "description": "Target environment"
+    },
+    "microfrontends": {
+      "type": "object",
+      "description": "Map of micro-frontend name to configuration",
+      "patternProperties": {
+        "^mfe-[a-z0-9-]+$": {
+          "type": "object",
+          "required": ["version", "url", "scope", "module"],
+          "properties": {
+            "version": {
+              "type": "string",
+              "description": "Semantic version of the micro-frontend",
+              "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-z0-9.]+)?$"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "CDN URL to the remoteEntry.js"
+            },
+            "integrity": {
+              "type": "string",
+              "description": "Subresource Integrity hash for security",
+              "pattern": "^sha(256|384|512)-[A-Za-z0-9+/=]+$"
+            },
+            "scope": {
+              "type": "string",
+              "description": "Module Federation scope name"
+            },
+            "module": {
+              "type": "string",
+              "description": "Exposed module path",
+              "pattern": "^\\./[A-Za-z0-9_-]+$"
+            },
+            "metadata": {
+              "type": "object",
+              "properties": {
+                "buildHash": {
+                  "type": "string",
+                  "description": "Git commit hash"
+                },
+                "buildDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "changelog": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "cdn": {
+      "type": "object",
+      "description": "CDN configuration",
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "region": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

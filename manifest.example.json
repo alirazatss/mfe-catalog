@@ -1,0 +1,24 @@
+{
+  "$schema": "./manifest.schema.json",
+  "version": "1.0.0",
+  "timestamp": "2026-07-09T10:00:00Z",
+  "environment": "production",
+  "microfrontends": {
+    "mfe-widget": {
+      "version": "1.2.3",
+      "url": "https://cdn.example.com/mfe-widget/1.2.3/remoteEntry.js",
+      "integrity": "sha384-abc123...",
+      "scope": "widget",
+      "module": "./App",
+      "metadata": {
+        "buildHash": "a1b2c3d",
+        "buildDate": "2026-07-09T09:55:00Z",
+        "changelog": "https://github.com/org/repo/releases/tag/mfe-widget-v1.2.3"
+      }
+    }
+  },
+  "cdn": {
+    "baseUrl": "https://cdn.example.com",
+    "region": "us-east-1"
+  }
+}
