@@ -8,10 +8,11 @@ export default defineConfig({
       filename: "remoteEntry.js",
       exposes: {
         "./CounterWidget": "./src/components/CounterWidget.ts",
+        "./App": "./src/App.tsx",
       },
       shared: {
-        // No shared dependencies for vanilla TypeScript
-        // If using libraries like lodash, add them here
+        react: { singleton: true, requiredVersion: "^19" },
+        "react-dom": { singleton: true, requiredVersion: "^19" },
       },
     }),
   ],

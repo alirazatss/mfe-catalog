@@ -13,7 +13,8 @@
   "dependencies": {
     "@mf-mono/dynamic-loader": "workspace:*",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "react-router": "catalog:"
   },
   "devDependencies": {
     "@types/react": "catalog:",
