@@ -1,14 +1,14 @@
-# module-federation-host Specification
+# Module Federation Host Integration Specification
 
-## Purpose
-
-This specification defines how the host application dynamically loads and integrates remote micro-frontends using Module Federation and the dynamic loader system. It covers configuration discovery, runtime loading, error handling, and development experience.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Host application SHALL load federated modules
 
 The host application SHALL dynamically load remote federated modules at runtime using the dynamic loader and generated configuration.
+
+**(Previously: Hardcoded remote URLs in vite.config.ts)**
+
+**Reason for change**: Enable dynamic discovery and configuration of micro-frontends without rebuilding the host.
 
 #### Scenario: Host initializes dynamic loader at startup
 
@@ -55,16 +55,15 @@ The host application SHALL dynamically load remote federated modules at runtime 
 - **AND** error boundary SHALL display "Remote is currently disabled"
 - **AND** error SHALL be logged to console
 
-#### Scenario: Remote module fails to load
-
-- **WHEN** a federated remote module fails to load (network error or module not found)
-- **THEN** the system SHALL display an error boundary fallback UI
-- **AND** the error SHALL be logged to the console
-- **AND** the rest of the host application SHALL continue to function
+---
 
 ### Requirement: Remote loading SHALL use mfe-\* naming convention
 
 The host application SHALL reference remotes using the `mfe-*` naming convention that matches auto-discovered package names.
+
+**(Previously: Used "remoteWidget" naming)**
+
+**Reason for change**: Consistency with monorepo naming convention and auto-discovery system.
 
 #### Scenario: Host references remote by mfe-\* name
 
@@ -80,9 +79,15 @@ The host application SHALL reference remotes using the `mfe-*` naming convention
 - **THEN** the loader SHALL NOT find a matching remote
 - **AND** SHALL throw "Remote 'remoteWidget' not found in config"
 
+---
+
 ### Requirement: Error boundaries SHALL display specific loader errors
 
 The host application SHALL catch and display specific error messages for different loader failure scenarios.
+
+**(Previously: Generic error boundary messages)**
+
+**Reason for change**: Better developer experience and easier debugging.
 
 #### Scenario: Config fetch error displayed
 
@@ -112,6 +117,10 @@ The host application SHALL catch and display specific error messages for differe
 - **WHEN** loader attempts to inject script
 - **THEN** error boundary SHALL display "Failed to load remote from {url}"
 - **AND** error SHALL include network details
+
+---
+
+## ADDED Requirements
 
 ### Requirement: Loader events SHALL be logged in development
 
@@ -146,6 +155,8 @@ The host application SHALL log all dynamic loader lifecycle events to the consol
 - **THEN** console SHALL NOT log event messages
 - **AND** only errors SHALL be logged
 
+---
+
 ### Requirement: Static config SHALL be preserved as fallback
 
 The host application SHALL maintain static Module Federation configuration (commented) as a documented fallback.
@@ -165,6 +176,8 @@ The host application SHALL maintain static Module Federation configuration (comm
 - **AND** rebuilds application
 - **THEN** static config SHALL be used
 - **AND** remotes SHALL load via hardcoded URLs
+
+---
 
 ### Requirement: Remote initialization SHALL happen before app render
 
@@ -188,6 +201,8 @@ The host application SHALL initialize the dynamic loader before rendering React 
 - **AND** app SHALL render anyway (graceful degradation)
 - **AND** remote loads will fail with helpful error
 
+---
+
 ### Requirement: Loader instance SHALL be exported for component use
 
 The host application SHALL export the loader instance so components can call loadRemote().
@@ -206,6 +221,8 @@ The host application SHALL export the loader instance so components can call loa
 - **THEN** all SHALL use the same loader instance
 - **AND** config SHALL be fetched only once
 - **AND** remote containers SHALL be cached
+
+---
 
 ### Requirement: Hot module reloading SHALL continue to work
 
@@ -226,6 +243,8 @@ The host application SHALL maintain hot module reload (HMR) functionality after 
 - **THEN** remote SHALL rebuild
 - **AND** HMR SHALL update the remote
 - **AND** host SHALL reflect the changes
+
+---
 
 ### Requirement: Integration tests SHALL verify end-to-end flow
 
@@ -259,42 +278,3 @@ The host application SHALL have integration tests verifying dynamic loading work
 - **WHEN** test renders host with remote widget
 - **THEN** widget component SHALL render
 - **AND** test SHALL assert widget content is visible
-
-### Requirement: Shared dependencies SHALL be configured
-
-The host application SHALL configure shared dependencies to avoid duplicate loading of common libraries.
-
-#### Scenario: React shared across host and remote
-
-- **WHEN** both host and remote applications use React
-- **THEN** the system SHALL load only one instance of React
-- **AND** the version SHALL be determined by the host application
-
-#### Scenario: Shared dependency version mismatch
-
-- **WHEN** a remote module requires a different version of a shared dependency
-- **THEN** the system SHALL log a warning to the console
-- **AND** the system SHALL attempt to use the host's version
-- **AND** if incompatible, the remote module SHALL fail gracefully with error boundary
-
-### Requirement: Build process SHALL generate federation manifest
-
-The host application build SHALL generate a Module Federation manifest for production deployments.
-
-#### Scenario: Production build with federation
-
-- **WHEN** running production build command
-- **THEN** the system SHALL generate federation manifest files
-- **AND** the output SHALL include remoteEntry.js
-- **AND** the build SHALL complete without errors
-
-### Requirement: TypeScript types SHALL be available for federated modules
-
-The host application SHALL have TypeScript declarations for remotely loaded modules.
-
-#### Scenario: Importing remote module with types
-
-- **WHEN** importing a federated remote module in TypeScript
-- **THEN** the TypeScript compiler SHALL recognize the module
-- **AND** type checking SHALL work correctly
-- **AND** IDE autocomplete SHALL function for remote module exports

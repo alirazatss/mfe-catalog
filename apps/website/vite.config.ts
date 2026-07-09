@@ -11,16 +11,23 @@ export default defineConfig({
     federation({
       name: "host",
       remotes: {
-        remoteWidget: {
+        // NOTE: Static remote configuration (fallback only)
+        // The host now uses dynamic loader to load remotes from remotes.config.json
+        // This static config is kept as a fallback and for reference
+        // To enable static config: uncomment the block below
+        /*
+        mfeWidget: {
           type: "module",
-          name: "remoteWidget",
+          name: "mfeWidget",
           entry: getRemoteUrl("VITE_REMOTE_WIDGET_URL", "http://localhost:5174/remoteEntry.js"),
-          entryGlobalName: "remoteWidget",
+          entryGlobalName: "mfeWidget",
           shareScope: "default",
         },
+        */
       },
       shared: {
         // No shared dependencies for vanilla TypeScript
+        // Add shared dependencies here if using React, Vue, etc.
       },
     }),
   ],

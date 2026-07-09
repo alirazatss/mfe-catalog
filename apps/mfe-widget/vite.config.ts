@@ -4,7 +4,7 @@ import { federation } from "@module-federation/vite";
 export default defineConfig({
   plugins: [
     federation({
-      name: "remoteWidget",
+      name: "widget", // Module Federation scope name
       filename: "remoteEntry.js",
       exposes: {
         "./CounterWidget": "./src/components/CounterWidget.ts",

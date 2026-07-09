@@ -10,7 +10,14 @@
     "generate:config": "tsx ../../scripts/generate-config.ts",
     "preview": "vp preview"
   },
+  "dependencies": {
+    "@mf-mono/dynamic-loader": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
   "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "typescript": "~6.0.2",
     "vite": "catalog:",
     "vite-plus": "catalog:"

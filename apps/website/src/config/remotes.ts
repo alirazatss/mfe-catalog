@@ -1,72 +1,72 @@
 /**
- * Runtime Remote Configuration
+ * Dynamic Remote Loader Initialization
  *
- * This allows dynamic loading of remote URLs at runtime
- * based on the current environment or configuration API
+ * Initializes the dynamic loader to fetch and load micro-frontends
+ * from the auto-generated remotes.config.json file.
  */
 
-interface RemoteConfig {
-  remoteWidget: string;
-  // Add more remotes here as needed
-}
+import { loader } from "@mf-mono/dynamic-loader";
 
 /**
- * Get remote configuration from various sources
+ * Initialize the dynamic loader
+ *
+ * This should be called once at app startup before rendering components.
+ * It fetches the generated config and caches it in memory.
  */
-export async function getRemoteConfig(): Promise<RemoteConfig> {
-  // Strategy 1: Environment variables (build-time)
-  const buildTimeConfig: RemoteConfig = {
-    remoteWidget:
-      import.meta.env.VITE_REMOTE_WIDGET_URL || "http://localhost:5174/assets/remoteEntry.js",
-  };
-
-  // Strategy 2: Runtime configuration from API (recommended for dynamic environments)
+export async function initializeRemotes(): Promise<void> {
   try {
-    // Fetch from configuration endpoint
-    const response = await fetch("/api/config/remotes");
-    if (response.ok) {
-      const runtimeConfig = await response.json();
-      return {
-        remoteWidget: runtimeConfig.remoteWidget || buildTimeConfig.remoteWidget,
-      };
+    await loader.init({
+      configPath: "/remotes.config.json",
+      maxRetries: 2,
+      retryDelay: 1000,
+    });
+
+    if (import.meta.env.DEV) {
+      console.log("[Remotes] Dynamic loader initialized successfully");
     }
   } catch (error) {
-    console.warn("[RemoteConfig] Failed to fetch runtime config, using build-time config:", error);
+    console.error("[Remotes] Failed to initialize dynamic loader:", error);
+    // App can still run - error will be caught when trying to load remotes
   }
-
-  // Strategy 3: Base URL detection (for same-origin deployments)
-  if (window.location.hostname !== "localhost") {
-    const baseUrl = window.location.origin;
-    return {
-      remoteWidget: `${baseUrl}/remotes/remote-widget/assets/remoteEntry.js`,
-    };
-  }
-
-  return buildTimeConfig;
 }
 
 /**
- * Common deployment patterns for remote URLs
+ * Setup event listeners for development debugging
  */
-export const DEPLOYMENT_PATTERNS = {
-  // Pattern 1: CDN with versioning
-  cdn: (version: string) =>
-    `https://cdn.example.com/remote-widget/${version}/assets/remoteEntry.js`,
+if (import.meta.env.DEV) {
+  loader.on("config:fetch:success", ({ config }: { config: any }) => {
+    console.log("[Remotes] Config loaded:", config);
+  });
 
-  // Pattern 2: Same origin, different path
-  sameOrigin: (remoteName: string) =>
-    `${window.location.origin}/remotes/${remoteName}/assets/remoteEntry.js`,
+  loader.on("config:fetch:error", ({ error }: { error: any }) => {
+    console.error("[Remotes] Config fetch error:", error);
+  });
 
-  // Pattern 3: Subdomain per remote
-  subdomain: (remoteName: string) => `https://${remoteName}.example.com/assets/remoteEntry.js`,
+  loader.on("remote:load:start", ({ name }: { name: string }) => {
+    console.log(`[Remotes] Loading remote '${name}'...`);
+  });
 
-  // Pattern 4: Environment-specific domains
-  environment: (env: "dev" | "staging" | "prod", remoteName: string) => {
-    const domains = {
-      dev: `https://dev-${remoteName}.example.com`,
-      staging: `https://staging-${remoteName}.example.com`,
-      prod: `https://${remoteName}.example.com`,
-    };
-    return `${domains[env]}/assets/remoteEntry.js`;
-  },
-};
+  loader.on("remote:load:success", ({ name }: { name: string }) => {
+    console.log(`[Remotes] Remote '${name}' loaded successfully`);
+  });
+
+  loader.on("remote:load:error", ({ name, error }: { name: string; error: any }) => {
+    console.error(`[Remotes] Failed to load remote '${name}':`, error);
+  });
+
+  loader.on("remote:preload:success", ({ name }: { name: string }) => {
+    console.log(`[Remotes] Remote '${name}' preloaded`);
+  });
+}
+
+/**
+ * Export the loader instance for use in components
+ */
+export { loader };
+
+/**
+ * Get current loader status (useful for debugging)
+ */
+export function getLoaderStatus() {
+  return loader.getStatus();
+}

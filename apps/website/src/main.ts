@@ -4,6 +4,7 @@ import viteLogo from "./assets/vite.svg";
 import heroImg from "./assets/hero.png";
 import { setupCounter } from "./counter.ts";
 import { loadRemoteWidget } from "./RemoteWidgetLoader.ts";
+import { initializeRemotes } from "./config/remotes.ts";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 <section id="center">
@@ -78,11 +79,29 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 
 setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
 
-// Load the remote widget
+// Initialize the dynamic loader and load the remote widget
 const remoteContainer = document.querySelector<HTMLDivElement>("#remote-widget-container");
 if (remoteContainer) {
-  void loadRemoteWidget(remoteContainer, {
-    initialValue: 10,
-    theme: "light",
-  });
+  // Initialize loader first, then load remote
+  initializeRemotes()
+    .then(() => {
+      return loadRemoteWidget(remoteContainer, {
+        initialValue: 10,
+        theme: "light",
+      });
+    })
+    .catch((error) => {
+      console.error("[Main] Failed to initialize remotes or load widget:", error);
+      remoteContainer.innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: #dc2626; border: 2px dashed #dc2626; border-radius: 8px;">
+          <h3>Failed to Load Remote Widget</h3>
+          <p style="color: #6b7280; margin: 1rem 0;">
+            ${error instanceof Error ? error.message : String(error)}
+          </p>
+          <p style="font-size: 0.875rem; color: #9ca3af;">
+            Check the console for details
+          </p>
+        </div>
+      `;
+    });
 }

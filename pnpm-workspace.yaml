@@ -8,9 +8,13 @@ catalogMode: prefer
 catalog:
   "@module-federation/vite": ^1.16.12
   "@types/node": ^24
+  "@types/react": ^19
+  "@types/react-dom": ^19
   ajv: ^8.17.1
   ajv-formats: ^3.0.1
   glob: ^11.0.0
+  react: ^19
+  react-dom: ^19
   tsdown: ^0.22.4
   turbo: ^2.10.4
   tsx: ^4.19.2
