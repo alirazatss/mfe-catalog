@@ -42,15 +42,39 @@ apiClient.interceptors.request.use(
 );
 
 /**
- * Response interceptor - Handle errors
+ * Response interceptor - Handle errors and auto-retry on 401
  */
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.error('[MFE] Unauthorized - Token may be expired');
-      // Shell will handle auto-refresh or logout
-      // MFE just logs the error
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // Auto-retry on 401 (token expired)
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      console.log('[MFE] 401 Unauthorized - Waiting for token refresh...');
+      
+      // Wait briefly for shell's TokenManager to auto-refresh
+      // TokenManager refreshes at 80% lifetime, but if we hit 401,
+      // it will refresh immediately via the AUTH_LOGOUT event handling
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Get fresh token from shell
+      const getAccessToken = (window as any).__AUTH__?.getAccessToken;
+      if (getAccessToken) {
+        const token = getAccessToken();
+        
+        if (token) {
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          
+          console.log('[MFE] Retrying request with refreshed token');
+          return apiClient(originalRequest);
+        }
+      }
+      
+      console.error('[MFE] Token refresh failed - logging out');
     }
 
     return Promise.reject(error);
