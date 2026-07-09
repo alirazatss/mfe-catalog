@@ -13,6 +13,10 @@
     "build": "turbo build",
     "build:host": "turbo build --filter website",
     "build:remote": "turbo build --filter '@mf-mono/mfe-widget'",
+    "test": "turbo test",
+    "test:watch": "turbo test -- --watch",
+    "test:coverage": "turbo test -- --coverage",
+    "test:ui": "turbo test -- --ui",
     "generate:config": "tsx scripts/generate-config.ts",
     "prepare": "vp config"
   },
