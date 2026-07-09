@@ -15,6 +15,9 @@ dist-ssr
 # Turborepo
 .turbo
 
+# Test coverage
+coverage
+
 # Auto-generated config files
 apps/website/public/remotes.config.json
 

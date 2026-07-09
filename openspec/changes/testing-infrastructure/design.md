@@ -463,16 +463,18 @@ describe('AuthProvider Integration', () => {
 ```json
 {
   "devDependencies": {
-    "@testing-library/react": "^16.0.0",
-    "@testing-library/user-event": "^14.0.0",
-    "@vitest/ui": "^2.0.0",
-    "happy-dom": "^15.0.0",
-    "vitest": "^2.0.0"
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@vitest/ui": "latest",
+    "happy-dom": "^15.11.7"
   }
 }
 ```
 
-**Note**: Vitest is already included with Vite+, but specific versions may need to be pinned.
+**Note**: 
+- Vitest 3.2.0 is already included with Vite+ via catalog
+- React 19.x is in the catalog and fully supported by @testing-library/react@16.3.2
+- All packages will be added to root devDependencies via catalog for version consistency
 
 ## Future Enhancements
 
