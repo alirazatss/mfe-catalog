@@ -4,6 +4,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import App from "./App";
 import { initializeRemotes } from "./config/remotes";
+import { AuthProvider } from "./providers/AuthProvider";
+import { NavigationEventListener } from "./components/NavigationEventListener";
 
 async function bootstrap() {
   // Initialize dynamic loader before rendering
@@ -18,13 +20,16 @@ async function bootstrap() {
     // Continue anyway - errors will be handled by route loaders
   }
 
-  // Render React app with BrowserRouter
+  // Render React app with BrowserRouter and AuthProvider
   const root = createRoot(document.getElementById("app")!);
 
   root.render(
     <StrictMode>
       <BrowserRouter>
-        <App />
+        <AuthProvider>
+          <NavigationEventListener />
+          <App />
+        </AuthProvider>
       </BrowserRouter>
     </StrictMode>,
   );

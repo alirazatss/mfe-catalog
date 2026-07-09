@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@mf-mono/events": "workspace:*",
+    "axios": "^1.7.9",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "catalog:"

@@ -10,6 +10,7 @@ export const MFE_EVENTS = {
   // Auth events
   AUTH_LOGIN: 'mfe:auth:login',
   AUTH_LOGOUT: 'mfe:auth:logout',
+  AUTH_REFRESH: 'mfe:auth:refresh',
   AUTH_TOKEN_REFRESHED: 'mfe:auth:token-refreshed',
   AUTH_SESSION_EXPIRED: 'mfe:auth:session-expired',
 
@@ -28,8 +29,9 @@ export const MFE_EVENTS = {
  */
 export interface MFEEventMap {
   // Auth event payloads
-  [MFE_EVENTS.AUTH_LOGIN]: { userId: string; email: string };
-  [MFE_EVENTS.AUTH_LOGOUT]: { userId?: string };
+  [MFE_EVENTS.AUTH_LOGIN]: { user: any; timestamp: number };
+  [MFE_EVENTS.AUTH_LOGOUT]: { reason: string };
+  [MFE_EVENTS.AUTH_REFRESH]: { newToken: string; expiresAt?: number };
   [MFE_EVENTS.AUTH_TOKEN_REFRESHED]: { token: string };
   [MFE_EVENTS.AUTH_SESSION_EXPIRED]: undefined;
 

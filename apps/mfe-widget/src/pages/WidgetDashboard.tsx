@@ -1,12 +1,29 @@
 import { Link } from "react-router";
 import { navigateTo } from "../utils/navigation";
 
-export default function WidgetDashboard() {
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  roles?: string[];
+}
+
+interface WidgetDashboardProps {
+  user?: User | null;
+}
+
+export default function WidgetDashboard({ user }: WidgetDashboardProps) {
   return (
     <div style={{ padding: "2rem" }}>
       <h2 style={{ marginBottom: "1rem", fontSize: "1.5rem", fontWeight: "bold" }}>
         Widget Dashboard
       </h2>
+
+      {user && (
+        <p style={{ marginBottom: "1rem", color: "#6b7280" }}>
+          Welcome, <strong>{user.name}</strong>!
+        </p>
+      )}
 
       <p style={{ marginBottom: "2rem", color: "#6b7280" }}>
         This is the main dashboard page of the MFE-Widget micro-frontend.

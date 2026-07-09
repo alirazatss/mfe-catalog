@@ -1,12 +1,15 @@
 import { Routes, Route } from "react-router";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import Layout from "./components/Layout";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { useAuth } from "./providers/AuthProvider";
+import { tokenManager } from "@mf-mono/auth";
 
 // Lazy-load pages
 const HomePage = lazy(() => import("./components/HomePage"));
-const LoginPage = lazy(() => import("./components/LoginPage"));
+const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const NotFoundPage = lazy(() => import("./components/NotFoundPage"));
 
 // Lazy-load MFE
@@ -19,9 +22,20 @@ const MFEWidget = lazy(async () => {
 }) as any; // Type assertion needed for lazy-loaded MFE with props
 
 export default function App() {
+  const { isAuthenticated, user } = useAuth();
+
+  // Expose auth methods globally for MFEs
+  useEffect(() => {
+    (window as any).__AUTH__ = {
+      getAccessToken: () => tokenManager.getAccessToken(),
+      isAuthenticated: () => tokenManager.isAuthenticated(),
+    };
+  }, []);
+
   return (
     <Routes>
       <Route element={<Layout />} errorElement={<ErrorBoundary />}>
+        {/* Public route - Home */}
         <Route
           index
           element={
@@ -31,24 +45,34 @@ export default function App() {
           }
         />
 
+        {/* Public route - Login */}
         <Route
-          path="auth/login"
+          path="login"
           element={
             <Suspense fallback={<LoadingSpinner />}>
-              <LoginPage />
+              <Login />
             </Suspense>
           }
         />
 
+        {/* Protected route - MFE Widget */}
         <Route
           path="widget/*"
           element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <MFEWidget basePath="/widget" router="memory" />
-            </Suspense>
+            <ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <MFEWidget 
+                  basePath="/widget" 
+                  router="memory"
+                  isAuthenticated={isAuthenticated}
+                  user={user}
+                />
+              </Suspense>
+            </ProtectedRoute>
           }
         />
 
+        {/* 404 */}
         <Route
           path="*"
           element={

@@ -11,6 +11,7 @@
     "preview": "vp preview"
   },
   "dependencies": {
+    "@mf-mono/auth": "workspace:*",
     "@mf-mono/dynamic-loader": "workspace:*",
     "@mf-mono/events": "workspace:*",
     "react": "catalog:",
