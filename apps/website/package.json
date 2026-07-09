@@ -8,7 +8,10 @@
     "build": "tsc && vp build",
     "prebuild": "pnpm run generate:config",
     "generate:config": "tsx ../../scripts/generate-config.ts",
-    "preview": "vp preview"
+    "preview": "vp preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@mf-mono/auth": "workspace:*",
@@ -19,10 +22,16 @@
     "react-router": "catalog:"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "happy-dom": "catalog:",
     "typescript": "~6.0.2",
     "vite": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   }
 }
