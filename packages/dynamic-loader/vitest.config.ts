@@ -1,14 +1,27 @@
-import { defineConfig } from "vite-plus";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    name: "@mf-mono/dynamic-loader",
+    environment: "node",
     globals: true,
-    environment: "jsdom",
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
-      include: ["src/**/*.ts"],
-      exclude: ["src/**/*.test.ts", "src/**/__tests__/**"],
+      thresholds: {
+        statements: 80,
+        branches: 75,
+        functions: 80,
+        lines: 80,
+      },
+      exclude: [
+        "dist/**",
+        "node_modules/**",
+        "**/*.test.ts",
+        "**/*.config.ts",
+        "**/test/**",
+        "**/__tests__/**",
+      ],
     },
   },
 });

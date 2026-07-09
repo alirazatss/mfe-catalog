@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { LoaderEvents } from "../events.js";
 
 describe("LoaderEvents", () => {
