@@ -1,7 +1,8 @@
 /**
  * Cross-MFE navigation utility
- * Dispatches custom events for shell-level navigation
+ * Uses event bus for shell-level navigation
  */
+import { emitMFEEvent, MFE_EVENTS } from '@mf-mono/events';
 
 export interface NavigationOptions {
   state?: any;
@@ -10,18 +11,14 @@ export interface NavigationOptions {
 
 /**
  * Navigate to a different route (can be in a different MFE)
- * This dispatches a custom event that the shell router listens to
+ * Emits navigation event that the shell router listens to
  */
 export function navigateTo(path: string, options: NavigationOptions = {}) {
-  const event = new CustomEvent("mfe:navigate", {
-    detail: {
-      path,
-      state: options.state,
-      replace: options.replace,
-    },
+  emitMFEEvent(MFE_EVENTS.NAVIGATE, {
+    path,
+    state: options.state,
+    replace: options.replace,
   });
-
-  window.dispatchEvent(event);
 
   if (import.meta.env.DEV) {
     console.log(`[Navigation] Dispatched navigation to: ${path}`, options);

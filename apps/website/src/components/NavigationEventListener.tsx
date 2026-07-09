@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import { onMFEEvent, MFE_EVENTS } from '@mf-mono/events';
 
 /**
  * Component that listens for cross-MFE navigation events
@@ -9,10 +10,8 @@ export function NavigationEventListener() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleNavigation = (event: Event) => {
-      const customEvent = event as CustomEvent<{ path: string; state?: any; replace?: boolean }>;
-      const { path, state, replace } = customEvent.detail;
-
+    // Subscribe to navigation events using event bus
+    const cleanup = onMFEEvent(MFE_EVENTS.NAVIGATE, ({ path, state, replace }) => {
       // Validate path (security check)
       if (!path.startsWith("/")) {
         console.error("[Navigation] Invalid path:", path);
@@ -30,19 +29,14 @@ export function NavigationEventListener() {
       if (import.meta.env.DEV) {
         console.log(`[Navigation] Navigated to: ${path}`);
       }
-    };
-
-    // Register event listener
-    window.addEventListener("mfe:navigate", handleNavigation as EventListener);
+    });
 
     if (import.meta.env.DEV) {
       console.log("[App] Navigation event listener registered");
     }
 
-    // Cleanup
-    return () => {
-      window.removeEventListener("mfe:navigate", handleNavigation as EventListener);
-    };
+    // Cleanup function removes listener
+    return cleanup;
   }, [navigate]);
 
   return null; // This component doesn't render anything

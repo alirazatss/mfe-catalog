@@ -9,6 +9,7 @@
     "preview": "vp preview"
   },
   "dependencies": {
+    "@mf-mono/events": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "catalog:"

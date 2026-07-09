@@ -1,6 +1,7 @@
 /**
  * Cross-MFE navigation utilities
  */
+import { emitMFEEvent, MFE_EVENTS } from '@mf-mono/events';
 
 export interface NavigationOptions {
   state?: any;
@@ -9,7 +10,7 @@ export interface NavigationOptions {
 
 /**
  * Navigate to a path from within an MFE
- * Emits custom event that the shell listens to
+ * Emits navigation event that the shell listens to
  */
 export function navigateTo(path: string, options: NavigationOptions = {}): void {
   // Validate path
@@ -24,16 +25,12 @@ export function navigateTo(path: string, options: NavigationOptions = {}): void 
     return;
   }
 
-  // Dispatch custom event
-  const event = new CustomEvent("mfe:navigate", {
-    detail: {
-      path,
-      state: options.state,
-      replace: options.replace || false,
-    },
+  // Emit event using event bus
+  emitMFEEvent(MFE_EVENTS.NAVIGATE, {
+    path,
+    state: options.state,
+    replace: options.replace || false,
   });
-
-  window.dispatchEvent(event);
 
   if (import.meta.env.DEV) {
     console.log(`[Navigation] Emitted navigation event: ${path}`);

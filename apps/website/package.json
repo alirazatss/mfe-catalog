@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@mf-mono/dynamic-loader": "workspace:*",
+    "@mf-mono/events": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "catalog:"
