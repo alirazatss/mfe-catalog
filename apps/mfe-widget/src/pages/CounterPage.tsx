@@ -38,28 +38,32 @@ export default function CounterPage() {
       <h2 style={{ marginBottom: "1rem", fontSize: "1.5rem", fontWeight: "bold" }}>
         Counter Widget
       </h2>
-      
+
       <p style={{ marginBottom: "2rem", color: "#6b7280" }}>
         This is the interactive counter widget component.
       </p>
 
-      <div style={{ 
-        padding: "2rem", 
-        background: "white", 
-        borderRadius: "8px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-      }}>
+      <div
+        style={{
+          padding: "2rem",
+          background: "white",
+          borderRadius: "8px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        }}
+      >
         <div ref={containerRef} />
       </div>
 
       {import.meta.env.DEV && (
-        <div style={{ 
-          marginTop: "2rem",
-          padding: "1rem", 
-          background: "#f3f4f6", 
-          borderRadius: "8px",
-          fontSize: "0.875rem"
-        }}>
+        <div
+          style={{
+            marginTop: "2rem",
+            padding: "1rem",
+            background: "#f3f4f6",
+            borderRadius: "8px",
+            fontSize: "0.875rem",
+          }}
+        >
           <strong>Dev Info:</strong> This page demonstrates a nested route within the MFE-Widget.
           The widget is initialized when this component mounts and cleaned up on unmount.
         </div>

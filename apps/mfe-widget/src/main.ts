@@ -8,11 +8,7 @@ const rootElement = document.getElementById("app");
 if (rootElement) {
   const root = createRoot(rootElement);
   root.render(
-    createElement(
-      StrictMode,
-      null,
-      createElement(App, { basePath: "/", router: "browser" })
-    )
+    createElement(StrictMode, null, createElement(App, { basePath: "/", router: "browser" })),
   );
 
   if (import.meta.env.DEV) {

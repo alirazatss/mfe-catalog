@@ -30,7 +30,7 @@ export default function App() {
             </Suspense>
           }
         />
-        
+
         <Route
           path="auth/login"
           element={
@@ -39,7 +39,7 @@ export default function App() {
             </Suspense>
           }
         />
-        
+
         <Route
           path="widget/*"
           element={
@@ -48,7 +48,7 @@ export default function App() {
             </Suspense>
           }
         />
-        
+
         <Route
           path="*"
           element={

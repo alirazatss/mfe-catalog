@@ -29,20 +29,20 @@ export default function App({ basePath = "/", router: routerType = "browser" }: 
           {routes}
         </MemoryRouter>
       ) : (
-        <BrowserRouter basename={basePath}>
-          {routes}
-        </BrowserRouter>
+        <BrowserRouter basename={basePath}>{routes}</BrowserRouter>
       )}
-      
+
       {import.meta.env.DEV && (
-        <div style={{ 
-          marginTop: "1rem", 
-          padding: "1rem", 
-          background: "#f3f4f6", 
-          borderRadius: "8px", 
-          fontSize: "0.875rem",
-          borderTop: "2px solid #e5e7eb"
-        }}>
+        <div
+          style={{
+            marginTop: "1rem",
+            padding: "1rem",
+            background: "#f3f4f6",
+            borderRadius: "8px",
+            fontSize: "0.875rem",
+            borderTop: "2px solid #e5e7eb",
+          }}
+        >
           <strong>MFE-Widget Dev Info:</strong> basePath={basePath}, router={routerType}
         </div>
       )}

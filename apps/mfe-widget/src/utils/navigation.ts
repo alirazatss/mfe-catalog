@@ -31,7 +31,11 @@ export function navigateTo(path: string, options: NavigationOptions = {}) {
 /**
  * Navigate with query parameters
  */
-export function navigateWithParams(path: string, params: Record<string, string>, options: NavigationOptions = {}) {
+export function navigateWithParams(
+  path: string,
+  params: Record<string, string>,
+  options: NavigationOptions = {},
+) {
   const queryString = new URLSearchParams(params).toString();
   const fullPath = queryString ? `${path}?${queryString}` : path;
   navigateTo(fullPath, options);

@@ -9,7 +9,7 @@ async function bootstrap() {
   // Initialize dynamic loader before rendering
   try {
     await initializeRemotes();
-    
+
     if (import.meta.env.DEV) {
       console.log("[App] Dynamic loader initialized successfully");
     }
@@ -17,18 +17,18 @@ async function bootstrap() {
     console.error("[App] Failed to initialize dynamic loader:", error);
     // Continue anyway - errors will be handled by route loaders
   }
-  
+
   // Render React app with BrowserRouter
   const root = createRoot(document.getElementById("app")!);
-  
+
   root.render(
     <StrictMode>
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </StrictMode>
+    </StrictMode>,
   );
-  
+
   if (import.meta.env.DEV) {
     console.log("[App] Router initialized and rendered");
   }

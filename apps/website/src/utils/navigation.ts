@@ -17,13 +17,13 @@ export function navigateTo(path: string, options: NavigationOptions = {}): void 
     console.error("[Navigation] Path must start with '/', got:", path);
     return;
   }
-  
+
   // Reject external URLs for security
   if (path.startsWith("http://") || path.startsWith("https://")) {
     console.error("[Navigation] External URLs not allowed:", path);
     return;
   }
-  
+
   // Dispatch custom event
   const event = new CustomEvent("mfe:navigate", {
     detail: {
@@ -32,9 +32,9 @@ export function navigateTo(path: string, options: NavigationOptions = {}): void 
       replace: options.replace || false,
     },
   });
-  
+
   window.dispatchEvent(event);
-  
+
   if (import.meta.env.DEV) {
     console.log(`[Navigation] Emitted navigation event: ${path}`);
   }
@@ -45,13 +45,13 @@ export function navigateTo(path: string, options: NavigationOptions = {}): void 
  */
 export function buildQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams();
-  
+
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null) {
       searchParams.append(key, String(value));
     }
   }
-  
+
   const qs = searchParams.toString();
   return qs ? `?${qs}` : "";
 }
@@ -62,7 +62,7 @@ export function buildQueryString(params: Record<string, any>): string {
 export function navigateWithParams(
   path: string,
   params: Record<string, any>,
-  options: NavigationOptions = {}
+  options: NavigationOptions = {},
 ): void {
   const queryString = buildQueryString(params);
   navigateTo(`${path}${queryString}`, options);
