@@ -1,0 +1,56 @@
+{
+  "name": "@mf-mono/auth-ui",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./bridge": {
+      "types": "./dist/bridge/index.d.mts",
+      "default": "./dist/bridge/index.mjs"
+    },
+    "./theme": {
+      "types": "./dist/theme.d.mts",
+      "default": "./dist/theme.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown --config tsdown.config.ts",
+    "dev": "tsdown --config tsdown.config.ts --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@mf-mono/auth": "workspace:*",
+    "@mf-mono/events": "workspace:*"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "happy-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "~6.0.2",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router": "catalog:"
+  }
+}

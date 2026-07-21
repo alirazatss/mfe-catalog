@@ -111,7 +111,9 @@ async function main() {
     await writeFile(outputPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
 
     console.log(`\n✅ Config written to ${options.output}`);
-    console.log(`   ${config.remotes.length} remote(s) configured`);
+    const chromeCount = Object.keys(config.chrome ?? {}).length;
+    const featureCount = Object.keys(config.features ?? {}).length;
+    console.log(`   ${chromeCount} chrome MFE(s), ${featureCount} feature MFE(s) configured`);
   } catch (error) {
     console.error("\n❌ Error generating config:");
     console.error(error instanceof Error ? error.message : String(error));

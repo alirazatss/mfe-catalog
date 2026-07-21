@@ -1,26 +1,20 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
-    name: '@mf-mono/events',
-    environment: 'happy-dom',
+    name: "@mf-mono/events",
+    environment: "happy-dom",
     globals: true,
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
       thresholds: {
         statements: 80,
         branches: 75,
         functions: 80,
         lines: 80,
       },
-      exclude: [
-        'dist/**',
-        'node_modules/**',
-        '**/*.test.ts',
-        '**/*.config.ts',
-        '**/test/**',
-      ],
+      exclude: ["dist/**", "node_modules/**", "**/*.test.ts", "**/*.config.ts", "**/test/**"],
     },
   },
 });

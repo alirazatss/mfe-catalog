@@ -30,7 +30,7 @@
 ## 3. Environment Detection
 
 - [ ] 3.1 Create `packages/config/src/detectEnvironment.ts`
-- [ ] 3.2 Implement hostname-based detection (localhost = dev, staging.* = staging)
+- [ ] 3.2 Implement hostname-based detection (localhost = dev, staging.\* = staging)
 - [ ] 3.3 Implement query parameter override (?env=production)
 - [ ] 3.4 Add environment validation
 - [ ] 3.5 Export `detectEnvironment()` function
@@ -82,7 +82,7 @@
 - [ ] 6.1 Create `packages/config/src/defaults.ts`
 - [ ] 6.2 Define DEFAULT_CONFIG with development values
 - [ ] 6.3 Set apiBaseUrl to 'http://localhost:3000/api'
-- [ ] 6.4 Set auth URLs to /api/auth/* endpoints
+- [ ] 6.4 Set auth URLs to /api/auth/\* endpoints
 - [ ] 6.5 Set all feature flags to false
 - [ ] 6.6 Export as const
 
@@ -113,7 +113,7 @@
 - [ ] 8.3 Set apiBaseUrl to 'http://localhost:3000/api'
 - [ ] 8.4 Create `config.staging.json` placeholder (copy from dev)
 - [ ] 8.5 Create `config.production.json` placeholder (update URLs to production)
-- [ ] 8.6 Add .gitignore entry for config.*.local.json (local overrides)
+- [ ] 8.6 Add .gitignore entry for config.\*.local.json (local overrides)
 
 **Depends on**: None (can be parallel)  
 **Skill**: Frontend developer or DevOps  

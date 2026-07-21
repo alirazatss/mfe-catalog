@@ -1,0 +1,7 @@
+{
+  "ignore": ["**/src/_legacy/**"],
+  "env": {},
+  "globals": {},
+  "settings": {},
+  "rules": {}
+}

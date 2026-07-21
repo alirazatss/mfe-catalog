@@ -1,9 +1,9 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
     name: "@mf-mono/dynamic-loader",
-    environment: "node",
+    environment: "happy-dom",
     globals: true,
     coverage: {
       provider: "v8",

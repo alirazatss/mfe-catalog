@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2026-07-17T12:25:37.820Z",
+  "environment": "production",
+  "microfrontends": {
+    "mfe-widget": {
+      "version": "0.0.0",
+      "url": "https://test-cdn.example.com/mfe-widget/0.0.0/remoteEntry.js",
+      "scope": "widget",
+      "module": "./App",
+      "integrity": "sha384-Ww53bzHNdZe++Aj9ARoYFx/lmUZrzSxpKO7zxNOnSEgrz3e2MQwOMCCKN/P8Abm7",
+      "metadata": {
+        "buildHash": "b5c5b2f",
+        "buildDate": "2026-07-09T23:40:51+02:00"
+      }
+    }
+  },
+  "cdn": {
+    "baseUrl": "https://test-cdn.example.com"
+  }
+}

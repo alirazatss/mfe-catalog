@@ -8,6 +8,7 @@
 ## 🎯 Project Vision
 
 Production-ready micro-frontend architecture with:
+
 - ✅ Keycloak authentication
 - ✅ Event-driven communication
 - ⏳ Runtime environment configuration
@@ -20,6 +21,7 @@ Production-ready micro-frontend architecture with:
 ## 📊 Current Status
 
 ### Completed Features ✅
+
 - [x] **Monorepo Setup** - Turborepo with smart builds
 - [x] **Auto-Discovery** - Convention-based MFE registration (`apps/mfe-*`)
 - [x] **Dynamic Loader** - Runtime MFE loading with Module Federation
@@ -30,9 +32,11 @@ Production-ready micro-frontend architecture with:
 - [x] **MFE Auth Integration** - Axios interceptors, event listeners
 
 ### In Progress 🔄
+
 - [ ] **Backend Auth Endpoints** - Keycloak integration (BLOCKING)
 
 ### Not Started ⏸️
+
 - [ ] **Error Handling** - Boundaries, retry, graceful degradation
 - [ ] **Environment Config** - Runtime config loading, detection
 - [ ] **Testing** - Unit, integration, E2E tests
@@ -48,12 +52,14 @@ Production-ready micro-frontend architecture with:
 ### Priority 1: BLOCKING Production 🔴
 
 #### 1.1 Backend Auth Endpoints
+
 **Owner**: Backend Team  
 **Effort**: 1-2 days  
 **Depends on**: Keycloak setup  
 **Blocks**: All auth functionality
 
 **Deliverables**:
+
 ```typescript
 POST /api/auth/login
   Request: { email: string, password: string }
@@ -72,6 +78,7 @@ POST /api/auth/logout
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Login endpoint validates credentials with Keycloak
 - [ ] Login returns JWT access token with user claims
 - [ ] Login sets HttpOnly secure cookie with refresh token
@@ -82,6 +89,7 @@ POST /api/auth/logout
 - [ ] CORS configured for frontend origin
 
 **Testing**:
+
 - [ ] Unit tests for each endpoint
 - [ ] Integration tests with Keycloak
 - [ ] Security tests (token validation, cookie flags)
@@ -91,12 +99,14 @@ POST /api/auth/logout
 ### Priority 2: CRITICAL for Stability 🟠
 
 #### 2.1 Error Handling & Recovery
+
 **Owner**: Frontend Team  
 **Effort**: 18-25 hours  
 **Depends on**: Event bus (✅ complete)  
 **Spec**: `openspec/changes/error-handling-recovery/`
 
 **Deliverables**:
+
 - [ ] **Enhanced Error Boundary** (6-8h)
   - Error boundary wrapper component
   - Retry mechanism for recoverable errors
@@ -127,6 +137,7 @@ POST /api/auth/logout
   - Auto-recovery on refresh
 
 **Acceptance Criteria**:
+
 - [ ] Component errors don't crash entire app
 - [ ] MFE load failures show retry button
 - [ ] Network errors retry automatically (3 attempts)
@@ -136,18 +147,21 @@ POST /api/auth/logout
 - [ ] Error boundaries tested with intentional errors
 
 **Skills to Use**:
+
 - `frontend-developer` - Implementation
 - `tester` - Verification and tests
 
 ---
 
 #### 2.2 Environment Configuration
+
 **Owner**: Frontend Team  
 **Effort**: 16-20 hours  
 **Depends on**: None  
 **Spec**: `openspec/changes/environment-configuration/`
 
 **Deliverables**:
+
 - [ ] **Runtime Config Loader** (4-5h)
   - Fetch config from `/public/config/config.{env}.json`
   - Block app render until config loaded
@@ -177,6 +191,7 @@ POST /api/auth/logout
   - Error state handling
 
 **Acceptance Criteria**:
+
 - [ ] Config loads before app renders
 - [ ] Environment auto-detected from URL
 - [ ] API endpoints configurable per environment
@@ -186,6 +201,7 @@ POST /api/auth/logout
 - [ ] Type-safe config access everywhere
 
 **Config File Structure**:
+
 ```json
 {
   "environment": "development",
@@ -209,6 +225,7 @@ POST /api/auth/logout
 ```
 
 **Skills to Use**:
+
 - `frontend-developer` - Implementation
 - `backend-developer` - Config structure design
 - `tester` - Config validation tests
@@ -218,12 +235,14 @@ POST /api/auth/logout
 ### Priority 3: IMPORTANT for Quality 🟡
 
 #### 3.1 Testing Infrastructure
+
 **Owner**: QA + Frontend Team  
 **Effort**: 15-20 hours  
 **Depends on**: Backend endpoints (for integration tests)  
 **Spec**: TBD (use `tester` skill to generate)
 
 **Deliverables**:
+
 - [ ] **Unit Tests** (6-8h)
   - TokenManager tests (token lifecycle, refresh, expiry)
   - EventBus tests (emit, listen, cleanup)
@@ -247,30 +266,35 @@ POST /api/auth/logout
   - Error scenarios (network failures, MFE load failures)
 
 **Testing Stack**:
+
 - **Unit**: Vitest + Testing Library
 - **Integration**: Vitest + MSW (Mock Service Worker)
 - **E2E**: Playwright
 
 **Acceptance Criteria**:
-- [ ] >80% code coverage for packages/auth
-- [ ] >70% code coverage for packages/events
+
+- [ ] > 80% code coverage for packages/auth
+- [ ] > 70% code coverage for packages/events
 - [ ] All critical paths covered by E2E tests
 - [ ] Tests run in CI/CD pipeline
 - [ ] No flaky tests
 - [ ] Tests document expected behavior
 
 **Skills to Use**:
+
 - `tester` - Test design and implementation
 - `frontend-developer` - Test fixtures and mocks
 
 ---
 
 #### 3.2 Documentation
+
 **Owner**: Frontend Team  
 **Effort**: 4-6 hours  
-**Depends on**: Features stabilized  
+**Depends on**: Features stabilized
 
 **Deliverables**:
+
 - [ ] **Package READMEs** (2-3h)
   - `packages/auth/README.md` - TokenManager API, usage examples
   - `packages/events/README.md` - EventBus API, event catalog
@@ -290,6 +314,7 @@ POST /api/auth/logout
   - `docs/TROUBLESHOOTING.md` - Common issues
 
 **Acceptance Criteria**:
+
 - [ ] New developers can onboard without help
 - [ ] All public APIs documented
 - [ ] Architecture diagrams included
@@ -297,6 +322,7 @@ POST /api/auth/logout
 - [ ] Troubleshooting section for known issues
 
 **Skills to Use**:
+
 - `frontend-developer` - Technical writing
 - `architect` - Architecture diagrams
 
@@ -305,11 +331,13 @@ POST /api/auth/logout
 ### Priority 4: REQUIRED for Production 🟢
 
 #### 4.1 Monitoring & Observability
+
 **Owner**: DevOps + Frontend Team  
 **Effort**: 8-12 hours  
-**Depends on**: Error handling (event emission)  
+**Depends on**: Error handling (event emission)
 
 **Deliverables**:
+
 - [ ] **Error Tracking** (3-4h)
   - Integrate Sentry / Datadog / custom solution
   - Listen to error events from event bus
@@ -336,6 +364,7 @@ POST /api/auth/logout
   - Dashboard for system status
 
 **Acceptance Criteria**:
+
 - [ ] All errors tracked in monitoring tool
 - [ ] Real-time alerts for critical errors
 - [ ] Performance metrics visible
@@ -343,6 +372,7 @@ POST /api/auth/logout
 - [ ] Logs searchable and filterable
 
 **Tools to Evaluate**:
+
 - Sentry (error tracking)
 - Datadog / New Relic (APM)
 - Google Analytics / Mixpanel (user analytics)
@@ -351,11 +381,13 @@ POST /api/auth/logout
 ---
 
 #### 4.2 Performance Optimization
+
 **Owner**: Frontend Team  
 **Effort**: 6-10 hours  
-**Depends on**: All features implemented  
+**Depends on**: All features implemented
 
 **Deliverables**:
+
 - [ ] **Code Splitting** (2-3h)
   - Route-based splitting
   - Component lazy loading
@@ -375,12 +407,14 @@ POST /api/auth/logout
   - Optimize font loading
 
 **Acceptance Criteria**:
+
 - [ ] Lighthouse score >90
 - [ ] First Contentful Paint <1.5s
 - [ ] Time to Interactive <3s
 - [ ] Bundle sizes optimized (<200KB per MFE)
 
 **Tools**:
+
 - Lighthouse CI
 - Bundle analyzer
 - Chrome DevTools Performance
@@ -388,11 +422,13 @@ POST /api/auth/logout
 ---
 
 #### 4.3 CI/CD Pipeline
+
 **Owner**: DevOps Team  
 **Effort**: 12-16 hours  
-**Depends on**: Testing infrastructure  
+**Depends on**: Testing infrastructure
 
 **Deliverables**:
+
 - [ ] **Build Pipeline** (4-5h)
   - Automated builds on commit
   - Parallel builds with Turborepo
@@ -413,6 +449,7 @@ POST /api/auth/logout
   - Blue-green deployments
 
 **Acceptance Criteria**:
+
 - [ ] All commits trigger builds
 - [ ] Tests block merging if failed
 - [ ] Deployments automated
@@ -420,6 +457,7 @@ POST /api/auth/logout
 - [ ] Deployment notifications (Slack/email)
 
 **Tools**:
+
 - GitHub Actions / GitLab CI / Jenkins
 - Docker for containerization
 - Kubernetes / AWS / Vercel for hosting
@@ -429,6 +467,7 @@ POST /api/auth/logout
 ## 📅 Suggested Timeline
 
 ### Week 1: Unblock Critical Path
+
 - **Days 1-2**: Backend implements auth endpoints
 - **Days 3-4**: Test auth flow, fix issues
 - **Day 5**: Begin error handling implementation
@@ -438,6 +477,7 @@ POST /api/auth/logout
 ---
 
 ### Week 2: Stability & Configuration
+
 - **Days 1-3**: Complete error handling (boundaries, retry, degradation)
 - **Days 4-5**: Begin environment configuration
 
@@ -446,6 +486,7 @@ POST /api/auth/logout
 ---
 
 ### Week 3: Complete Core Features
+
 - **Days 1-2**: Complete environment configuration
 - **Days 3-5**: Add unit and integration tests
 
@@ -454,6 +495,7 @@ POST /api/auth/logout
 ---
 
 ### Week 4: Quality & Documentation
+
 - **Days 1-2**: E2E tests
 - **Days 3-4**: Documentation (READMEs, guides)
 - **Day 5**: Code review, cleanup
@@ -463,6 +505,7 @@ POST /api/auth/logout
 ---
 
 ### Week 5: Production Readiness
+
 - **Days 1-2**: Monitoring setup (Sentry, analytics)
 - **Days 3-4**: Performance optimization
 - **Day 5**: Security audit
@@ -472,6 +515,7 @@ POST /api/auth/logout
 ---
 
 ### Week 6: DevOps & Launch
+
 - **Days 1-3**: CI/CD pipeline
 - **Days 4-5**: Staging deployment, final testing
 - **End of Week**: Production launch 🚀
@@ -483,6 +527,7 @@ POST /api/auth/logout
 ## 🎯 Success Metrics
 
 ### Technical Metrics
+
 - [ ] **Test Coverage**: >80% for core packages
 - [ ] **Performance**: Lighthouse score >90
 - [ ] **Availability**: 99.9% uptime
@@ -491,12 +536,14 @@ POST /api/auth/logout
 - [ ] **Deploy Time**: <10 minutes dev, <30 minutes prod
 
 ### User Metrics
+
 - [ ] **Auth Success Rate**: >95%
 - [ ] **Token Refresh Success**: >99%
 - [ ] **Page Load Time**: <3 seconds
 - [ ] **Error Recovery**: Users can recover from >90% of errors
 
 ### Developer Metrics
+
 - [ ] **Onboarding Time**: New dev productive in <1 day
 - [ ] **PR Review Time**: <2 hours
 - [ ] **Deploy Frequency**: Multiple times per day
@@ -507,22 +554,26 @@ POST /api/auth/logout
 ## 🔄 Maintenance Plan
 
 ### Daily
+
 - Monitor error rates
 - Review deployment logs
 - Check system health
 
 ### Weekly
+
 - Dependency updates (security patches)
 - Performance review
 - User feedback review
 
 ### Monthly
+
 - Full dependency audit
 - Security scan
 - Performance optimization review
 - Architecture review
 
 ### Quarterly
+
 - Major dependency upgrades
 - Architecture refactoring (if needed)
 - Capacity planning
@@ -533,42 +584,52 @@ POST /api/auth/logout
 ## 🚧 Known Risks & Mitigations
 
 ### Risk 1: Backend Auth Delays
+
 **Impact**: HIGH - Blocks all auth functionality  
 **Probability**: MEDIUM  
-**Mitigation**: 
+**Mitigation**:
+
 - Use MSW (Mock Service Worker) for frontend development
 - Create mock endpoints matching spec
 - Parallel backend and frontend testing
 
 ### Risk 2: Keycloak Configuration Complexity
+
 **Impact**: MEDIUM - Auth may not work correctly  
 **Probability**: MEDIUM  
 **Mitigation**:
+
 - Thorough Keycloak documentation review
 - Test with Keycloak in dev environment first
 - Have Keycloak expert available
 
 ### Risk 3: MFE Load Failures in Production
+
 **Impact**: HIGH - User experience degraded  
 **Probability**: LOW (with error handling)  
 **Mitigation**:
+
 - Implement comprehensive error handling (Priority 2)
 - CDN with failover
 - Health checks and monitoring
 
 ### Risk 4: Token Security Vulnerabilities
+
 **Impact**: CRITICAL - Security breach  
 **Probability**: LOW (with current design)  
 **Mitigation**:
+
 - Security audit before launch
 - Penetration testing
 - Regular security updates
 - Follow OWASP guidelines
 
 ### Risk 5: Performance Degradation at Scale
+
 **Impact**: MEDIUM - Slow user experience  
 **Probability**: MEDIUM  
 **Mitigation**:
+
 - Load testing before launch
 - Performance monitoring
 - CDN for static assets
@@ -579,11 +640,13 @@ POST /api/auth/logout
 ## 📚 Resources
 
 ### Internal Documentation
+
 - OpenSpec changes: `openspec/changes/`
 - Agent memory: `.opencode/memory.md`
 - Agent instructions: `.opencode/instructions.md`
 
 ### External Resources
+
 - [Keycloak Documentation](https://www.keycloak.org/docs/latest/)
 - [Module Federation](https://module-federation.io/)
 - [React Router v8](https://reactrouter.com/)
@@ -591,6 +654,7 @@ POST /api/auth/logout
 - [OWASP Security Guidelines](https://owasp.org/)
 
 ### Skills Available
+
 - `spec-writer` - Feature specifications
 - `backend-developer` - Server-side implementation
 - `frontend-developer` - UI/UX implementation
@@ -605,16 +669,19 @@ POST /api/auth/logout
 ## 🎬 Next Actions
 
 **Immediate** (Today):
+
 1. ✅ Share roadmap with team
 2. ✅ Assign owners for Priority 1 items
 3. ✅ Schedule backend sync for auth endpoints
 
 **This Week**:
+
 1. Backend team starts auth endpoint implementation
 2. Frontend team reviews error handling spec
 3. QA team reviews testing requirements
 
 **Next Week**:
+
 1. Test auth flow end-to-end
 2. Begin error handling implementation
 3. Plan environment configuration approach

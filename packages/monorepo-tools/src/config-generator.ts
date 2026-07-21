@@ -1,51 +1,73 @@
 import { validateRemoteConfig } from "@mf-mono/remote-config";
-import type { MicroFrontend, RemoteConfig, ConfigGenerationOptions } from "./types.js";
+import type {
+  MicroFrontend,
+  RemoteConfig,
+  ConfigGenerationOptions,
+  FeatureMFEEntry,
+} from "./types.js";
 
 /**
- * Generate remote configuration from discovered micro-frontends
+ * Generate remote manifest (v2 — chrome + features shape) from discovered MFEs.
  *
- * Takes an array of discovered micro-frontends and generates a RemoteConfig
- * object with environment-specific URLs.
+ * By convention:
+ * - Any MFE whose shortName ends with a chrome slot name (header, sidebar, footer)
+ *   is placed under `chrome.<slot>`.
+ * - All other MFEs are placed under `features["/<shortName>"]` as route-based
+ *   feature MFEs. Consumers can further customize the manifest afterwards
+ *   (e.g., adjust `requiredRoles`, `basePath`, `requiresAuth`).
  *
- * @param microFrontends - Array of discovered micro-frontends
- * @param options - Configuration options (environment, gitHash, baseUrl, outputPath)
- * @returns RemoteConfig object validated against JSON Schema
+ * See:
+ * - openspec/changes/refactor-to-thin-shell/specs/thin-shell-bootstrap/spec.md
+ * - docs/adr/0004-chrome-mfe-pattern.md
  */
 export async function generateConfig(
   microFrontends: MicroFrontend[],
   options: ConfigGenerationOptions,
 ): Promise<RemoteConfig> {
   const { environment, gitHash, baseUrl } = options;
+  const version = gitHash || "latest";
 
-  const remotes = microFrontends.map((mfe) => {
-    // Generate entry URL based on environment
-    let entryUrl: string;
+  const chrome: NonNullable<RemoteConfig["chrome"]> = {};
+  const features: NonNullable<RemoteConfig["features"]> = {};
 
-    if (environment === "development") {
-      // Development: http://localhost:{port}/remoteEntry.js
-      entryUrl = `http://localhost:${mfe.port}/remoteEntry.js`;
+  for (const mfe of microFrontends) {
+    const entryUrl =
+      environment === "development"
+        ? `http://localhost:${mfe.port}/remoteEntry.js`
+        : `${baseUrl || ""}/mfe-${mfe.shortName}/v${version}/remoteEntry.js`;
+
+    const slot = detectChromeSlot(mfe.shortName);
+    if (slot) {
+      chrome[slot] = {
+        mfe: mfe.shortName,
+        entryUrl,
+        scope: mfe.scope,
+        version: gitHash || mfe.version,
+        enabled: true,
+      };
     } else {
-      // Production: {baseUrl}/mfe-{shortName}/v{gitHash}/remoteEntry.js
-      const hash = gitHash || "latest";
-      const base = baseUrl || "";
-      entryUrl = `${base}/mfe-${mfe.shortName}/v${hash}/remoteEntry.js`;
+      const basePath = `/${stripMfePrefix(mfe.shortName)}`;
+      const entry: FeatureMFEEntry = {
+        mfe: mfe.shortName,
+        entryUrl,
+        scope: mfe.scope,
+        version: gitHash || mfe.version,
+        basePath,
+        requiresAuth: true,
+        requiredRoles: [],
+        enabled: true,
+      };
+      features[basePath] = entry;
     }
-
-    return {
-      name: mfe.shortName,
-      entryUrl,
-      scope: mfe.scope,
-      version: gitHash || mfe.version,
-      enabled: true,
-    };
-  });
+  }
 
   const config: RemoteConfig = {
     $schema: "../node_modules/@mf-mono/remote-config/schema.json",
-    remotes,
+    schemaVersion: "2.0.0",
+    chrome,
+    features,
   };
 
-  // Validate against JSON Schema
   try {
     validateRemoteConfig(config);
   } catch (error) {
@@ -55,4 +77,22 @@ export async function generateConfig(
   }
 
   return config;
+}
+
+const CHROME_SLOTS = ["header", "sidebar", "footer"] as const;
+
+/**
+ * If the MFE short name matches or ends with a chrome slot name, return it.
+ * Examples:
+ *   "mfe-header" -> "header"
+ *   "header"     -> "header"
+ *   "mfe-widget" -> null
+ */
+function detectChromeSlot(shortName: string): string | null {
+  const normalized = stripMfePrefix(shortName);
+  return (CHROME_SLOTS as readonly string[]).includes(normalized) ? normalized : null;
+}
+
+function stripMfePrefix(shortName: string): string {
+  return shortName.startsWith("mfe-") ? shortName.slice(4) : shortName;
 }

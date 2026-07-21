@@ -1,6 +1,6 @@
 /**
  * Standard event names used across the application
- * 
+ *
  * Convention: mfe:domain:action
  * - mfe: prefix to avoid collision with browser events
  * - domain: feature area (auth, cart, error, etc.)
@@ -8,19 +8,19 @@
  */
 export const MFE_EVENTS = {
   // Auth events
-  AUTH_LOGIN: 'mfe:auth:login',
-  AUTH_LOGOUT: 'mfe:auth:logout',
-  AUTH_REFRESH: 'mfe:auth:refresh',
-  AUTH_TOKEN_REFRESHED: 'mfe:auth:token-refreshed',
-  AUTH_SESSION_EXPIRED: 'mfe:auth:session-expired',
+  AUTH_LOGIN: "mfe:auth:login",
+  AUTH_LOGOUT: "mfe:auth:logout",
+  AUTH_REFRESH: "mfe:auth:refresh",
+  AUTH_TOKEN_REFRESHED: "mfe:auth:token-refreshed",
+  AUTH_SESSION_EXPIRED: "mfe:auth:session-expired",
 
   // Navigation events (formalize existing pattern)
-  NAVIGATE: 'mfe:navigate',
+  NAVIGATE: "mfe:navigate",
 
   // Error events
-  ERROR_MFE_LOAD_FAILED: 'mfe:error:mfe-load-failed',
-  ERROR_API_FAILED: 'mfe:error:api-failed',
-  ERROR_COMPONENT_FAILED: 'mfe:error:component-failed',
+  ERROR_MFE_LOAD_FAILED: "mfe:error:mfe-load-failed",
+  ERROR_API_FAILED: "mfe:error:api-failed",
+  ERROR_COMPONENT_FAILED: "mfe:error:component-failed",
 } as const;
 
 /**

@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vp dev",
     "build": "tsc && vp build",
-    "prebuild": "pnpm run generate:config",
+    "prebuild": "pnpm run generate:config && pnpm run check:size",
     "generate:config": "tsx ../../scripts/generate-config.ts",
+    "check:size": "tsx ../../scripts/check-shell-size.ts",
     "preview": "vp preview",
     "test": "vitest",
     "test:run": "vitest run",
@@ -17,9 +18,9 @@
     "@mf-mono/auth": "workspace:*",
     "@mf-mono/dynamic-loader": "workspace:*",
     "@mf-mono/events": "workspace:*",
+    "@mf-mono/remote-config": "workspace:*",
     "react": "catalog:",
-    "react-dom": "catalog:",
-    "react-router": "catalog:"
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "catalog:",

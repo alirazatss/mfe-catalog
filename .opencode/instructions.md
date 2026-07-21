@@ -26,8 +26,8 @@ This project has access to specialized skills that MUST be used proactively. Ski
 ### Workflow Pattern
 
 ```
-brainstorming → spec-writer → team-lead → 
-  backend-developer → frontend-developer → 
+brainstorming → spec-writer → team-lead →
+  backend-developer → frontend-developer →
     tester → git-commit
 ```
 
@@ -43,18 +43,21 @@ brainstorming → spec-writer → team-lead →
 ## Project-Specific Context
 
 ### Architecture Principles
+
 - Shell loads MFEs, NO business logic in shell
 - Zero deps for core packages (native browser APIs)
 - Event-driven communication (mfe:domain:action)
 - Singleton pattern for shared services
 
 ### Tech Constraints
+
 - Use `vp` CLI (Vite+) for all package management
 - Convention: `apps/mfe-*` for micro-frontends
 - Auto-discovery via glob patterns
 - React Router v8 (declarative API)
 
 ### Security
+
 - Access tokens: Memory only (XSS safe)
 - Refresh tokens: HttpOnly cookies (CSRF safe)
 - Auto-refresh at 80% token lifetime
@@ -65,12 +68,14 @@ brainstorming → spec-writer → team-lead →
 ## OpenSpec Workflow
 
 Active changes in `openspec/changes/`:
+
 1. `auth-token-management` - Core ✅, Tests pending
-2. `event-bus-communication` - Core ✅, Tests pending  
+2. `event-bus-communication` - Core ✅, Tests pending
 3. `environment-configuration` - Not started
 4. `error-handling-recovery` - Not started
 
 Use local OpenSpec skills:
+
 - `openspec-propose` - Create new changes
 - `openspec-explore` - Think through problems
 - `openspec-apply-change` - Implement tasks

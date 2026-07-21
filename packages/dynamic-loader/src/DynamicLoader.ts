@@ -1,10 +1,36 @@
-import type { RemoteConfig, Remote } from "@mf-mono/remote-config";
+import type { RemoteConfig, ChromeMFE, FeatureMFE, LegacyRemote } from "@mf-mono/remote-config";
 import { LoaderEvents } from "./events.js";
 import { fetchConfig, type FetchConfigOptions } from "./config.js";
 import type { LoaderStatus, Container } from "./types.js";
 
 /**
- * Dynamic loader for Module Federation remotes
+ * A resolved MFE descriptor produced by the loader when looking up an MFE by name.
+ * Normalizes the difference between chrome MFEs, feature MFEs, and legacy remotes.
+ */
+export interface ResolvedMFE {
+  name: string;
+  entryUrl: string;
+  scope: string;
+  enabled: boolean;
+  /** Original source: which section of the manifest this MFE came from */
+  source: "chrome" | "feature" | "legacy";
+  /** For chrome MFEs, the slot this MFE is registered under */
+  slot?: string;
+  /** For feature MFEs, the URL prefix that maps to this MFE */
+  routePrefix?: string;
+  /** For feature MFEs */
+  requiresAuth?: boolean;
+  requiredRoles?: string[];
+  basePath?: string;
+  /** Free-form MFE-specific config from the manifest */
+  config?: Record<string, unknown>;
+}
+
+/**
+ * Dynamic loader for Module Federation remotes.
+ *
+ * v2 supports the chrome+features manifest shape from ADR-0004, in addition to the
+ * legacy `remotes` array. See openspec/changes/refactor-to-thin-shell/.
  */
 export class DynamicLoader {
   private events = new LoaderEvents();
@@ -12,6 +38,8 @@ export class DynamicLoader {
   private loadedRemotes = new Map<string, Container>();
   private loadedScripts = new Set<string>();
   private initialized = false;
+  /** Tracks which slot currently hosts which MFE (best-effort bookkeeping) */
+  private slotOccupancy = new Map<string, string>();
 
   /**
    * Check if running in browser environment
@@ -28,7 +56,6 @@ export class DynamicLoader {
   async init(options?: FetchConfigOptions): Promise<void> {
     this.checkEnvironment();
 
-    // If already initialized, return cached config
     if (this.initialized && this.config) {
       return;
     }
@@ -47,54 +74,124 @@ export class DynamicLoader {
   }
 
   /**
-   * Load a remote by name
+   * Set the manifest programmatically (used by shells that fetch the manifest themselves).
    */
-  async loadRemote(name: string): Promise<Container> {
-    this.checkEnvironment();
+  setConfig(config: RemoteConfig): void {
+    this.config = config;
+    this.initialized = true;
+  }
 
-    // Ensure initialized
-    if (!this.config) {
-      throw new Error("Loader not initialized. Call init() first.");
+  /**
+   * Resolve an MFE by name across chrome, features, and legacy remotes.
+   *
+   * Returns null if the MFE is not found. Callers decide how to surface the
+   * missing-MFE case (typically slot-level error UI).
+   */
+  resolveMFE(name: string): ResolvedMFE | null {
+    if (!this.config) return null;
+
+    // Chrome MFEs (keyed by slot name)
+    if (this.config.chrome) {
+      for (const [slot, entry] of Object.entries(this.config.chrome)) {
+        if (entry.mfe === name) {
+          return this.normalizeChrome(entry, slot);
+        }
+      }
     }
 
-    // Check if already loaded
+    // Feature MFEs (keyed by route prefix)
+    if (this.config.features) {
+      for (const [prefix, entry] of Object.entries(this.config.features)) {
+        if (entry.mfe === name) {
+          return this.normalizeFeature(entry, prefix);
+        }
+      }
+    }
+
+    // Legacy remotes array
+    if (this.config.remotes) {
+      const legacy = this.config.remotes.find((r) => r.name === name);
+      if (legacy) return this.normalizeLegacy(legacy);
+    }
+
+    return null;
+  }
+
+  /**
+   * List all chrome MFEs for iterative mounting during bootstrap.
+   * Returns an array of `[slot, resolved]` tuples in insertion order.
+   */
+  listChromeMFEs(): Array<[string, ResolvedMFE]> {
+    if (!this.config?.chrome) return [];
+    return Object.entries(this.config.chrome).map(([slot, entry]) => [
+      slot,
+      this.normalizeChrome(entry, slot),
+    ]);
+  }
+
+  /**
+   * Match a URL pathname to a feature MFE using longest-prefix wins.
+   * Returns null if no feature matches.
+   */
+  matchRoute(pathname: string): ResolvedMFE | null {
+    if (!this.config?.features) return null;
+
+    const prefixes = Object.keys(this.config.features).sort((a, b) => b.length - a.length);
+    for (const prefix of prefixes) {
+      if (pathname === prefix || pathname.startsWith(`${prefix}/`)) {
+        const entry = this.config.features[prefix];
+        return this.normalizeFeature(entry, prefix);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Load a remote's Module Federation container by name.
+   * Does NOT mount the MFE — callers are responsible for driving the lifecycle
+   * once the container is available. See mfe-lifecycle-contract change for the
+   * upcoming lifecycle-aware `load(name, slotId, props)` API.
+   *
+   * If `slotId` is provided, the loader records the slot->name mapping for
+   * bookkeeping.
+   */
+  async loadRemote(name: string, slotId?: string): Promise<Container> {
+    this.checkEnvironment();
+
+    if (!this.config) {
+      throw new Error("Loader not initialized. Call init() or setConfig() first.");
+    }
+
     if (this.loadedRemotes.has(name)) {
+      if (slotId) this.slotOccupancy.set(slotId, name);
       return this.loadedRemotes.get(name)!;
     }
 
     this.events.emit("remote:load:start", { name });
 
     try {
-      // Find remote in config
-      const remote = this.config.remotes.find((r) => r.name === name);
-      if (!remote) {
-        throw new Error(`Remote '${name}' not found in config`);
+      const resolved = this.resolveMFE(name);
+      if (!resolved) {
+        throw new Error(`Remote '${name}' not found in manifest`);
       }
 
-      // Check if enabled
-      if (remote.enabled === false) {
+      if (!resolved.enabled) {
         throw new Error(`Remote '${name}' is disabled`);
       }
 
-      // Load the remote script
-      await this.loadScript(remote.entryUrl);
+      await this.loadScript(resolved.entryUrl);
 
-      // Get the container
-      const scope = remote.scope || name;
-      const container = (window as any)[scope] as Container | undefined;
-
+      const container = (window as any)[resolved.scope] as Container | undefined;
       if (!container) {
-        throw new Error(`Remote '${name}' container not found at window.${scope}`);
+        throw new Error(`Remote '${name}' container not found at window.${resolved.scope}`);
       }
 
-      // Initialize Module Federation sharing
       await this.initializeSharing(container);
 
-      // Cache the container
       this.loadedRemotes.set(name, container);
+      if (slotId) this.slotOccupancy.set(slotId, name);
 
       this.events.emit("remote:load:success", { name, container });
-
       return container;
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -104,25 +201,36 @@ export class DynamicLoader {
   }
 
   /**
+   * Return the MFE name currently occupying a slot (best effort bookkeeping).
+   */
+  getSlotOccupant(slotId: string): string | null {
+    return this.slotOccupancy.get(slotId) ?? null;
+  }
+
+  /**
+   * Clear the slot occupancy record for a slot. Callers that unmount an MFE
+   * should call this so the next `loadRemote(_, slotId)` knows the slot is free.
+   */
+  clearSlot(slotId: string): void {
+    this.slotOccupancy.delete(slotId);
+  }
+
+  /**
    * Preload a remote without initializing it
    */
   async preload(name: string): Promise<void> {
     this.checkEnvironment();
 
-    // Ensure config is loaded
     if (!this.config) {
       await this.init();
     }
 
-    // Find remote
-    const remote = this.config!.remotes.find((r) => r.name === name);
-    if (!remote) {
-      throw new Error(`Remote '${name}' not found in config`);
+    const resolved = this.resolveMFE(name);
+    if (!resolved) {
+      throw new Error(`Remote '${name}' not found in manifest`);
     }
 
-    // Just load the script, don't initialize
-    await this.loadScript(remote.entryUrl);
-
+    await this.loadScript(resolved.entryUrl);
     this.events.emit("remote:preload:success", { name });
   }
 
@@ -144,24 +252,59 @@ export class DynamicLoader {
     this.config = null;
     this.loadedRemotes.clear();
     this.loadedScripts.clear();
+    this.slotOccupancy.clear();
     this.initialized = false;
   }
 
-  /**
-   * Register an event listener
-   */
+  /** Register an event listener */
   on = this.events.on.bind(this.events);
 
-  /**
-   * Remove an event listener
-   */
+  /** Remove an event listener */
   off = this.events.off.bind(this.events);
 
-  /**
-   * Load a script tag dynamically
-   */
+  // ------------------------------------------------------------------
+  // Normalization helpers
+  // ------------------------------------------------------------------
+
+  private normalizeChrome(entry: ChromeMFE, slot: string): ResolvedMFE {
+    return {
+      name: entry.mfe,
+      entryUrl: entry.entryUrl,
+      scope: entry.scope ?? entry.mfe,
+      enabled: entry.enabled !== false,
+      source: "chrome",
+      slot,
+      config: entry.config,
+    };
+  }
+
+  private normalizeFeature(entry: FeatureMFE, routePrefix: string): ResolvedMFE {
+    return {
+      name: entry.mfe,
+      entryUrl: entry.entryUrl,
+      scope: entry.scope ?? entry.mfe,
+      enabled: entry.enabled !== false,
+      source: "feature",
+      routePrefix,
+      // Secure by default: missing `requiresAuth` = protected
+      requiresAuth: entry.requiresAuth ?? true,
+      requiredRoles: entry.requiredRoles ?? [],
+      basePath: entry.basePath ?? routePrefix,
+      config: entry.config,
+    };
+  }
+
+  private normalizeLegacy(entry: LegacyRemote): ResolvedMFE {
+    return {
+      name: entry.name,
+      entryUrl: entry.entryUrl,
+      scope: entry.scope,
+      enabled: entry.enabled !== false,
+      source: "legacy",
+    };
+  }
+
   private async loadScript(url: string): Promise<void> {
-    // Skip if already loaded
     if (this.loadedScripts.has(url)) {
       return;
     }
@@ -185,16 +328,11 @@ export class DynamicLoader {
     });
   }
 
-  /**
-   * Initialize Module Federation sharing
-   */
   private async initializeSharing(container: Container): Promise<void> {
-    // Initialize webpack sharing if available
     if (typeof __webpack_init_sharing__ !== "undefined") {
       await __webpack_init_sharing__("default");
     }
 
-    // Initialize the container
     if (typeof __webpack_share_scopes__ !== "undefined") {
       await container.init(__webpack_share_scopes__.default);
     } else {

@@ -25,14 +25,14 @@ The project uses **Vitest** with **React Testing Library** for unit and integrat
 
 ## Test Stack
 
-| Tool | Purpose | Version |
-|------|---------|---------|
-| Vitest | Test runner | 3.2.7 |
-| @testing-library/react | Component testing | 16.3.2 |
-| @testing-library/user-event | User interaction simulation | 14.6.1 |
-| @testing-library/jest-dom | DOM matchers | 6.6.4 |
-| happy-dom | Fast DOM implementation | 15.11.7 |
-| @vitest/coverage-v8 | Code coverage | 3.2.7 |
+| Tool                        | Purpose                     | Version |
+| --------------------------- | --------------------------- | ------- |
+| Vitest                      | Test runner                 | 3.2.7   |
+| @testing-library/react      | Component testing           | 16.3.2  |
+| @testing-library/user-event | User interaction simulation | 14.6.1  |
+| @testing-library/jest-dom   | DOM matchers                | 6.6.4   |
+| happy-dom                   | Fast DOM implementation     | 15.11.7 |
+| @vitest/coverage-v8         | Code coverage               | 3.2.7   |
 
 ## Running Tests
 
@@ -96,15 +96,15 @@ src/
 ### Basic Component Test
 
 ```tsx
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { MyComponent } from './MyComponent.js';
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { MyComponent } from "./MyComponent.js";
 
-describe('MyComponent', () => {
-  it('should render correctly', () => {
+describe("MyComponent", () => {
+  it("should render correctly", () => {
     render(<MyComponent title="Hello" />);
-    
-    expect(screen.getByText('Hello')).toBeInTheDocument();
+
+    expect(screen.getByText("Hello")).toBeInTheDocument();
   });
 });
 ```
@@ -112,22 +112,24 @@ describe('MyComponent', () => {
 ### Testing with Router
 
 **Shell (BrowserRouter)**:
-```tsx
-import { renderWithRouter } from '../test/utils.js';
 
-it('should navigate correctly', () => {
+```tsx
+import { renderWithRouter } from "../test/utils.js";
+
+it("should navigate correctly", () => {
   renderWithRouter(<MyComponent />);
   // ... assertions
 });
 ```
 
 **MFE (MemoryRouter)**:
-```tsx
-import { renderWithRouter } from '../test/utils.js';
 
-it('should render with initial route', () => {
+```tsx
+import { renderWithRouter } from "../test/utils.js";
+
+it("should render with initial route", () => {
   renderWithRouter(<MyComponent />, {
-    initialEntries: ['/dashboard'],
+    initialEntries: ["/dashboard"],
   });
   // ... assertions
 });
@@ -136,26 +138,26 @@ it('should render with initial route', () => {
 ### Testing with Auth
 
 ```tsx
-import { renderWithAuth } from '../test/utils.js';
-import { mockUser } from '../test/mocks.js';
+import { renderWithAuth } from "../test/utils.js";
+import { mockUser } from "../test/mocks.js";
 
-it('should show user info when authenticated', () => {
+it("should show user info when authenticated", () => {
   // Renders with AuthProvider + Router
   renderWithAuth(<MyComponent />);
   // ... assertions
 });
 ```
 
-### Mocking window.__AUTH__
+### Mocking window.**AUTH**
 
 ```tsx
-import { mockAuthGlobal, clearAuthGlobal } from '../test/mocks.js';
+import { mockAuthGlobal, clearAuthGlobal } from "../test/mocks.js";
 
 beforeEach(() => {
   mockAuthGlobal({
     isAuthenticated: true,
     user: mockUser,
-    getAccessToken: () => 'mock-token',
+    getAccessToken: () => "mock-token",
   });
 });
 
@@ -167,17 +169,17 @@ afterEach(() => {
 ### Testing Async Code
 
 ```tsx
-import { waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
-it('should handle async operations', async () => {
+it("should handle async operations", async () => {
   const user = userEvent.setup();
   render(<MyComponent />);
-  
-  await user.click(screen.getByText('Submit'));
-  
+
+  await user.click(screen.getByText("Submit"));
+
   await waitFor(() => {
-    expect(screen.getByText('Success')).toBeInTheDocument();
+    expect(screen.getByText("Success")).toBeInTheDocument();
   });
 });
 ```
@@ -185,19 +187,19 @@ it('should handle async operations', async () => {
 ### Testing Event Bus
 
 ```tsx
-import { eventBus, MFE_EVENTS } from '@mf-mono/events';
+import { eventBus, MFE_EVENTS } from "@mf-mono/events";
 
-it('should emit event on action', () => {
+it("should emit event on action", () => {
   const handler = vi.fn();
   const cleanup = eventBus.on(MFE_EVENTS.NAVIGATE, handler);
-  
+
   // Trigger action that emits event
   myFunction();
-  
+
   expect(handler).toHaveBeenCalledWith({
-    path: '/dashboard',
+    path: "/dashboard",
   });
-  
+
   cleanup();
 });
 ```
@@ -241,6 +243,7 @@ Apps must maintain **70% coverage**:
 ### Excluded Files
 
 The following files are excluded from coverage:
+
 - `dist/**` - Build output
 - `**/*.config.ts` - Configuration files
 - `**/*.test.ts` - Test files themselves
@@ -253,19 +256,25 @@ The following files are excluded from coverage:
 ### Shell Test Utilities (`apps/website/src/test/`)
 
 #### `renderWithRouter()`
+
 Renders component with BrowserRouter:
+
 ```tsx
 renderWithRouter(<Component />);
 ```
 
 #### `renderWithAuth()`
+
 Renders component with AuthProvider + Router:
+
 ```tsx
 renderWithAuth(<Component />);
 ```
 
 #### `mockUser`
+
 Mock user object for testing:
+
 ```tsx
 {
   id: 'test-user-123',
@@ -277,25 +286,31 @@ Mock user object for testing:
 ### MFE Test Utilities (`apps/mfe-widget/src/test/`)
 
 #### `renderWithRouter()`
+
 Renders component with MemoryRouter:
+
 ```tsx
 renderWithRouter(<Component />, {
-  initialEntries: ['/dashboard'],
+  initialEntries: ["/dashboard"],
 });
 ```
 
 #### `mockAuthGlobal()`
-Mocks window.__AUTH__ global:
+
+Mocks window.**AUTH** global:
+
 ```tsx
 mockAuthGlobal({
   isAuthenticated: true,
   user: mockUser,
-  getAccessToken: () => 'token',
+  getAccessToken: () => "token",
 });
 ```
 
 #### `clearAuthGlobal()`
-Clears window.__AUTH__:
+
+Clears window.**AUTH**:
+
 ```tsx
 clearAuthGlobal();
 ```
@@ -305,18 +320,21 @@ clearAuthGlobal();
 ### 1. Test Behavior, Not Implementation
 
 ❌ **Bad**: Testing internal state
+
 ```tsx
 expect(component.state.count).toBe(5);
 ```
 
 ✅ **Good**: Testing user-visible behavior
+
 ```tsx
-expect(screen.getByText('Count: 5')).toBeInTheDocument();
+expect(screen.getByText("Count: 5")).toBeInTheDocument();
 ```
 
 ### 2. Use Testing Library Queries
 
 **Query Priority** (from most to least preferred):
+
 1. `getByRole` - Accessible to all users
 2. `getByLabelText` - Form elements
 3. `getByPlaceholderText` - Inputs
@@ -326,7 +344,7 @@ expect(screen.getByText('Count: 5')).toBeInTheDocument();
 ### 3. Clean Up After Tests
 
 ```tsx
-import { afterEach, vi } from 'vitest';
+import { afterEach, vi } from "vitest";
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -337,17 +355,17 @@ afterEach(() => {
 ### 4. Mock External Dependencies
 
 ```tsx
-import { vi } from 'vitest';
-import * as apiClient from './apiClient.js';
+import { vi } from "vitest";
+import * as apiClient from "./apiClient.js";
 
 const mockFetch = vi.fn();
-vi.spyOn(apiClient, 'fetchData').mockImplementation(mockFetch);
+vi.spyOn(apiClient, "fetchData").mockImplementation(mockFetch);
 ```
 
 ### 5. Use Fake Timers for setTimeout/setInterval
 
 ```tsx
-import { vi, beforeEach, afterEach } from 'vitest';
+import { vi, beforeEach, afterEach } from "vitest";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -357,12 +375,12 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-it('should execute after delay', () => {
+it("should execute after delay", () => {
   const callback = vi.fn();
   setTimeout(callback, 1000);
-  
+
   vi.advanceTimersByTime(1000);
-  
+
   expect(callback).toHaveBeenCalled();
 });
 ```
@@ -370,12 +388,12 @@ it('should execute after delay', () => {
 ### 6. Test Accessibility
 
 ```tsx
-import { screen } from '@testing-library/react';
+import { screen } from "@testing-library/react";
 
-it('should be accessible', () => {
+it("should be accessible", () => {
   render(<Button>Click me</Button>);
-  
-  const button = screen.getByRole('button', { name: 'Click me' });
+
+  const button = screen.getByRole("button", { name: "Click me" });
   expect(button).toBeInTheDocument();
 });
 ```
@@ -386,14 +404,20 @@ Each test should verify **one thing**:
 
 ```tsx
 // ❌ Bad: Testing multiple things
-it('should handle everything', () => {
+it("should handle everything", () => {
   // ... 50 lines of tests
 });
 
 // ✅ Good: Focused tests
-it('should render title', () => { /* ... */ });
-it('should handle click', () => { /* ... */ });
-it('should validate input', () => { /* ... */ });
+it("should render title", () => {
+  /* ... */
+});
+it("should handle click", () => {
+  /* ... */
+});
+it("should validate input", () => {
+  /* ... */
+});
 ```
 
 ## Troubleshooting
@@ -404,7 +428,7 @@ Make sure you have imported jest-dom in your setup file:
 
 ```ts
 // src/test/setup.ts
-import '@testing-library/jest-dom/vitest';
+import "@testing-library/jest-dom/vitest";
 ```
 
 ### "Cannot find module" errors
@@ -413,10 +437,10 @@ Ensure you're using `.js` extensions for imports in test files:
 
 ```tsx
 // ✅ Correct
-import { MyComponent } from './MyComponent.js';
+import { MyComponent } from "./MyComponent.js";
 
 // ❌ Wrong
-import { MyComponent } from './MyComponent';
+import { MyComponent } from "./MyComponent";
 ```
 
 ### Infinite loop with React Router Navigate
@@ -424,7 +448,7 @@ import { MyComponent } from './MyComponent';
 This is a known issue when testing redirects. Skip the test or mock the Navigate component:
 
 ```tsx
-it.skip('should redirect when not authenticated', () => {
+it.skip("should redirect when not authenticated", () => {
   // TODO: Fix infinite loop with Navigate
 });
 ```
@@ -432,6 +456,7 @@ it.skip('should redirect when not authenticated', () => {
 ### "Maximum call stack size exceeded"
 
 Usually caused by infinite re-renders. Check:
+
 1. Are you mocking hooks correctly?
 2. Is useEffect missing dependencies?
 3. Is there a redirect loop?
@@ -447,6 +472,7 @@ Usually caused by infinite re-renders. Check:
 ## Questions?
 
 For questions or issues with testing, please:
+
 1. Check this documentation
 2. Review existing test files for examples
 3. Ask in the team chat

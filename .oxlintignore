@@ -1,0 +1,5 @@
+**/src/_legacy/**
+**/dist/**
+**/build/**
+**/node_modules/**
+**/coverage/**

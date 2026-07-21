@@ -1,59 +1,163 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://mf-mono.local/schemas/remote-config.json",
-  "title": "Remote Configuration",
-  "description": "Configuration file for dynamically loaded micro-frontends",
+  "title": "Remote Manifest",
+  "description": "Manifest listing chrome MFEs (always mounted) and feature MFEs (route-based) for a shell. See ADR-0004.",
   "type": "object",
   "properties": {
     "$schema": {
       "type": "string",
       "description": "Reference to this JSON Schema"
     },
+    "schemaVersion": {
+      "type": "string",
+      "description": "Manifest schema version, e.g. '2.0.0'. Used to invalidate cached manifests when the schema changes.",
+      "default": "2.0.0"
+    },
+    "chrome": {
+      "type": "object",
+      "description": "Chrome MFEs keyed by slot name (header, sidebar, footer). Loaded at shell bootstrap and never unmounted while the page is alive.",
+      "additionalProperties": {
+        "$ref": "#/definitions/chromeMFE"
+      }
+    },
+    "features": {
+      "type": "object",
+      "description": "Feature MFEs keyed by URL prefix (e.g. '/widget'). Mounted into main-slot when the current URL matches. Longest-prefix wins.",
+      "additionalProperties": {
+        "$ref": "#/definitions/featureMFE"
+      }
+    },
     "remotes": {
       "type": "array",
-      "description": "Array of remote micro-frontend configurations",
+      "description": "DEPRECATED — legacy array format. Kept for one release cycle for backward compatibility. Migrate to chrome/features.",
       "items": {
-        "$ref": "#/definitions/remote"
+        "$ref": "#/definitions/legacyRemote"
       }
     }
   },
-  "required": ["remotes"],
   "additionalProperties": false,
   "definitions": {
-    "remote": {
+    "chromeMFE": {
       "type": "object",
-      "description": "Configuration for a single remote micro-frontend",
+      "description": "A chrome MFE loaded once at bootstrap into a fixed slot.",
       "properties": {
-        "name": {
+        "mfe": {
           "type": "string",
-          "description": "Unique identifier for the remote (e.g., 'mfe-widget')",
-          "pattern": "^[a-z][a-z0-9-]*$"
+          "description": "MFE name (e.g. 'header'). Matches the Module Federation scope.",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9-]*$"
         },
         "entryUrl": {
           "type": "string",
           "description": "URL to the remoteEntry.js file",
-          "format": "uri"
+          "format": "uri-reference"
         },
         "scope": {
           "type": "string",
-          "description": "Module Federation scope (e.g., 'mfeWidget')",
+          "description": "Module Federation scope (defaults to mfe name)",
           "pattern": "^[a-zA-Z][a-zA-Z0-9]*$"
         },
         "version": {
           "type": "string",
           "description": "Version identifier (semver or git hash)"
         },
+        "config": {
+          "type": "object",
+          "description": "MFE-specific configuration passed as MFEProps.config",
+          "additionalProperties": true
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this chrome MFE is enabled",
+          "default": true
+        }
+      },
+      "required": ["mfe", "entryUrl"],
+      "additionalProperties": false
+    },
+    "featureMFE": {
+      "type": "object",
+      "description": "A feature MFE loaded into main-slot based on URL prefix match.",
+      "properties": {
+        "mfe": {
+          "type": "string",
+          "description": "MFE name (matches Module Federation scope)",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9-]*$"
+        },
+        "entryUrl": {
+          "type": "string",
+          "description": "URL to the remoteEntry.js file",
+          "format": "uri-reference"
+        },
+        "scope": {
+          "type": "string",
+          "description": "Module Federation scope (defaults to mfe name)",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9]*$"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version identifier (semver or git hash)"
+        },
+        "basePath": {
+          "type": "string",
+          "description": "Base URL passed to the MFE as MFEProps.basePath. Should match the URL prefix key.",
+          "pattern": "^/"
+        },
+        "requiresAuth": {
+          "type": "boolean",
+          "description": "Whether an authenticated session is required to access this feature. Defaults to true (secure by default).",
+          "default": true
+        },
+        "requiredRoles": {
+          "type": "array",
+          "description": "Role names required to access this feature. Empty array means any authenticated user.",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "config": {
+          "type": "object",
+          "description": "MFE-specific configuration passed as MFEProps.config",
+          "additionalProperties": true
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this feature MFE is enabled",
+          "default": true
+        }
+      },
+      "required": ["mfe", "entryUrl"],
+      "additionalProperties": false
+    },
+    "legacyRemote": {
+      "type": "object",
+      "description": "DEPRECATED legacy remote entry shape (pre-chrome/features split)",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "entryUrl": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "scope": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9]*$"
+        },
+        "version": {
+          "type": "string"
+        },
         "fallbackUrls": {
           "type": "array",
-          "description": "Fallback URLs to try if primary URL fails",
           "items": {
             "type": "string",
-            "format": "uri"
+            "format": "uri-reference"
           }
         },
         "enabled": {
           "type": "boolean",
-          "description": "Whether this remote is enabled (defaults to true)",
           "default": true
         }
       },

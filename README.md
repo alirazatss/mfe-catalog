@@ -680,6 +680,92 @@ Benefits:
 - **Rollback support** - Keep old versions on CDN
 - **Immutable deploys** - Never overwrite existing versions
 
+### Production Manifest System
+
+For production deployments, the system uses a **deployment manifest** format that maps micro-frontend names to their CDN locations, versions, and security metadata.
+
+#### Manifest Structure
+
+```json
+{
+  "$schema": "./manifest.schema.json",
+  "version": "1.0.0",
+  "timestamp": "2026-07-17T10:00:00Z",
+  "environment": "production",
+  "microfrontends": {
+    "mfe-widget": {
+      "version": "1.2.3",
+      "url": "https://cdn.example.com/mfe-widget/1.2.3/remoteEntry.js",
+      "integrity": "sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC",
+      "scope": "widget",
+      "module": "./App",
+      "metadata": {
+        "buildHash": "a1b2c3d",
+        "buildDate": "2026-07-17T09:55:00Z",
+        "changelog": "https://github.com/org/repo/releases/tag/mfe-widget-v1.2.3"
+      }
+    }
+  },
+  "cdn": {
+    "baseUrl": "https://cdn.example.com",
+    "region": "us-east-1"
+  }
+}
+```
+
+#### Key Features
+
+- **Semantic Versioning**: Each MFE has an independent semver version
+- **Subresource Integrity (SRI)**: SHA-384 hashes for security verification
+- **Metadata Tracking**: Build hash, timestamp, and changelog URLs
+- **Schema Validation**: JSON Schema validation ensures manifest correctness
+- **Environment-Specific**: Different manifests for dev/staging/production
+
+#### Generating a Manifest
+
+```bash
+# Generate production manifest (future implementation)
+pnpm tsx scripts/generate-manifest.ts \
+  --env production \
+  --cdn-base-url https://cdn.example.com \
+  --output manifest.production.json
+
+# Validate manifest
+pnpm tsx scripts/validate-manifest.ts manifest.production.json
+```
+
+#### Manifest vs Config
+
+The system supports two formats:
+
+| Format                | Purpose                        | Environment | Location               |
+| --------------------- | ------------------------------ | ----------- | ---------------------- |
+| `remotes.config.json` | Development runtime config     | Development | `apps/website/public/` |
+| `manifest.json`       | Production deployment manifest | Production  | CDN root               |
+
+**Development** uses `remotes.config.json` with localhost URLs for hot reloading.  
+**Production** uses `manifest.json` fetched from CDN with versioned, immutable URLs and integrity hashes.
+
+#### Runtime Manifest Loading
+
+In production, the shell fetches the manifest at startup:
+
+```typescript
+// Fetch manifest from CDN
+const manifest = await fetch("https://cdn.example.com/manifest.json");
+const config = transformManifestToConfig(manifest);
+
+// Initialize loader with manifest-based config
+await loader.init(config);
+```
+
+Benefits:
+
+- **Independent deployment**: Update manifest without redeploying shell
+- **Instant rollbacks**: Point manifest to previous versions
+- **A/B testing**: Different manifests for different user segments (future)
+- **Security**: SRI hashes prevent CDN tampering
+
 ## Technologies
 
 | Category          | Technology                     |

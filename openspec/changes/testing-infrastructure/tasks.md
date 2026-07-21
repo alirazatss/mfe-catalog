@@ -129,7 +129,7 @@
 - [ ] 8.3 Test: logout flow integration (POST, clear, state update)
 - [ ] 8.4 Test: AUTH_LOGOUT event triggers logout
 - [ ] 8.5 Test: initialize with existing session (refreshToken on mount)
-- [ ] 8.6 Test: window.__AUTH__ is exposed correctly
+- [ ] 8.6 Test: window.**AUTH** is exposed correctly
 - [ ] 8.7 Mock fetch for API calls
 - [ ] 8.8 Mock tokenManager methods
 - [ ] 8.9 Run tests and verify coverage >70%
@@ -191,12 +191,12 @@
 ## 12. Write Unit Tests for MFE Utilities
 
 - [ ] 12.1 Create `apiClient.test.ts`
-- [ ] 12.2 Test: injects auth token from window.__AUTH__
-- [ ] 12.3 Test: handles missing window.__AUTH__ gracefully
+- [ ] 12.2 Test: injects auth token from window.**AUTH**
+- [ ] 12.3 Test: handles missing window.**AUTH** gracefully
 - [ ] 12.4 Test: 401 triggers auto-retry with new token
 - [ ] 12.5 Test: 401 retry prevents infinite loop
 - [ ] 12.6 Test: non-401 errors do not retry
-- [ ] 12.7 Mock window.__AUTH__ global
+- [ ] 12.7 Mock window.**AUTH** global
 - [ ] 12.8 Mock axios responses
 - [ ] 12.9 Create `navigation.test.ts`
 - [ ] 12.10 Test: navigateTo emits event
@@ -216,7 +216,7 @@
 - [ ] 13.4 Test: receives user prop correctly
 - [ ] 13.5 Test: setupAuthListeners is called on mount
 - [ ] 13.6 Test: internal routing works (MemoryRouter)
-- [ ] 13.7 Mock window.__AUTH__
+- [ ] 13.7 Mock window.**AUTH**
 - [ ] 13.8 Run tests and verify coverage >70%
 
 **Depends on**: Section 10  
@@ -281,6 +281,7 @@
 **Parallel Work**: Shell tests (Sections 6-9) and MFE tests (Sections 10-13) can run in parallel after Section 1
 
 **Testing Coverage Breakdown**:
+
 - packages/auth: 10 unit tests (~80% coverage)
 - packages/events: 9 unit tests (~80% coverage)
 - apps/website: ~25 tests (unit + integration, ~70% coverage)

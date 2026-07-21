@@ -1,6 +1,6 @@
-import { render, type RenderOptions } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
-import type { ReactElement, ReactNode } from 'react';
+import { render, type RenderOptions } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
+import type { ReactElement, ReactNode } from "react";
 
 interface WrapperProps {
   children: ReactNode;
@@ -11,9 +11,9 @@ interface WrapperProps {
  */
 export function renderWithRouter(
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'> & { initialEntries?: string[] }
+  options?: Omit<RenderOptions, "wrapper"> & { initialEntries?: string[] },
 ) {
-  const { initialEntries = ['/'], ...renderOptions } = options || {};
+  const { initialEntries = ["/"], ...renderOptions } = options || {};
 
   function Wrapper({ children }: WrapperProps) {
     return <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>;

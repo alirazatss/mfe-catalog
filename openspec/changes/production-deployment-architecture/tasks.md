@@ -1,10 +1,10 @@
 ## 1. Manifest Schema & Validation
 
-- [ ] 1.1 Create `manifest.schema.json` with complete schema definition
-- [ ] 1.2 Add JSON schema validation to existing schema directory structure
-- [ ] 1.3 Create TypeScript types from manifest schema
-- [ ] 1.4 Write unit tests for manifest schema validation
-- [ ] 1.5 Document manifest format in README
+- [x] 1.1 Create `manifest.schema.json` with complete schema definition
+- [x] 1.2 Add JSON schema validation to existing schema directory structure
+- [x] 1.3 Create TypeScript types from manifest schema
+- [x] 1.4 Write unit tests for manifest schema validation
+- [x] 1.5 Document manifest format in README
 
 **Depends on**: None (starting point)  
 **Skill**: Backend developer or frontend developer  
@@ -14,16 +14,16 @@
 
 ## 2. Manifest Generation Script
 
-- [ ] 2.1 Create `scripts/generate-manifest.ts` file
-- [ ] 2.2 Implement manifest structure generation from discovered MFEs
-- [ ] 2.3 Add SRI hash computation (SHA-384) for remoteEntry.js files
-- [ ] 2.4 Add git metadata extraction (commit SHA, timestamp)
-- [ ] 2.5 Implement environment-specific URL generation (dev/staging/prod)
-- [ ] 2.6 Add manifest JSON schema validation before output
-- [ ] 2.7 Write manifest to `manifest.production.json` (gitignored)
-- [ ] 2.8 Add CLI flags: `--env`, `--output`, `--cdn-base-url`
-- [ ] 2.9 Write unit tests for manifest generation logic
-- [ ] 2.10 Add integration test with sample MFE directory
+- [x] 2.1 Create `scripts/generate-manifest.ts` file
+- [x] 2.2 Implement manifest structure generation from discovered MFEs
+- [x] 2.3 Add SRI hash computation (SHA-384) for remoteEntry.js files
+- [x] 2.4 Add git metadata extraction (commit SHA, timestamp)
+- [x] 2.5 Implement environment-specific URL generation (dev/staging/prod)
+- [x] 2.6 Add manifest JSON schema validation before output
+- [x] 2.7 Write manifest to `manifest.production.json` (gitignored)
+- [x] 2.8 Add CLI flags: `--env`, `--output`, `--cdn-base-url`
+- [x] 2.9 Write unit tests for manifest generation logic
+- [x] 2.10 Add integration test with sample MFE directory
 
 **Depends on**: Section 1 (manifest schema)  
 **Skill**: Use #file:~/.agents/skills/backend-developer/SKILL.md  

@@ -11,6 +11,7 @@
 **Only 1 shell-level feature to port**: **401 Auto-Retry in Axios** (2 hours)
 
 Everything else is either:
+
 - ✅ Already covered by Vite+ (linting, formatting)
 - ✅ Already planned (testing, runtime config)
 - ⏸️ MFE-level concerns (hooks, state management)
@@ -21,6 +22,7 @@ Everything else is either:
 ## 🔍 Analysis Summary
 
 ### What Core Framework Uses:
+
 - **React 19.1** ≈ Our React 19.0 ✅
 - **TypeScript 5.8** < Our TypeScript 6.0.2 ✅
 - **Vite 7.1** (raw) vs Our Vite+ (wrapper with extras) ✅
@@ -42,6 +44,7 @@ vp pack         # Library build
 ```
 
 **We DON'T need**:
+
 - ❌ Biome (Vite+ has linting/formatting)
 - ❌ Separate ESLint/Prettier (Vite+ handles it)
 - ❌ Custom build scripts (Vite+ handles it)
@@ -59,27 +62,28 @@ apiClient.interceptors.response.use(
   (response) => response.data,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // If 401 and haven't retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       // Refresh token
       const newToken = await this.getRefreshTokenPromise();
-      
+
       // Retry original request with new token
       originalRequest.headers.Authorization = `Bearer ${newToken}`;
       return this.axiosInstance(originalRequest);
     }
-    
+
     throw error;
-  }
+  },
 );
 ```
 
 ### Why This Matters
 
 **Current Behavior (Without Retry):**
+
 1. User makes API call
 2. Token expires (15 min)
 3. API returns 401
@@ -89,6 +93,7 @@ apiClient.interceptors.response.use(
 7. User has to retry manually
 
 **With Auto-Retry:**
+
 1. User makes API call
 2. Token expires (15 min)
 3. API returns 401
@@ -108,29 +113,30 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       // Wait a bit for shell to refresh token (it happens automatically)
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       // Get fresh token from shell
       const token = (window as any).__AUTH__?.getAccessToken();
-      
+
       if (token) {
         // Retry with new token
         originalRequest.headers.Authorization = `Bearer ${token}`;
         return apiClient(originalRequest);
       }
     }
-    
+
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
 **Benefits:**
+
 - ✅ Users never see 401 errors (seamless recovery)
 - ✅ No manual retry needed
 - ✅ Works with our auto-refresh system
@@ -145,6 +151,7 @@ apiClient.interceptors.response.use(
 These are **application-level concerns**, not shell concerns:
 
 ### 1. useDebounce Hook
+
 ```typescript
 const debouncedSearch = useDebounce(searchTerm, 500);
 ```
@@ -156,6 +163,7 @@ const debouncedSearch = useDebounce(searchTerm, 500);
 ---
 
 ### 2. useDelayedLoading Hook
+
 ```typescript
 const showSpinner = useDelayedLoading(isLoading, 1000);
 ```
@@ -167,8 +175,9 @@ const showSpinner = useDelayedLoading(isLoading, 1000);
 ---
 
 ### 3. TanStack Query
+
 ```typescript
-const { data } = useQuery({ queryKey: ['users'], queryFn: getUsers });
+const { data } = useQuery({ queryKey: ["users"], queryFn: getUsers });
 ```
 
 **Decision**: Let each MFE decide  
@@ -178,8 +187,9 @@ const { data } = useQuery({ queryKey: ['users'], queryFn: getUsers });
 ---
 
 ### 4. Zustand (State Management)
+
 ```typescript
-const useStore = create((set) => ({ count: 0, inc: () => set(s => ({ count: s.count + 1 })) }));
+const useStore = create((set) => ({ count: 0, inc: () => set((s) => ({ count: s.count + 1 })) }));
 ```
 
 **Decision**: Let each MFE decide  
@@ -189,6 +199,7 @@ const useStore = create((set) => ({ count: 0, inc: () => set(s => ({ count: s.co
 ---
 
 ### 5. Tailwind CSS
+
 **Decision**: Let each MFE decide  
 **Reason**: Styling is per-MFE  
 **Note**: Shell uses inline styles (fine for MVP)
@@ -196,6 +207,7 @@ const useStore = create((set) => ({ count: 0, inc: () => set(s => ({ count: s.co
 ---
 
 ### 6. i18n (React Intl)
+
 **Decision**: Shell-level, but DEFER  
 **Reason**: Add when internationalization is required  
 **Effort**: 8-12 hours when needed
@@ -207,6 +219,7 @@ const useStore = create((set) => ({ count: 0, inc: () => set(s => ({ count: s.co
 These are already in `ROADMAP.md`:
 
 ### 1. Runtime Configuration
+
 **Core framework has**: `window.__RUNTIME_CONFIG__`  
 **We have**: OpenSpec change `environment-configuration` (80 tasks, 16-20h)  
 **Status**: Planned for Week 2-3  
@@ -215,12 +228,14 @@ These are already in `ROADMAP.md`:
 ---
 
 ### 2. Testing Infrastructure
+
 **Core framework has**: Vitest + Playwright + Coverage  
 **We have**: Planned in ROADMAP (15-20h)  
 **Status**: Priority 3 (Week 4)  
 **Decision**: ✅ Copy their setup (it's proven)
 
 **Scripts to copy:**
+
 ```json
 {
   "test": "vitest",
@@ -236,6 +251,7 @@ These are already in `ROADMAP.md`:
 ## ❌ What NOT to Port
 
 ### 1. TanStack Router
+
 **Why not**: We use React Router 8 (already implemented hybrid routing)  
 **Effort to migrate**: 2-3 days  
 **Decision**: ❌ Skip - not worth it
@@ -243,12 +259,14 @@ These are already in `ROADMAP.md`:
 ---
 
 ### 2. Biome Linter/Formatter
+
 **Why not**: Vite+ has `vp lint` and `vp format` built-in  
 **Decision**: ❌ Skip - we're covered
 
 ---
 
 ### 3. Their Auth System
+
 **Why not**: Ours is better (Keycloak + HttpOnly cookies vs server token)  
 **Decision**: ❌ Skip - keep ours
 
@@ -256,39 +274,41 @@ These are already in `ROADMAP.md`:
 
 ## 📊 Comparison: Shell Level Only
 
-| Feature | Core Framework | MF Mono | Action |
-|---------|---------------|---------|--------|
-| **Linting** | Biome | Vite+ built-in | ✅ Already have |
-| **Formatting** | Biome | Vite+ built-in | ✅ Already have |
-| **Type Checking** | tsc | Vite+ built-in | ✅ Already have |
-| **Auth System** | Server token | Keycloak + HttpOnly | ✅ Ours is better |
-| **401 Auto-Retry** | ✅ | ❌ | ⚠️ **ADD THIS** |
-| **Runtime Config** | ✅ | Planned (Week 2-3) | ✅ Already planned |
-| **Testing** | Vitest + Playwright | Planned (Week 4) | ✅ Already planned |
-| **Token Deduplication** | ✅ | ✅ | ✅ Already have |
-| **Router** | TanStack | React Router 8 | ✅ Keep ours |
+| Feature                 | Core Framework      | MF Mono             | Action             |
+| ----------------------- | ------------------- | ------------------- | ------------------ |
+| **Linting**             | Biome               | Vite+ built-in      | ✅ Already have    |
+| **Formatting**          | Biome               | Vite+ built-in      | ✅ Already have    |
+| **Type Checking**       | tsc                 | Vite+ built-in      | ✅ Already have    |
+| **Auth System**         | Server token        | Keycloak + HttpOnly | ✅ Ours is better  |
+| **401 Auto-Retry**      | ✅                  | ❌                  | ⚠️ **ADD THIS**    |
+| **Runtime Config**      | ✅                  | Planned (Week 2-3)  | ✅ Already planned |
+| **Testing**             | Vitest + Playwright | Planned (Week 4)    | ✅ Already planned |
+| **Token Deduplication** | ✅                  | ✅                  | ✅ Already have    |
+| **Router**              | TanStack            | React Router 8      | ✅ Keep ours       |
 
 ---
 
 ## 📊 Comparison: MFE Level (Let MFEs Decide)
 
-| Feature | Core Framework | MF Mono | Decision |
-|---------|---------------|---------|----------|
-| **useDebounce** | ✅ | ❌ | ⏸️ MFE choice |
-| **useDelayedLoading** | ✅ | ❌ | ⏸️ MFE choice |
-| **TanStack Query** | ✅ | ❌ | ⏸️ MFE choice |
-| **Zustand** | ✅ | React Context | ⏸️ MFE choice |
-| **Tailwind** | ✅ | Inline styles | ⏸️ MFE choice |
-| **i18n** | ✅ | ❌ | ⏸️ When needed |
+| Feature               | Core Framework | MF Mono       | Decision       |
+| --------------------- | -------------- | ------------- | -------------- |
+| **useDebounce**       | ✅             | ❌            | ⏸️ MFE choice  |
+| **useDelayedLoading** | ✅             | ❌            | ⏸️ MFE choice  |
+| **TanStack Query**    | ✅             | ❌            | ⏸️ MFE choice  |
+| **Zustand**           | ✅             | React Context | ⏸️ MFE choice  |
+| **Tailwind**          | ✅             | Inline styles | ⏸️ MFE choice  |
+| **i18n**              | ✅             | ❌            | ⏸️ When needed |
 
 ---
 
 ## 🎬 Recommended Action
 
 ### Immediate (2 hours):
+
 ✅ **Add 401 auto-retry to MFE Axios interceptors**
 
 **Files to update:**
+
 1. `apps/mfe-widget/src/utils/apiClient.ts`
 2. Any future MFE's `apiClient.ts`
 
@@ -297,13 +317,16 @@ These are already in `ROADMAP.md`:
 ---
 
 ### Short-term (Already Planned):
+
 1. ✅ Runtime configuration (Week 2-3, 16-20h) - Use core-framework pattern
 2. ✅ Testing infrastructure (Week 4, 15-20h) - Copy their Vitest + Playwright setup
 
 ---
 
 ### MFE-Specific (Optional):
+
 ⏸️ MFE teams can copy these from core-framework as needed:
+
 - `useDebounce` hook
 - `useDelayedLoading` hook
 - TanStack Query setup
@@ -342,11 +365,13 @@ core-framework/
 5. ❌ **Don't port** - TanStack Router, Biome, their auth
 
 ### Time saved by this analysis:
+
 - ❌ Don't add Biome (Vite+ has it) - Saved 2-3 hours
 - ❌ Don't migrate to TanStack Router - Saved 2-3 days
 - ❌ Don't copy MFE hooks to shell - Saved 4-6 hours
 
 ### Time to invest:
+
 - ✅ Add 401 auto-retry - 2 hours (high value!)
 
 **Net result**: You're on the right track! Just add the retry logic and you're good. 🎯

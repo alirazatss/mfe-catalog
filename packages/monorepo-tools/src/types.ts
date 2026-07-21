@@ -19,31 +19,61 @@ export interface MicroFrontend {
 }
 
 /**
- * Remote configuration entry for the generated config file
+ * DEPRECATED — legacy remote configuration entry (pre-thin-shell refactor).
+ * Kept for one release cycle for backward compatibility.
+ * Migrate to `FeatureMFEEntry` (route-based) or `ChromeMFEEntry` (slot-based).
  */
 export interface RemoteConfigEntry {
-  /** Remote name/identifier */
   name: string;
-  /** URL to remoteEntry.js */
   entryUrl: string;
-  /** Module Federation scope */
   scope: string;
-  /** Version (e.g., git hash or semver) */
   version: string;
-  /** Optional fallback URLs */
   fallbackUrls?: string[];
-  /** Whether this remote is enabled */
   enabled?: boolean;
 }
 
 /**
- * Full remote configuration file structure
+ * Chrome MFE entry — loaded at bootstrap into a fixed slot.
+ */
+export interface ChromeMFEEntry {
+  mfe: string;
+  entryUrl: string;
+  scope?: string;
+  version?: string;
+  config?: Record<string, unknown>;
+  enabled?: boolean;
+}
+
+/**
+ * Feature MFE entry — loaded into main-slot based on URL prefix match.
+ */
+export interface FeatureMFEEntry {
+  mfe: string;
+  entryUrl: string;
+  scope?: string;
+  version?: string;
+  basePath?: string;
+  requiresAuth?: boolean;
+  requiredRoles?: string[];
+  config?: Record<string, unknown>;
+  enabled?: boolean;
+}
+
+/**
+ * Manifest file structure (v2 — chrome + features).
+ * The legacy `remotes` array is preserved for backward compatibility.
  */
 export interface RemoteConfig {
   /** JSON Schema reference */
   $schema?: string;
-  /** Array of remote entries */
-  remotes: RemoteConfigEntry[];
+  /** Manifest schema version (default: "2.0.0") */
+  schemaVersion?: string;
+  /** Chrome MFEs keyed by slot name */
+  chrome?: Record<string, ChromeMFEEntry>;
+  /** Feature MFEs keyed by URL prefix (e.g., "/widget") */
+  features?: Record<string, FeatureMFEEntry>;
+  /** DEPRECATED — legacy remotes array */
+  remotes?: RemoteConfigEntry[];
 }
 
 /**

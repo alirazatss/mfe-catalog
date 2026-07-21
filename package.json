@@ -18,7 +18,11 @@
     "test:coverage": "turbo test -- --coverage",
     "test:ui": "turbo test -- --ui",
     "generate:config": "tsx scripts/generate-config.ts",
+    "generate:manifest": "tsx scripts/generate-manifest.ts",
     "prepare": "vp config"
+  },
+  "dependencies": {
+    "react-router-dom": "catalog:"
   },
   "devDependencies": {
     "@module-federation/vite": "catalog:",

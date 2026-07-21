@@ -1,107 +1,158 @@
+/**
+ * Thin Shell — bootstrap entry.
+ *
+ * The ENTIRE shell runtime. Vanilla TypeScript; no React import.
+ *
+ * Responsibilities:
+ *   1. Fetch and validate manifest
+ *   2. Initialize TokenManager and expose `window.__MFE_AUTH__`
+ *   3. Mount chrome MFEs into their slots (from `manifest.chrome`)
+ *   4. Mount the feature MFE matching the current URL (from `manifest.features`)
+ *   5. Listen for popstate + `mfe:navigate` events to swap feature MFEs
+ *
+ * Failure modes:
+ *   - Manifest unreachable: render critical-error template into #app
+ *   - Auth init throws: log, treat user as unauthenticated, continue
+ *   - Feature MFE load fails: (temporary) log to console. Slot-level fallback UI
+ *     arrives in the `graceful-failure-boundaries` change.
+ *
+ * See:
+ *   - openspec/changes/refactor-to-thin-shell/specs/thin-shell-bootstrap/spec.md
+ *   - docs/adr/0004-chrome-mfe-pattern.md
+ */
+
 import "./style.css";
-import typescriptLogo from "./assets/typescript.svg";
-import viteLogo from "./assets/vite.svg";
-import heroImg from "./assets/hero.png";
-import { setupCounter } from "./counter.ts";
-import { loadRemoteWidget } from "./RemoteWidgetLoader.ts";
-import { initializeRemotes } from "./config/remotes.ts";
+import { tokenManager } from "@mf-mono/auth";
+import { DynamicLoader } from "@mf-mono/dynamic-loader";
+import { onMFEEvent, MFE_EVENTS } from "@mf-mono/events";
+import { setupAuthBridge } from "./shell/auth-bridge.js";
+import { renderCriticalError } from "./shell/critical-error.js";
+import { fetchManifest } from "./shell/manifest.js";
+import { userFromToken } from "./shell/auth-helpers.js";
+import { applyGuardOutcome, evaluateRoute } from "./shell/router.js";
+import { mountMFE, unmountMFE } from "./shell/mfe-mount.js";
 
-document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Module Federation Demo</h1>
-    <p>Host application with <strong>Microfrontend</strong> integration</p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+async function bootstrap(): Promise<void> {
+  // 1. Fetch manifest first — nothing else can happen without it.
+  const manifest = await fetchManifest();
+  if (!manifest) {
+    renderCriticalError("Unable to load application manifest");
+    return;
+  }
 
-<div class="ticks"></div>
+  const loader = new DynamicLoader();
+  loader.setConfig(manifest);
 
-<section id="microfrontend-section" style="padding: 2rem 0;">
-  <h2 style="text-align: center; margin-bottom: 1rem; color: #4c1d95;">Remote Microfrontend Widget</h2>
-  <p style="text-align: center; margin-bottom: 2rem; color: #6b7280;">
-    This widget is loaded from a separate application via Module Federation
-  </p>
-  <div id="remote-widget-container"></div>
-</section>
+  // 2. Initialize auth (best effort — failure is OK, user just isn't signed in).
+  try {
+    await tokenManager.refreshToken();
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn("[shell] Auth init failed (user likely unauthenticated):", error);
+    }
+  }
+  setupAuthBridge();
 
-<div class="ticks"></div>
+  // 3. Mount all chrome MFEs in parallel.
+  await Promise.all(
+    loader.listChromeMFEs().map(async ([slot, resolved]) => {
+      const slotId = `${slot}-slot`;
+      try {
+        await mountMFE(loader, resolved, slotId, currentAppProps());
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn(`[shell] Chrome MFE '${resolved.name}' failed to mount:`, error);
+        }
+      }
+    }),
+  );
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-      <li>
-        <a href="https://module-federation.io/" target="_blank">
-          <svg class="button-icon" role="presentation" aria-hidden="true" style="width: 20px; height: 20px;">
-            <circle cx="10" cy="10" r="8" fill="#667eea"/>
-          </svg>
-          Module Federation
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+  // 4. Mount the feature MFE for the current URL (with guards).
+  await mountFeatureForCurrentUrl(loader);
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`;
+  // 5. Wire up navigation listeners.
+  registerNavigationHandlers(loader);
 
-setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
-
-// Initialize the dynamic loader and load the remote widget
-const remoteContainer = document.querySelector<HTMLDivElement>("#remote-widget-container");
-if (remoteContainer) {
-  // Initialize loader first, then load remote
-  initializeRemotes()
-    .then(() => {
-      return loadRemoteWidget(remoteContainer, {
-        initialValue: 10,
-        theme: "light",
-      });
-    })
-    .catch((error) => {
-      console.error("[Main] Failed to initialize remotes or load widget:", error);
-      remoteContainer.innerHTML = `
-        <div style="padding: 2rem; text-align: center; color: #dc2626; border: 2px dashed #dc2626; border-radius: 8px;">
-          <h3>Failed to Load Remote Widget</h3>
-          <p style="color: #6b7280; margin: 1rem 0;">
-            ${error instanceof Error ? error.message : String(error)}
-          </p>
-          <p style="font-size: 0.875rem; color: #9ca3af;">
-            Check the console for details
-          </p>
-        </div>
-      `;
-    });
+  if (import.meta.env.DEV) {
+    console.log("[shell] Bootstrap complete");
+  }
 }
+
+async function mountFeatureForCurrentUrl(loader: DynamicLoader): Promise<void> {
+  const outcome = evaluateRoute(loader, window.location.pathname);
+  const feature = applyGuardOutcome(outcome);
+  if (!feature) return; // redirect / not-found / denied already handled
+
+  try {
+    await mountMFE(loader, feature, "main-slot", currentAppProps());
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(`[shell] Feature '${feature.name}' failed to mount:`, error);
+    }
+    // Slot-level fallback UI arrives in graceful-failure-boundaries change.
+    const slot = document.getElementById("main-slot");
+    if (slot) {
+      slot.innerHTML = `<div class="mfe-error" role="alert">Feature temporarily unavailable</div>`;
+    }
+  }
+}
+
+function registerNavigationHandlers(loader: DynamicLoader): void {
+  // Browser back/forward
+  window.addEventListener("popstate", () => {
+    void handleRouteChange(loader);
+  });
+
+  // Cross-MFE navigation event bus (existing @mf-mono/events channel)
+  onMFEEvent(
+    MFE_EVENTS.NAVIGATE,
+    (payload: { path: string; state?: unknown; replace?: boolean }) => {
+      if (!payload || typeof payload.path !== "string" || !payload.path.startsWith("/")) return;
+      const url = payload.path;
+      if (payload.replace) {
+        window.history.replaceState(payload.state ?? null, "", url);
+      } else {
+        window.history.pushState(payload.state ?? null, "", url);
+      }
+      void handleRouteChange(loader);
+    },
+  );
+}
+
+async function handleRouteChange(loader: DynamicLoader): Promise<void> {
+  // If a feature MFE is currently mounted, unmount it before route change.
+  const currentInMain = loader.getSlotOccupant("main-slot");
+  if (currentInMain) {
+    const stillMatches = loader.matchRoute(window.location.pathname);
+    if (!stillMatches || stillMatches.name !== currentInMain) {
+      await unmountMFE(currentInMain);
+      loader.clearSlot("main-slot");
+    } else {
+      // Same MFE handles the new URL (its React Router will re-render).
+      return;
+    }
+  }
+  await mountFeatureForCurrentUrl(loader);
+}
+
+function currentAppProps(): {
+  user: ReturnType<typeof userFromToken>;
+  isAuthenticated: boolean;
+  onNavigate: (path: string) => void;
+} {
+  const token = tokenManager.getAccessToken();
+  return {
+    user: userFromToken(token),
+    isAuthenticated: tokenManager.isAuthenticated(),
+    onNavigate: (path: string) => {
+      window.history.pushState(null, "", path);
+      // Trigger the same handler; a lightweight synthetic event keeps things simple.
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    },
+  };
+}
+
+bootstrap().catch((error) => {
+  console.error("[shell] Fatal bootstrap error:", error);
+  renderCriticalError(error instanceof Error ? error.message : String(error));
+});

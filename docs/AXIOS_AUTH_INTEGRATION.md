@@ -3,6 +3,7 @@
 ## 📍 File Locations
 
 ### Shell (Website)
+
 ```
 apps/website/src/
 ├── App.tsx                    # Exposes window.__AUTH__ globally
@@ -11,6 +12,7 @@ apps/website/src/
 ```
 
 ### MFE (Widget)
+
 ```
 apps/mfe-widget/src/
 ├── App.tsx                    # Calls setupAuthListeners() on mount
@@ -18,6 +20,7 @@ apps/mfe-widget/src/
 ```
 
 ### Auth Package
+
 ```
 packages/auth/src/
 ├── TokenManager.ts            # Singleton: stores token, auto-refresh
@@ -45,6 +48,7 @@ export default function App() {
 ```
 
 **What happens:**
+
 - Shell creates a global `window.__AUTH__` object
 - Exposes `getAccessToken()` function
 - Exposes `isAuthenticated()` function
@@ -57,24 +61,23 @@ export default function App() {
 #### Request Interceptor (Injects Token)
 
 ```typescript
-apiClient.interceptors.request.use(
-  (config) => {
-    // Get token from shell's global auth object
-    const getAccessToken = (window as any).__AUTH__?.getAccessToken;
-    
-    if (getAccessToken) {
-      const token = getAccessToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
+apiClient.interceptors.request.use((config) => {
+  // Get token from shell's global auth object
+  const getAccessToken = (window as any).__AUTH__?.getAccessToken;
 
-    return config;
+  if (getAccessToken) {
+    const token = getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
-);
+
+  return config;
+});
 ```
 
 **What happens:**
+
 1. Every Axios request runs through this interceptor
 2. Interceptor calls `window.__AUTH__.getAccessToken()`
 3. TokenManager returns current in-memory token
@@ -90,16 +93,17 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.error('[MFE] Unauthorized - Token may be expired');
+      console.error("[MFE] Unauthorized - Token may be expired");
       // Shell will handle auto-refresh or logout
       // MFE just logs the error
     }
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
 **What happens:**
+
 1. If API returns 401 Unauthorized
 2. MFE logs the error
 3. Shell's TokenManager auto-refreshes the token (80% lifetime)
@@ -129,6 +133,7 @@ const MyComponent = () => {
 ```
 
 **Request sent:**
+
 ```http
 GET /api/users/me HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -264,6 +269,7 @@ export default function App() {
 ```
 
 **What's happening:**
+
 - `tokenManager` is imported from `@mf-mono/auth` package
 - It's a **singleton** (same instance across entire app)
 - `window.__AUTH__` exposes two methods:
@@ -277,18 +283,19 @@ export default function App() {
 **File**: `apps/mfe-widget/src/utils/apiClient.ts`
 
 ```typescript
-import axios from 'axios';
+import axios from "axios";
 
 export const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 ```
 
 **What's happening:**
+
 - Creates an Axios instance with default config
 - All API calls use this instance: `apiClient.get('/users')`
 - Base URL is `/api` (adjust based on your backend)
@@ -304,12 +311,12 @@ apiClient.interceptors.request.use(
   (config) => {
     // 1. Get getAccessToken function from global object
     const getAccessToken = (window as any).__AUTH__?.getAccessToken;
-    
+
     // 2. Check if function exists (shell might not be ready)
     if (getAccessToken) {
       // 3. Call the function to get current token
       const token = getAccessToken();
-      
+
       // 4. If token exists, inject it
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -321,11 +328,12 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
 **What's happening:**
+
 1. Every request goes through this interceptor
 2. Interceptor calls `window.__AUTH__.getAccessToken()`
 3. This calls `tokenManager.getAccessToken()` in the shell
@@ -334,6 +342,7 @@ apiClient.interceptors.request.use(
 6. Request proceeds with authentication
 
 **Example Request:**
+
 ```http
 GET /api/users/me HTTP/1.1
 Host: api.example.com
@@ -352,16 +361,17 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.error('[MFE] Unauthorized - Token may be expired');
+      console.error("[MFE] Unauthorized - Token may be expired");
       // Shell's TokenManager will auto-refresh
       // Or emit logout event if refresh fails
     }
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
 **What's happening:**
+
 1. If API returns 401 Unauthorized
 2. MFE logs the error (for debugging)
 3. Shell's TokenManager handles refresh automatically
@@ -379,9 +389,9 @@ class TokenManager {
   private async performRefresh(): Promise<void> {
     try {
       // Call backend with HttpOnly cookie
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        credentials: 'include', // Send HttpOnly cookie
+      const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include", // Send HttpOnly cookie
       });
 
       const data = await response.json();
@@ -398,7 +408,7 @@ class TokenManager {
       // Refresh failed - emit logout event
       this.clear();
       emitMFEEvent(MFE_EVENTS.AUTH_LOGOUT, {
-        reason: 'refresh_failed',
+        reason: "refresh_failed",
       });
     }
   }
@@ -406,6 +416,7 @@ class TokenManager {
 ```
 
 **What's happening:**
+
 1. Timer fires at 80% token lifetime (e.g., 12 min for 15 min token)
 2. POST to `/api/auth/refresh` (HttpOnly cookie sent automatically)
 3. Backend validates refresh token from cookie
@@ -420,18 +431,21 @@ class TokenManager {
 ## 💡 Why This Design?
 
 ### 1. Security
+
 - **Access token in memory** → XSS attacks cannot steal it from localStorage
 - **Refresh token in HttpOnly cookie** → JavaScript cannot access it at all
 - **Short-lived access tokens** → Even if stolen, expires quickly (15 min)
 - **Long-lived refresh tokens** → User doesn't have to login frequently (7 days)
 
 ### 2. Simplicity for MFEs
+
 - **No auth logic in MFEs** → Just use `apiClient.get('/data')`
 - **Token injection automatic** → Interceptor handles everything
 - **No manual refresh** → Shell handles it transparently
 - **Event-driven updates** → MFEs listen if they need to react
 
 ### 3. Centralized Control
+
 - **Single source of truth** → TokenManager singleton in shell
 - **Consistent behavior** → All MFEs use same auth flow
 - **Easy to update** → Change auth logic in one place (shell)
@@ -444,7 +458,7 @@ class TokenManager {
 
 ```typescript
 // ❌ MFE directly importing tokenManager
-import { tokenManager } from '@mf-mono/auth';
+import { tokenManager } from "@mf-mono/auth";
 
 apiClient.interceptors.request.use((config) => {
   const token = tokenManager.getAccessToken();
@@ -456,12 +470,14 @@ apiClient.interceptors.request.use((config) => {
 ```
 
 **Why we DON'T do this:**
+
 - **Violates architecture principle** → Shell owns auth, not MFEs
 - **Harder to test** → MFEs now depend on shell's auth package
 - **Less flexible** → Can't swap auth strategies easily
 - **Bundle duplication** → Each MFE bundles auth package
 
-**Why we DO use window.__AUTH__:**
+**Why we DO use window.**AUTH**:**
+
 - **Clear boundary** → Shell provides auth via global API
 - **Loose coupling** → MFEs only depend on the interface
 - **Runtime flexibility** → Can mock for testing
@@ -472,6 +488,7 @@ apiClient.interceptors.request.use((config) => {
 ## 📝 Quick Reference
 
 ### Shell Setup (One-time)
+
 ```typescript
 // apps/website/src/App.tsx
 import { tokenManager } from "@mf-mono/auth";
@@ -485,11 +502,12 @@ useEffect(() => {
 ```
 
 ### MFE Setup (Per MFE)
+
 ```typescript
 // apps/mfe-*/src/utils/apiClient.ts
-import axios from 'axios';
+import axios from "axios";
 
-export const apiClient = axios.create({ baseURL: '/api' });
+export const apiClient = axios.create({ baseURL: "/api" });
 
 apiClient.interceptors.request.use((config) => {
   const token = (window as any).__AUTH__?.getAccessToken();
@@ -499,10 +517,11 @@ apiClient.interceptors.request.use((config) => {
 ```
 
 ### MFE Usage (In Components)
-```typescript
-import { apiClient } from '../utils/apiClient';
 
-const response = await apiClient.get('/users/me');
+```typescript
+import { apiClient } from "../utils/apiClient";
+
+const response = await apiClient.get("/users/me");
 // Token automatically injected ✅
 ```
 
@@ -511,18 +530,22 @@ const response = await apiClient.get('/users/me');
 ## 🔍 Troubleshooting
 
 ### Problem: "Authorization header missing"
+
 **Cause**: `window.__AUTH__` not set  
 **Fix**: Ensure shell App.tsx has the useEffect hook
 
 ### Problem: "Token is null"
+
 **Cause**: User not logged in or token expired  
 **Fix**: Check `tokenManager.isAuthenticated()`, redirect to login
 
 ### Problem: "401 Unauthorized loop"
+
 **Cause**: Refresh endpoint failing  
 **Fix**: Check backend `/api/auth/refresh` implementation
 
 ### Problem: "CORS error on refresh"
+
 **Cause**: Backend not sending CORS headers for cookies  
 **Fix**: Backend must set `Access-Control-Allow-Credentials: true`
 
@@ -531,6 +554,7 @@ const response = await apiClient.get('/users/me');
 ## 🎯 Summary
 
 **Token Flow:**
+
 ```
 Login → TokenManager (memory) → window.__AUTH__ → Axios Interceptor → API Request
           ↓                                           ↑
@@ -538,15 +562,17 @@ Login → TokenManager (memory) → window.__AUTH__ → Axios Interceptor → AP
 ```
 
 **Key Files:**
+
 - `packages/auth/src/TokenManager.ts` - Stores token, handles refresh
 - `apps/website/src/App.tsx` - Exposes `window.__AUTH__`
 - `apps/mfe-widget/src/utils/apiClient.ts` - Axios with interceptors
 - `apps/mfe-widget/src/App.tsx` - Calls `setupAuthListeners()`
 
 **MFE Usage:**
+
 ```typescript
 // Just use apiClient - token injected automatically!
-const data = await apiClient.get('/endpoint');
+const data = await apiClient.get("/endpoint");
 ```
 
 🎉 **That's it! Axios setup complete with automatic auth!**

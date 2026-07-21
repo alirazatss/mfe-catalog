@@ -7,7 +7,7 @@
     "mfe-widget": {
       "version": "1.2.3",
       "url": "https://cdn.example.com/mfe-widget/1.2.3/remoteEntry.js",
-      "integrity": "sha384-abc123...",
+      "integrity": "sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC",
       "scope": "widget",
       "module": "./App",
       "metadata": {

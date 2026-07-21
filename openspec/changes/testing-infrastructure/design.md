@@ -3,12 +3,14 @@
 ## Context
 
 Currently, the mf-mono project has zero test coverage. As the codebase grows and production deployment approaches, we need comprehensive testing to:
+
 - Prevent regressions during rapid development
 - Enable confident refactoring
 - Document expected behavior
 - Catch bugs before production
 
 The micro-frontend architecture requires testing at multiple levels:
+
 - **Packages** (`packages/auth`, `packages/events`) - Core business logic
 - **Shell** (`apps/website`) - Auth, routing, layout, MFE integration
 - **MFEs** (`apps/mfe-widget`) - Component behavior, API integration
@@ -18,6 +20,7 @@ We'll use Vitest (already included with Vite+) for unit and integration tests. E
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Establish Vitest configuration for all packages and apps
 - Achieve >80% coverage for packages, >70% for apps
 - Create reusable test utilities and patterns
@@ -26,6 +29,7 @@ We'll use Vitest (already included with Vite+) for unit and integration tests. E
 - Document testing conventions
 
 **Non-Goals:**
+
 - E2E testing with Playwright (separate change)
 - Visual regression testing
 - Load/performance testing
@@ -38,6 +42,7 @@ We'll use Vitest (already included with Vite+) for unit and integration tests. E
 **Decision**: Use Vitest for all unit and integration tests.
 
 **Rationale**:
+
 - Already included with Vite+ (zero additional setup)
 - Compatible with Vite's build system
 - Fast (native ESM, parallelization)
@@ -46,6 +51,7 @@ We'll use Vitest (already included with Vite+) for unit and integration tests. E
 - Watch mode with HMR-like speed
 
 **Alternatives considered**:
+
 - Jest - Slower, requires more configuration for ESM
 - Testing Library standalone - Not a test runner
 
@@ -54,12 +60,14 @@ We'll use Vitest (already included with Vite+) for unit and integration tests. E
 **Decision**: Use happy-dom for React component tests.
 
 **Rationale**:
+
 - 2-10x faster than jsdom
 - Sufficient for most React testing needs
 - Actively maintained
 - Smaller bundle size
 
 **Alternatives considered**:
+
 - jsdom - Slower but more complete DOM implementation
 - No DOM (node environment) - Can't test React components
 
@@ -68,12 +76,14 @@ We'll use Vitest (already included with Vite+) for unit and integration tests. E
 **Decision**: Use @testing-library/react for component tests.
 
 **Rationale**:
+
 - Industry standard for React testing
 - Encourages testing user behavior, not implementation
 - Excellent TypeScript support
 - Works seamlessly with Vitest
 
 **Principles**:
+
 - Query by role/label (accessibility-first)
 - Avoid testing implementation details
 - Test behavior, not structure
@@ -83,6 +93,7 @@ We'll use Vitest (already included with Vite+) for unit and integration tests. E
 **Decision**: Place test files next to source files with `.test.ts(x)` suffix.
 
 **Example**:
+
 ```
 src/
 ├── components/
@@ -94,12 +105,14 @@ src/
 ```
 
 **Rationale**:
+
 - Easy to find related tests
 - Clear ownership
 - Encouraged by Vite+ and Vitest
 - Scales well with feature-based organization
 
 **Alternatives considered**:
+
 - Separate `__tests__` directory - More traditional but harder to maintain
 - Global `test/` directory - Doesn't scale for micro-frontends
 
@@ -108,12 +121,14 @@ src/
 **Decision**: Use Vitest's built-in mocking (`vi.mock`, `vi.fn`, `vi.spyOn`).
 
 **Patterns**:
-- **window.__AUTH__** - Mock directly in test setup
+
+- **window.**AUTH\*\*\*\* - Mock directly in test setup
 - **fetch API** - Mock with `vi.stubGlobal('fetch', mockFetch)`
 - **Event bus** - Mock emitMFEEvent and onMFEEvent
 - **React Router** - Use MemoryRouter for isolated tests
 
 **Avoid**:
+
 - Over-mocking (prefer integration when possible)
 - Mocking implementation details (mock interfaces, not internals)
 
@@ -122,6 +137,7 @@ src/
 **Decision**: Enforce coverage thresholds per package/app.
 
 **Thresholds**:
+
 ```typescript
 // packages/ (shared code - high threshold)
 coverage: {
@@ -141,6 +157,7 @@ coverage: {
 ```
 
 **Rationale**:
+
 - Shared packages are critical (higher bar)
 - UI code has more edge cases (lower bar)
 - Thresholds prevent coverage decay
@@ -150,6 +167,7 @@ coverage: {
 **Decision**: Create test utilities at app/package level, not global.
 
 **Structure**:
+
 ```
 apps/website/
 └── src/
@@ -165,11 +183,13 @@ packages/auth/
 ```
 
 **Rationale**:
+
 - Each app/package has different testing needs
 - Avoids "god object" test utility file
 - Easier to find relevant helpers
 
 **Global utilities (if needed)**:
+
 - Extract to `packages/test-utils` after patterns stabilize
 
 ### 8. Async Testing Pattern
@@ -177,10 +197,11 @@ packages/auth/
 **Decision**: Use `async/await` with `waitFor` for async tests.
 
 **Pattern**:
+
 ```typescript
 test('async operation', async () => {
   render(<Component />);
-  
+
   await waitFor(() => {
     expect(screen.getByText('Loaded')).toBeInTheDocument();
   });
@@ -188,6 +209,7 @@ test('async operation', async () => {
 ```
 
 **Avoid**:
+
 - `flush()` or `tick()` (implementation-specific)
 - Hardcoded delays (`setTimeout` in tests)
 
@@ -196,10 +218,11 @@ test('async operation', async () => {
 **Decision**: Run tests in CI with coverage enforcement.
 
 **CI Configuration**:
+
 ```yaml
 - name: Run tests
   run: pnpm test:run --coverage
-  
+
 - name: Upload coverage
   uses: codecov/codecov-action@v3
   with:
@@ -207,6 +230,7 @@ test('async operation', async () => {
 ```
 
 **Rationale**:
+
 - Tests must pass before merge
 - Coverage trends are visible
 - Prevents regressions
@@ -269,70 +293,68 @@ apps/website/
 ### Vitest Configuration
 
 **Shared config** (`vitest.config.base.ts` - if needed):
+
 ```typescript
 export default {
   test: {
     globals: true,
-    environment: 'happy-dom',
-    setupFiles: ['./src/test/setup.ts'],
+    environment: "happy-dom",
+    setupFiles: ["./src/test/setup.ts"],
     coverage: {
-      reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: [
-        '**/*.test.{ts,tsx}',
-        '**/*.config.{ts,js}',
-        '**/dist/**',
-        '**/coverage/**'
-      ]
-    }
-  }
+      reporter: ["text", "json", "html", "lcov"],
+      exclude: ["**/*.test.{ts,tsx}", "**/*.config.{ts,js}", "**/dist/**", "**/coverage/**"],
+    },
+  },
 };
 ```
 
 **Package-specific** (`packages/auth/vitest.config.ts`):
+
 ```typescript
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'node', // No DOM needed
+    environment: "node", // No DOM needed
     coverage: {
       thresholds: {
         statements: 80,
         branches: 75,
         functions: 80,
-        lines: 80
-      }
-    }
-  }
+        lines: 80,
+      },
+    },
+  },
 });
 ```
 
 **App-specific** (`apps/website/vitest.config.ts`):
+
 ```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
-    environment: 'happy-dom',
-    setupFiles: ['./src/test/setup.ts'],
+    environment: "happy-dom",
+    setupFiles: ["./src/test/setup.ts"],
     coverage: {
       thresholds: {
         statements: 70,
         branches: 65,
         functions: 70,
-        lines: 70
-      }
-    }
+        lines: 70,
+      },
+    },
   },
   resolve: {
     alias: {
-      '@': '/src' // Match tsconfig paths
-    }
-  }
+      "@": "/src", // Match tsconfig paths
+    },
+  },
 });
 ```
 
@@ -341,16 +363,16 @@ export default defineConfig({
 ### Unit Test Pattern
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { tokenManager } from './TokenManager';
+import { describe, it, expect } from "vitest";
+import { tokenManager } from "./TokenManager";
 
-describe('TokenManager', () => {
-  it('should store and retrieve token', () => {
-    tokenManager.setAccessToken('token123', 900);
-    expect(tokenManager.getAccessToken()).toBe('token123');
+describe("TokenManager", () => {
+  it("should store and retrieve token", () => {
+    tokenManager.setAccessToken("token123", 900);
+    expect(tokenManager.getAccessToken()).toBe("token123");
   });
 
-  it('should schedule refresh at 80% lifetime', () => {
+  it("should schedule refresh at 80% lifetime", () => {
     // Use vi.useFakeTimers() for timer testing
   });
 });
@@ -384,30 +406,30 @@ describe('ProtectedRoute', () => {
 ### Integration Test Pattern
 
 ```typescript
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { AuthProvider, useAuth } from './AuthProvider';
+import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { AuthProvider, useAuth } from "./AuthProvider";
 
-describe('AuthProvider Integration', () => {
-  it('should login and update state', async () => {
+describe("AuthProvider Integration", () => {
+  it("should login and update state", async () => {
     // Mock fetch
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({ accessToken: 'token', user: { email: 'test@example.com' } })
-      })
+        json: () => Promise.resolve({ accessToken: "token", user: { email: "test@example.com" } }),
+      }),
     );
 
     const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider
+      wrapper: AuthProvider,
     });
 
     await act(async () => {
-      await result.current.login({ email: 'test@example.com', password: 'pass' });
+      await result.current.login({ email: "test@example.com", password: "pass" });
     });
 
     expect(result.current.isAuthenticated).toBe(true);
-    expect(result.current.user).toEqual({ email: 'test@example.com' });
+    expect(result.current.user).toEqual({ email: "test@example.com" });
   });
 });
 ```
@@ -415,17 +437,21 @@ describe('AuthProvider Integration', () => {
 ## Risks / Trade-offs
 
 ### Risk 1: Test Maintenance Overhead
+
 **Risk**: Tests become brittle and require frequent updates.
 
 **Mitigation**:
+
 - Use React Testing Library (test behavior, not implementation)
 - Avoid over-specific assertions (test contract, not details)
 - Extract common test utilities to reduce duplication
 
 ### Risk 2: Slow Test Suite
+
 **Risk**: Test suite becomes too slow for rapid iteration.
 
 **Mitigation**:
+
 - Use happy-dom (faster than jsdom)
 - Run tests in parallel (Vitest default)
 - Mock expensive operations (API calls, timers)
@@ -434,25 +460,31 @@ describe('AuthProvider Integration', () => {
 **Target**: <30s for full unit/integration suite
 
 ### Risk 3: Coverage Without Quality
+
 **Risk**: High coverage but poor test quality (trivial tests).
 
 **Mitigation**:
+
 - Code review focuses on test quality
 - Test scenarios from specs (not just happy path)
 - Prefer integration tests over isolated unit tests
 
 ### Risk 4: Flaky Tests
+
 **Risk**: Tests pass/fail intermittently.
 
 **Mitigation**:
+
 - Avoid timing-dependent tests (use fake timers)
 - Ensure proper cleanup (afterEach hooks)
 - Use Vitest's retry mechanism for truly async operations
 
 ### Risk 5: Mock Maintenance
+
 **Risk**: Mocks drift from real implementations.
 
 **Mitigation**:
+
 - Prefer integration tests (fewer mocks)
 - Update mocks when interfaces change
 - Validate mocks match real API contracts
@@ -460,6 +492,7 @@ describe('AuthProvider Integration', () => {
 ## Dependencies
 
 **Required Packages**:
+
 ```json
 {
   "devDependencies": {
@@ -471,7 +504,8 @@ describe('AuthProvider Integration', () => {
 }
 ```
 
-**Note**: 
+**Note**:
+
 - Vitest 3.2.0 is already included with Vite+ via catalog
 - React 19.x is in the catalog and fully supported by @testing-library/react@16.3.2
 - All packages will be added to root devDependencies via catalog for version consistency

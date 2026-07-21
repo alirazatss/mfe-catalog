@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { apiClient, setupAuthListeners } from "./apiClient.js";
 import { mockAuthGlobal, clearAuthGlobal } from "../test/mocks.js";
 import { MFE_EVENTS } from "@mf-mono/events";

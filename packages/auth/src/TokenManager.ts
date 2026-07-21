@@ -1,12 +1,12 @@
-import { emitMFEEvent, MFE_EVENTS } from '@mf-mono/events';
-import type { RefreshResponse } from './types';
+import { emitMFEEvent, MFE_EVENTS } from "@mf-mono/events";
+import type { RefreshResponse } from "./types";
 
 /**
  * Token Manager
- * 
+ *
  * Manages Keycloak access tokens in memory (XSS safe).
  * Refresh tokens are automatically sent via HttpOnly cookies.
- * 
+ *
  * Features:
  * - In-memory access token storage
  * - Auto-refresh at 80% token lifetime
@@ -38,7 +38,7 @@ class TokenManager {
         const decoded = this.decodeJWT(token);
         expiresAtMs = decoded.exp * 1000; // Convert to milliseconds
       } catch (error) {
-        console.error('[TokenManager] Failed to decode JWT:', error);
+        console.error("[TokenManager] Failed to decode JWT:", error);
         return;
       }
     }
@@ -103,14 +103,16 @@ class TokenManager {
 
     if (import.meta.env.DEV) {
       const refreshDate = new Date(refreshAt).toLocaleTimeString();
-      console.log(`[TokenManager] Token refresh scheduled at ${refreshDate} (${Math.round(delay / 1000)}s from now)`);
+      console.log(
+        `[TokenManager] Token refresh scheduled at ${refreshDate} (${Math.round(delay / 1000)}s from now)`,
+      );
     }
   }
 
   /**
    * Refresh access token via backend
    * Backend automatically reads refresh token from HttpOnly cookie
-   * 
+   *
    * Deduplicates simultaneous refresh requests
    */
   async refreshToken(): Promise<void> {
@@ -133,9 +135,9 @@ class TokenManager {
    */
   private async performRefresh(): Promise<void> {
     try {
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        credentials: 'include', // Send HttpOnly cookie with refresh token
+      const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include", // Send HttpOnly cookie with refresh token
       });
 
       if (!response.ok) {
@@ -154,17 +156,17 @@ class TokenManager {
       });
 
       if (import.meta.env.DEV) {
-        console.log('[TokenManager] Token refreshed successfully');
+        console.log("[TokenManager] Token refreshed successfully");
       }
     } catch (error) {
-      console.error('[TokenManager] Token refresh failed:', error);
+      console.error("[TokenManager] Token refresh failed:", error);
 
       // Clear tokens
       this.clear();
 
       // Emit logout event (triggers redirect to login)
       emitMFEEvent(MFE_EVENTS.AUTH_LOGOUT, {
-        reason: 'refresh_failed',
+        reason: "refresh_failed",
       });
     }
   }
@@ -172,19 +174,19 @@ class TokenManager {
   /**
    * Decode JWT payload without verification
    * We trust the backend to validate the token
-   * 
+   *
    * @param token - JWT token
    * @returns Decoded payload
    */
   private decodeJWT(token: string): { exp: number; [key: string]: any } {
-    const parts = token.split('.');
+    const parts = token.split(".");
     if (parts.length !== 3) {
-      throw new Error('Invalid JWT format');
+      throw new Error("Invalid JWT format");
     }
 
     const payload = parts[1];
     // Base64URL decode
-    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(decoded);
   }
 }

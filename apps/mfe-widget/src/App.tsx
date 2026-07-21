@@ -19,8 +19,8 @@ interface AppProps {
   user?: User | null;
 }
 
-export default function App({ 
-  basePath = "/", 
+export default function App({
+  basePath = "/",
   router: routerType = "browser",
   isAuthenticated = false,
   user = null,
