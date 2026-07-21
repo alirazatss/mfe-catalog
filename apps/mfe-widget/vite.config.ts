@@ -8,8 +8,8 @@ export default defineConfig({
       filename: "remoteEntry.js",
       exposes: {
         "./bootstrap": "./src/bootstrap.ts",
-        "./App": "./src/App.tsx",
-        "./CounterWidget": "./src/components/CounterWidget.ts",
+        "./App": "./src/bootstrap.ts",
+        "./CounterWidget": "./src/bootstrap.ts",
       },
       shared: {
         react: { singleton: true, requiredVersion: "^19" },
