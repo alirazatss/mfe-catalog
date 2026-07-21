@@ -7,8 +7,9 @@ export default defineConfig({
       name: "widget", // Module Federation scope name
       filename: "remoteEntry.js",
       exposes: {
-        "./CounterWidget": "./src/components/CounterWidget.ts",
+        "./bootstrap": "./src/bootstrap.ts",
         "./App": "./src/App.tsx",
+        "./CounterWidget": "./src/components/CounterWidget.ts",
       },
       shared: {
         react: { singleton: true, requiredVersion: "^19" },

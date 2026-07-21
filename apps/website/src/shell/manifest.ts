@@ -1,16 +1,19 @@
 /**
- * Thin Shell — manifest fetching with retry.
+ * Thin Shell — manifest fetching with retry and fallback.
  *
- * Fetches `/remotes.config.json` with exponential backoff (1s, 2s, 4s).
- * Returns null on total failure — the caller decides how to surface it
- * (typically renderCriticalError).
+ * MVP Architecture:
+ * - Fetches `/remotes.config.json` (served by the shell itself) with exponential backoff (1s, 2s, 4s)
+ * - If network fetch fails, falls back to the bundled FALLBACK_REMOTES configuration
+ * - This dual-layer approach ensures resilience: the shell can load even if serving the
+ *   static config file temporarily fails
  *
- * The 24-hour localStorage cache fallback is added in the
- * `graceful-failure-boundaries` change; for now, this is a pure network fetch.
+ * Future: In production, the URL can point to an external config service, and the fallback
+ * becomes a true bootstrap configuration.
  */
 
 import type { RemoteConfig } from "@mf-mono/remote-config";
 import { safeValidateRemoteConfig } from "@mf-mono/remote-config";
+import { FALLBACK_REMOTES } from "../config/remotes.js";
 
 const DEFAULT_URL = "/remotes.config.json";
 const RETRY_DELAYS_MS = [1000, 2000, 4000];
@@ -35,7 +38,15 @@ export async function fetchManifest(url: string = DEFAULT_URL): Promise<RemoteCo
           error,
         );
       }
-      if (isLastAttempt) return null;
+      if (isLastAttempt) {
+        // Fall back to bundled configuration if all retries fail
+        if (import.meta.env.DEV) {
+          console.warn(
+            "[shell] All manifest fetch attempts failed. Using fallback bundled configuration.",
+          );
+        }
+        return FALLBACK_REMOTES;
+      }
       await sleep(RETRY_DELAYS_MS[attempt]);
     }
   }
