@@ -1,8 +1,15 @@
 /**
  * MFE Widget - Main Entry Point
  *
- * When running standalone in dev/preview mode, this bootstraps the widget.
- * When loaded as a federated module, the host loads ./bootstrap instead.
+ * The federated entry imports bootstrap.ts without executing this file.
  */
 
-import "./bootstrap.js";
+import { bootstrap, mount } from "./bootstrap.js";
+
+const container = document.getElementById("app");
+if (container) {
+  const props = { container, basePath: "/" };
+  bootstrap()
+    .then(() => mount(props))
+    .catch((error) => console.error("[MFE-Widget] Bootstrap error:", error));
+}

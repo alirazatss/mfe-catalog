@@ -36,7 +36,7 @@ export class DynamicLoader {
   private events = new LoaderEvents();
   private config: RemoteConfig | null = null;
   private loadedRemotes = new Map<string, Container>();
-  private loadedScripts = new Set<string>();
+  private loadedScripts = new Map<string, Container | null>();
   private initialized = false;
   /** Tracks which slot currently hosts which MFE (best-effort bookkeeping) */
   private slotOccupancy = new Map<string, string>();
@@ -179,9 +179,10 @@ export class DynamicLoader {
         throw new Error(`Remote '${name}' is disabled`);
       }
 
-      await this.loadScript(resolved.entryUrl);
+      const importedContainer = await this.loadScript(resolved.entryUrl);
 
-      const container = (window as any)[resolved.scope] as Container | undefined;
+      const container =
+        importedContainer ?? ((window as any)[resolved.scope] as Container | undefined);
       if (!container) {
         throw new Error(`Remote '${name}' container not found at window.${resolved.scope}`);
       }
@@ -304,28 +305,27 @@ export class DynamicLoader {
     };
   }
 
-  private async loadScript(url: string): Promise<void> {
+  private async loadScript(url: string): Promise<Container | undefined> {
     if (this.loadedScripts.has(url)) {
-      return;
+      return this.loadedScripts.get(url) ?? undefined;
     }
 
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = url;
-      script.type = "text/javascript";
-      script.async = true;
+    try {
+      const remoteModule = await import(/* @vite-ignore */ url);
+      const container =
+        typeof remoteModule.init === "function" && typeof remoteModule.get === "function"
+          ? (remoteModule as Container)
+          : undefined;
 
-      script.onload = () => {
-        this.loadedScripts.add(url);
-        resolve();
-      };
-
-      script.onerror = () => {
-        reject(new Error(`Failed to load script from ${url}`));
-      };
-
-      document.head.appendChild(script);
-    });
+      this.loadedScripts.set(url, container ?? null);
+      return container;
+    } catch (error) {
+      throw new Error(
+        `Failed to load script from ${url}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 
   private async initializeSharing(container: Container): Promise<void> {

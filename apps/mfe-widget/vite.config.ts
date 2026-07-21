@@ -7,6 +7,7 @@ export default defineConfig({
       name: "widget", // Module Federation scope name
       filename: "remoteEntry.js",
       exposes: {
+        "./lifecycle": "./src/bootstrap.ts",
         "./bootstrap": "./src/bootstrap.ts",
         "./App": "./src/bootstrap.ts",
         "./CounterWidget": "./src/bootstrap.ts",
@@ -20,6 +21,9 @@ export default defineConfig({
   server: {
     port: 5174,
     origin: "http://localhost:5174",
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-dom/client"],
   },
   preview: {
     port: 5174,

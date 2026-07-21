@@ -5,33 +5,46 @@
  * It initializes shared dependencies and returns the module scope.
  */
 
-import { StrictMode, createElement } from "react";
-import { createRoot } from "react-dom/client";
+import { StrictMode, createElement, type ComponentProps } from "react";
+import { createRoot, type Root } from "react-dom/client";
 import App from "./App.js";
-import { CounterWidget } from "./components/CounterWidget.js";
 
-// Export for Module Federation
-export { CounterWidget, App };
+export { CounterWidget } from "./components/CounterWidget.js";
+export { App };
 
-// Standalone rendering (when accessed directly)
-export async function bootstrap(): Promise<void> {
-  const rootElement = document.getElementById("app");
-  if (rootElement) {
-    const root = createRoot(rootElement);
-    root.render(
-      createElement(StrictMode, null, createElement(App, { basePath: "/", router: "browser" })),
-    );
-
-    if (import.meta.env.DEV) {
-      console.log("[MFE-Widget] Running in standalone mode with BrowserRouter");
-    }
-  }
+interface LifecycleProps {
+  container: HTMLElement;
+  basePath?: string;
+  isAuthenticated?: boolean;
+  user?: ComponentProps<typeof App>["user"];
 }
 
-// Auto-bootstrap when running standalone (not as a remote)
-const g = globalThis as Record<string, unknown> & {
-  __REACT_DEVTOOLS_GLOBAL_HOOK__?: { isCommitted?: boolean };
-};
-if (import.meta.env.MODE === "development" && !g.__REACT_DEVTOOLS_GLOBAL_HOOK__?.isCommitted) {
-  bootstrap().catch((err) => console.error("[MFE-Widget] Bootstrap error:", err));
+const roots = new Map<HTMLElement, Root>();
+
+export function bootstrap(): Promise<void> {
+  return Promise.resolve();
+}
+
+export async function mount(props: LifecycleProps): Promise<void> {
+  roots.get(props.container)?.unmount();
+
+  const root = createRoot(props.container);
+  roots.set(props.container, root);
+  root.render(
+    createElement(
+      StrictMode,
+      null,
+      createElement(App, {
+        basePath: props.basePath ?? "/",
+        router: "browser",
+        isAuthenticated: props.isAuthenticated,
+        user: props.user,
+      }),
+    ),
+  );
+}
+
+export async function unmount(props: LifecycleProps): Promise<void> {
+  roots.get(props.container)?.unmount();
+  roots.delete(props.container);
 }

@@ -32,7 +32,7 @@ export const FALLBACK_REMOTES: RemoteConfig = {
       scope: "widget",
       version: "0.0.0",
       basePath: "/widget",
-      requiresAuth: true,
+      requiresAuth: false,
       requiredRoles: [],
       enabled: true,
     },
