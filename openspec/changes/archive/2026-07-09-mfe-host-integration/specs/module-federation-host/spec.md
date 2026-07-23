@@ -67,7 +67,7 @@ The host application SHALL reference remotes using the `mfe-*` naming convention
 
 #### Scenario: Host references remote by mfe-\* name
 
-- **GIVEN** a micro-frontend package named `@mf-mono/mfe-widget`
+- **GIVEN** a micro-frontend package named `@mfe-runtine/mfe-widget`
 - **WHEN** the host loads the remote
 - **THEN** the remote SHALL be referenced as "mfe-widget"
 - **AND** the loader SHALL find it in config by that name

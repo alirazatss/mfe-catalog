@@ -52,7 +52,7 @@ The system SHALL allow MFEs to use shared token manager without direct props.
 
 #### Scenario: MFE retrieves token from singleton
 
-- **WHEN** MFE imports tokenManager from @mf-mono/auth
+- **WHEN** MFE imports tokenManager from @mfe-runtine/auth
 - **THEN** MFE can call tokenManager.getAccessToken()
 - **AND** MFE receives current token without needing props
 - **AND** token is always up-to-date after refreshes

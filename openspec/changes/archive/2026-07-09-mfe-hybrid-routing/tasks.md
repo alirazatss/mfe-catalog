@@ -248,7 +248,7 @@
 
 ## 20. End-to-End Testing
 
-- [ ] 20.1 Start all dev servers: `pnpm turbo dev --filter=website --filter=@mf-mono/mfe-widget`
+- [ ] 20.1 Start all dev servers: `pnpm turbo dev --filter=website --filter=@mfe-runtine/mfe-widget`
 - [ ] 20.2 Test navigation: `/` → `/widget` → `/widget/settings`
 - [ ] 20.3 Test back/forward buttons work correctly
 - [ ] 20.4 Test deep linking to `/widget/settings` from fresh browser

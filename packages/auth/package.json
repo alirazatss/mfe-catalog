@@ -1,5 +1,5 @@
 {
-  "name": "@mf-mono/auth",
+  "name": "@mfe-runtine/auth",
   "version": "0.0.0",
   "private": true,
   "files": [
@@ -23,7 +23,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@mf-mono/events": "workspace:*"
+    "@mfe-runtine/events": "workspace:*"
   },
   "devDependencies": {
     "typescript": "~6.0.2",

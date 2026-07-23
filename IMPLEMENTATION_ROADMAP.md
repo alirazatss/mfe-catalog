@@ -41,7 +41,7 @@ pnpm turbo build  # Should use cache, complete in <100ms
 **Start here**:
 
 ```bash
-cd /Users/ali.raza/dev/mf-mono
+cd /Users/ali.raza/dev/mfe-runtine
 cat openspec/changes/mfe-convention-and-packages/tasks.md
 ```
 
@@ -111,7 +111,7 @@ cat openspec/changes/mfe-dynamic-loader/tasks.md
 
 ```bash
 # In browser console or Node test:
-import { DynamicLoader } from '@mf-mono/dynamic-loader';
+import { DynamicLoader } from '@mfe-runtine/dynamic-loader';
 const loader = new DynamicLoader();
 await loader.init();
 const module = await loader.loadRemote('mfe-widget');

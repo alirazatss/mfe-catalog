@@ -25,7 +25,7 @@ Following the Turborepo setup, we need to adopt the `apps/mfe-*` naming conventi
 ### Affected Code
 
 - `apps/remote-widget/` → `apps/mfe-widget/`
-- `apps/mfe-widget/package.json` - Update name to `@mf-mono/mfe-widget`
+- `apps/mfe-widget/package.json` - Update name to `@mfe-runtine/mfe-widget`
 - Root `package.json` - Update scripts (dev:remote → dev:mfe-widget)
 - Host imports - Update references
 

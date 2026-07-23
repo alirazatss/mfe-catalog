@@ -7,7 +7,7 @@ The test suite currently has 59 failing tests due to two blocking issues: (1) DO
 - Update all vitest.config.ts files to configure `happy-dom` or `jsdom` environment for DOM-dependent tests
 - Replace all `window.__AUTH__` mock references with current `window.__MFE_AUTH__` contract in test fixtures
 - Update test utilities to set up the MFEAuthBridge correctly in test setup
-- Fix test helpers to emit correct event types from `@mf-mono/events` (e.g., `mfe:auth:login` not `auth:login`)
+- Fix test helpers to emit correct event types from `@mfe-runtine/events` (e.g., `mfe:auth:login` not `auth:login`)
 - Add DOM environment setup to `apps/website/` and `apps/mfe-widget/` vitest configs
 - Update shell test setup to mock `DynamicLoader` correctly (load, unload, update, getSlotOccupant methods)
 

@@ -4,14 +4,14 @@ The current `LoginPage`, `AuthProvider` React logic, and related auth UI live in
 
 ## What Changes
 
-- Create new npm package `@mf-mono/auth-ui` under `packages/auth-ui/` that exports React components for login, logout, session-expired, and forgot-password flows
+- Create new npm package `@mfe-runtine/auth-ui` under `packages/auth-ui/` that exports React components for login, logout, session-expired, and forgot-password flows
 - Extract `LoginPage.tsx` from `apps/website/src/components/` into the new package with a customization API (logo, primaryColor, additional fields, social providers)
 - Extract `AuthProvider.tsx` React Context wrapper from `apps/website/src/providers/` into the package (kept for shells that want a React-context-based auth API)
 - Extract `ProtectedRoute.tsx` from the shell into the package so shells that still render some React can reuse the guard
 - Expose a single `setupAuthBridge()` helper that shells call from their vanilla bootstrap to populate `window.__MFE_AUTH__`
-- Keep `packages/auth/` focused on framework-agnostic logic (`TokenManager`, JWT utilities, types); `@mf-mono/auth-ui` depends on it
-- Publish `@mf-mono/auth-ui` to the private npm registry so shell repos in separate repositories can consume it
-- **BREAKING**: `apps/website` now imports auth UI from `@mf-mono/auth-ui` instead of local files (paired with `refactor-to-thin-shell` change)
+- Keep `packages/auth/` focused on framework-agnostic logic (`TokenManager`, JWT utilities, types); `@mfe-runtine/auth-ui` depends on it
+- Publish `@mfe-runtine/auth-ui` to the private npm registry so shell repos in separate repositories can consume it
+- **BREAKING**: `apps/website` now imports auth UI from `@mfe-runtine/auth-ui` instead of local files (paired with `refactor-to-thin-shell` change)
 
 ## Capabilities
 
@@ -27,7 +27,7 @@ The current `LoginPage`, `AuthProvider` React logic, and related auth UI live in
 
 **Affected code:**
 
-- New package `packages/auth-ui/` with source, tests, and build config (`tsdown` for library builds, like other `@mf-mono/*` packages)
+- New package `packages/auth-ui/` with source, tests, and build config (`tsdown` for library builds, like other `@mfe-runtine/*` packages)
 - `packages/auth-ui/src/LoginPage.tsx` — extracted, generalized with props API
 - `packages/auth-ui/src/LogoutPage.tsx` — new confirmation UI
 - `packages/auth-ui/src/SessionExpiredPage.tsx` — new UI shown when refresh fails after retries
@@ -37,12 +37,12 @@ The current `LoginPage`, `AuthProvider` React logic, and related auth UI live in
 - `packages/auth-ui/src/setupAuthBridge.ts` — helper that exposes `window.__MFE_AUTH__` from `tokenManager`
 - `packages/auth-ui/src/theme.ts` — corporate branding tokens (colors, fonts, logo URL default)
 - `packages/auth-ui/src/index.ts` — public exports
-- `packages/auth-ui/package.json` — declares peer deps on `react`, `react-dom`, `react-router` (all `^19`/`^8`) and dep on `@mf-mono/auth: workspace:*`
+- `packages/auth-ui/package.json` — declares peer deps on `react`, `react-dom`, `react-router` (all `^19`/`^8`) and dep on `@mfe-runtine/auth: workspace:*`
 
 **Affected dependencies:**
 
-- `apps/website/package.json` — adds `@mf-mono/auth-ui: workspace:*`
-- Shell repositories (future) — will add `@mf-mono/auth-ui: ^1.0.0` from npm
+- `apps/website/package.json` — adds `@mfe-runtine/auth-ui: workspace:*`
+- Shell repositories (future) — will add `@mfe-runtine/auth-ui: ^1.0.0` from npm
 
 **Affected tests:**
 

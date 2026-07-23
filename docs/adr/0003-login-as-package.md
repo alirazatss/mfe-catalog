@@ -14,12 +14,12 @@ Multiple shells share the same corporate branding for login. We need to decide w
 
 ## Decision
 
-**Login is a React component in `@mf-mono/auth-ui` npm package.**
+**Login is a React component in `@mfe-runtine/auth-ui` npm package.**
 
 Each shell imports and uses:
 
 ```typescript
-import { LoginPage } from '@mf-mono/auth-ui';
+import { LoginPage } from '@mfe-runtine/auth-ui';
 
 <Route path="/login" element={<LoginPage />} />
 ```
@@ -93,7 +93,7 @@ Include shared login code via git submodule.
 ### Package Structure
 
 ```
-@mf-mono/auth-ui/
+@mfe-runtine/auth-ui/
 ├── src/
 │   ├── LoginPage.tsx           ← Main login form
 │   ├── LogoutPage.tsx          ← Logout confirmation

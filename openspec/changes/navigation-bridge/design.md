@@ -1,6 +1,6 @@
 ## Context
 
-Cross-MFE navigation was originally implemented via a `mfe:navigate` custom event on the shared event bus (`@mf-mono/events`). The shell listens for that event and calls React Router's `useNavigate`. This worked for the fat-shell architecture but has several limitations for the Chrome MFE pattern:
+Cross-MFE navigation was originally implemented via a `mfe:navigate` custom event on the shared event bus (`@mfe-runtine/events`). The shell listens for that event and calls React Router's `useNavigate`. This worked for the fat-shell architecture but has several limitations for the Chrome MFE pattern:
 
 1. **No synchronous path access** — chrome MFEs (like the header) cannot ask "what's the current path?" without subscribing and waiting
 2. **No active-route detection** — highlighting the current nav item requires MFEs to reimplement URL matching
@@ -14,7 +14,7 @@ ADR-0005 defined the target API. This change implements it while preserving the 
 
 - `apps/website/src/components/NavigationEventListener.tsx` listens for `mfe:navigate` events and calls React Router's `useNavigate`
 - After `refactor-to-thin-shell`, that React component is deleted and the shell handles navigation in vanilla JS
-- `apps/mfe-widget/src/utils/navigation.ts` emits `mfe:navigate` events via `@mf-mono/events`
+- `apps/mfe-widget/src/utils/navigation.ts` emits `mfe:navigate` events via `@mfe-runtine/events`
 
 **Target state:**
 

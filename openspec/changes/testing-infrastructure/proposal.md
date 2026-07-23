@@ -5,7 +5,7 @@ The micro-frontend architecture requires comprehensive testing to ensure quality
 ## What Changes
 
 - Add Vitest testing infrastructure to all packages and apps
-- Implement unit tests for shared packages (@mf-mono/auth, @mf-mono/events)
+- Implement unit tests for shared packages (@mfe-runtine/auth, @mfe-runtine/events)
 - Implement unit tests for shell components and utilities
 - Implement integration tests for shell providers (AuthProvider, event bus integration)
 - Implement unit tests for MFE components and utilities

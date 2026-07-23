@@ -55,7 +55,7 @@ Example:
 
 ```json
 {
-  "name": "@mf-mono/mfe-widget",
+  "name": "@mfe-runtine/mfe-widget",
   "mfe": {
     "port": 5200,
     "scope": "customScope"

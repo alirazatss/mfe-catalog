@@ -36,7 +36,7 @@ Cross-MFE navigation today goes through the `mfe:navigate` event bus. This works
 **Affected dependencies:**
 
 - No new npm dependencies
-- Continues to depend on `@mf-mono/events` for backward-compatible event bus emissions
+- Continues to depend on `@mfe-runtine/events` for backward-compatible event bus emissions
 
 **Affected tests:**
 

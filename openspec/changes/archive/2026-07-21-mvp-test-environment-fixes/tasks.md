@@ -18,25 +18,25 @@ Fix 59 failing tests by configuring DOM environments and updating auth bridge mo
 - [ ] Open `packages/auth/vitest.config.ts`
 - [ ] Add `environment: 'happy-dom'` to test config
 - [ ] Verify no errors on file save
-- [ ] Run `pnpm -F @mf-mono/auth test:run` to confirm tests still pass
+- [ ] Run `pnpm -F @mfe-runtine/auth test:run` to confirm tests still pass
 
 ### 1.2 Add happy-dom environment to packages/auth-ui/vitest.config.ts
 
 - [ ] Open `packages/auth-ui/vitest.config.ts`
 - [ ] Add `environment: 'happy-dom'` to test config
-- [ ] Run `pnpm -F @mf-mono/auth-ui test:run` to confirm
+- [ ] Run `pnpm -F @mfe-runtine/auth-ui test:run` to confirm
 
 ### 1.3 Add happy-dom environment to packages/events/vitest.config.ts
 
 - [ ] Open `packages/events/vitest.config.ts`
 - [ ] Add `environment: 'happy-dom'` to test config
-- [ ] Run `pnpm -F @mf-mono/events test:run`
+- [ ] Run `pnpm -F @mfe-runtine/events test:run`
 
 ### 1.4 Add happy-dom environment to packages/dynamic-loader/vitest.config.ts
 
 - [ ] Open `packages/dynamic-loader/vitest.config.ts`
 - [ ] Add `environment: 'happy-dom'` to test config
-- [ ] Run `pnpm -F @mf-mono/dynamic-loader test:run`
+- [ ] Run `pnpm -F @mfe-runtine/dynamic-loader test:run`
 
 ### 1.5 Add happy-dom environment to apps/website/vitest.config.ts
 
@@ -48,7 +48,7 @@ Fix 59 failing tests by configuring DOM environments and updating auth bridge mo
 
 - [ ] Open `apps/mfe-widget/vitest.config.ts`
 - [ ] Add `environment: 'happy-dom'` to test config
-- [ ] Run `pnpm -F @mf-mono/mfe-widget test:run`
+- [ ] Run `pnpm -F @mfe-runtine/mfe-widget test:run`
 
 ### 1.7 Add happy-dom environment to remaining packages
 

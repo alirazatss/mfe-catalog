@@ -4,7 +4,7 @@
 
 ### Requirement: Package structure exists
 
-The system SHALL include a @mf-mono/monorepo-tools package with proper TypeScript configuration.
+The system SHALL include a @mfe-runtine/monorepo-tools package with proper TypeScript configuration.
 
 #### Scenario: Package directory exists
 
@@ -14,9 +14,9 @@ The system SHALL include a @mf-mono/monorepo-tools package with proper TypeScrip
 #### Scenario: Package.json configured correctly
 
 - **WHEN** `packages/monorepo-tools/package.json` is read
-- **THEN** name is `@mf-mono/monorepo-tools`
+- **THEN** name is `@mfe-runtine/monorepo-tools`
 - **AND** version is `0.1.0`
-- **AND** dependencies include `glob` and `@mf-mono/remote-config`
+- **AND** dependencies include `glob` and `@mfe-runtine/remote-config`
 
 #### Scenario: TypeScript configured correctly
 
@@ -76,7 +76,7 @@ The system SHALL build the monorepo-tools package using vite-plus.
 
 #### Scenario: Build produces output
 
-- **WHEN** `pnpm build --filter @mf-mono/monorepo-tools` is run
+- **WHEN** `pnpm build --filter @mfe-runtine/monorepo-tools` is run
 - **THEN** the command exits with code 0
 - **AND** `dist/index.mjs` is created
 - **AND** `dist/index.d.mts` is created

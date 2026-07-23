@@ -1,12 +1,12 @@
 /**
- * @mf-mono/auth-ui
+ * @mfe-runtine/auth-ui
  *
  * Corporate-branded auth UI components for shells consuming Keycloak-backed auth.
  *
  * Subpath imports:
- *   - `@mf-mono/auth-ui`         → full React UI (LoginPage, AuthProvider, etc.)
- *   - `@mf-mono/auth-ui/bridge`  → framework-agnostic window.__MFE_AUTH__ setup
- *   - `@mf-mono/auth-ui/theme`   → design tokens (no React dependency)
+ *   - `@mfe-runtine/auth-ui`         → full React UI (LoginPage, AuthProvider, etc.)
+ *   - `@mfe-runtine/auth-ui/bridge`  → framework-agnostic window.__MFE_AUTH__ setup
+ *   - `@mfe-runtine/auth-ui/theme`   → design tokens (no React dependency)
  *
  * See:
  * - docs/adr/0002-authentication-ownership.md

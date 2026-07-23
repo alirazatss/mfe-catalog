@@ -2,7 +2,7 @@
 
 ## 1. Add Dynamic Loader Dependency
 
-- [x] 1.1 Update `apps/website/package.json` to add `@mf-mono/dynamic-loader` dependency
+- [x] 1.1 Update `apps/website/package.json` to add `@mfe-runtine/dynamic-loader` dependency
 - [x] 1.2 Run `pnpm install` to link workspace package
 
 **Depends on**: mfe-dynamic-loader complete  

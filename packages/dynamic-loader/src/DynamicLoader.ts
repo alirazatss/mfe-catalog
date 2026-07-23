@@ -1,4 +1,4 @@
-import type { RemoteConfig, ChromeMFE, FeatureMFE, LegacyRemote } from "@mf-mono/remote-config";
+import type { RemoteConfig, ChromeMFE, FeatureMFE, LegacyRemote } from "@mfe-runtine/remote-config";
 import { LoaderEvents } from "./events.js";
 import { fetchConfig, type FetchConfigOptions } from "./config.js";
 import type { LoaderStatus, Container } from "./types.js";
@@ -11,6 +11,7 @@ export interface ResolvedMFE {
   name: string;
   entryUrl: string;
   scope: string;
+  version?: string;
   enabled: boolean;
   /** Original source: which section of the manifest this MFE came from */
   source: "chrome" | "feature" | "legacy";
@@ -272,6 +273,7 @@ export class DynamicLoader {
       name: entry.mfe,
       entryUrl: entry.entryUrl,
       scope: entry.scope ?? entry.mfe,
+      version: entry.version,
       enabled: entry.enabled !== false,
       source: "chrome",
       slot,
@@ -284,6 +286,7 @@ export class DynamicLoader {
       name: entry.mfe,
       entryUrl: entry.entryUrl,
       scope: entry.scope ?? entry.mfe,
+      version: entry.version,
       enabled: entry.enabled !== false,
       source: "feature",
       routePrefix,
@@ -300,6 +303,7 @@ export class DynamicLoader {
       name: entry.name,
       entryUrl: entry.entryUrl,
       scope: entry.scope,
+      version: entry.version,
       enabled: entry.enabled !== false,
       source: "legacy",
     };

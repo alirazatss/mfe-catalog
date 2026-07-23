@@ -2,7 +2,7 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
-    name: "@mf-mono/dynamic-loader",
+    name: "@mfe-runtine/dynamic-loader",
     environment: "happy-dom",
     globals: true,
     coverage: {

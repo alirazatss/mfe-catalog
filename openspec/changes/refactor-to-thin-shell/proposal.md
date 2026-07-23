@@ -31,7 +31,7 @@ The current shell (`apps/website`) contains ~476 lines of business logic (AuthPr
 - `apps/website/src/main.tsx` — becomes primary entry point (~50 lines)
 - `apps/website/src/providers/AuthProvider.tsx` — logic preserved, React wrapper removed
 - `apps/website/src/components/Layout.tsx` — removed (migrates to `mfe-header` in future change)
-- `apps/website/src/components/LoginPage.tsx` — removed (migrates to `@mf-mono/auth-ui` in future change)
+- `apps/website/src/components/LoginPage.tsx` — removed (migrates to `@mfe-runtine/auth-ui` in future change)
 - `apps/website/src/components/ProtectedRoute.tsx` — removed (auth check moves to bootstrap)
 - `apps/website/index.html` — adds slot placeholders and base grid CSS
 - `apps/website/src/style.css` — reduced to layout-only CSS

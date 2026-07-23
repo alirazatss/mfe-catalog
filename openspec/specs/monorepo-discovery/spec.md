@@ -86,12 +86,12 @@ The system SHALL derive Module Federation scope by converting package name to ca
 
 #### Scenario: Scoped package name converted
 
-- **WHEN** package name is `@mf-mono/mfe-widget`
+- **WHEN** package name is `@mfe-runtine/mfe-widget`
 - **THEN** scope is `widget` (strips scope and mfe- prefix, camelCase)
 
 #### Scenario: Multi-word name converted
 
-- **WHEN** package name is `@mf-mono/mfe-user-profile`
+- **WHEN** package name is `@mfe-runtine/mfe-user-profile`
 - **THEN** scope is `userProfile` (camelCase conversion)
 
 #### Scenario: Custom scope override
@@ -133,8 +133,8 @@ The system SHALL read each discovered micro-frontend's package.json and extract 
 
 #### Scenario: Package.json metadata extracted
 
-- **WHEN** `apps/mfe-widget/package.json` contains `{ "name": "@mf-mono/mfe-widget", "version": "1.0.0", "description": "Counter widget" }`
-- **THEN** discovery SHALL extract name as "mfe-widget" (strip @mf-mono/ prefix)
+- **WHEN** `apps/mfe-widget/package.json` contains `{ "name": "@mfe-runtine/mfe-widget", "version": "1.0.0", "description": "Counter widget" }`
+- **THEN** discovery SHALL extract name as "mfe-widget" (strip @mfe-runtine/ prefix)
 - **AND** discovery SHALL extract version as "1.0.0"
 - **AND** discovery SHALL extract description as "Counter widget"
 
@@ -223,7 +223,7 @@ The system SHALL expose programmatic API for discovering micro-frontends.
 Example TypeScript usage:
 
 ```typescript
-import { discoverMicroFrontends } from "@mf-mono/monorepo-tools";
+import { discoverMicroFrontends } from "@mfe-runtine/monorepo-tools";
 
 const mfes = await discoverMicroFrontends();
 // [

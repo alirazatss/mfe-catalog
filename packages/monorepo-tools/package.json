@@ -1,5 +1,5 @@
 {
-  "name": "@mf-mono/monorepo-tools",
+  "name": "@mfe-runtine/monorepo-tools",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
     "dev": "vp pack --watch"
   },
   "dependencies": {
-    "@mf-mono/remote-config": "workspace:*",
+    "@mfe-runtine/remote-config": "workspace:*",
     "glob": "catalog:"
   },
   "devDependencies": {

@@ -4,7 +4,7 @@
 - [ ] 1.2 Create `packages/auth/package.json` with dependencies (no external deps needed)
 - [ ] 1.3 Create `packages/auth/tsconfig.json` extending base config
 - [ ] 1.4 Add build script to `packages/auth/package.json`
-- [ ] 1.5 Add `@mf-mono/auth` to workspace in `pnpm-workspace.yaml`
+- [ ] 1.5 Add `@mfe-runtine/auth` to workspace in `pnpm-workspace.yaml`
 
 **Depends on**: None (starting point)  
 **Skill**: Backend developer  

@@ -187,7 +187,7 @@ it("should handle async operations", async () => {
 ### Testing Event Bus
 
 ```tsx
-import { eventBus, MFE_EVENTS } from "@mf-mono/events";
+import { eventBus, MFE_EVENTS } from "@mfe-runtine/events";
 
 it("should emit event on action", () => {
   const handler = vi.fn();

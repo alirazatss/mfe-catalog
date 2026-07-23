@@ -28,7 +28,7 @@ The **thin host container** that owns a domain and orchestrates MFE loading.
 **What shell DOES NOT do:**
 
 - No React components (except optional error boundary)
-- No auth UI (that's in `@mf-mono/auth-ui`)
+- No auth UI (that's in `@mfe-runtine/auth-ui`)
 - No navigation logic (that's in `mfe-header`)
 - No feature logic (that's in feature MFEs)
 
@@ -99,10 +99,10 @@ Used by both shells and MFEs, must be npm.
 
 **Examples:**
 
-- `@mf-mono/auth` - TokenManager logic (no UI)
-- `@mf-mono/auth-ui` - LoginPage, LogoutPage components
-- `@mf-mono/dynamic-loader` - MFE loader utility
-- `@mf-mono/events` - EventBus for cross-MFE communication
+- `@mfe-runtine/auth` - TokenManager logic (no UI)
+- `@mfe-runtine/auth-ui` - LoginPage, LogoutPage components
+- `@mfe-runtine/dynamic-loader` - MFE loader utility
+- `@mfe-runtine/events` - EventBus for cross-MFE communication
 
 #### MFE-Only Shared (workspace dependency)
 
@@ -256,10 +256,10 @@ A **global API** exposed by the shell for cross-MFE navigation.
 │      └── deploy-changed-to-cdn.yml                          │
 │                                                             │
 │  Also publishes to npm (used by shells):                    │
-│  ├── @mf-mono/auth         (TokenManager)                  │
-│  ├── @mf-mono/auth-ui      (LoginPage)                     │
-│  ├── @mf-mono/dynamic-loader (MFE loader)                  │
-│  └── @mf-mono/events       (EventBus)                      │
+│  ├── @mfe-runtine/auth         (TokenManager)                  │
+│  ├── @mfe-runtine/auth-ui      (LoginPage)                     │
+│  ├── @mfe-runtine/dynamic-loader (MFE loader)                  │
+│  └── @mfe-runtine/events       (EventBus)                      │
 └────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────┐
@@ -280,9 +280,9 @@ A **global API** exposed by the shell for cross-MFE navigation.
 │  ├── manifest-prod.json                                     │
 │  ├── package.json                                           │
 │  │   dependencies:                                          │
-│  │     "@mf-mono/auth": "^1.0.0"                           │
-│  │     "@mf-mono/auth-ui": "^1.0.0"                        │
-│  │     "@mf-mono/dynamic-loader": "^1.0.0"                 │
+│  │     "@mfe-runtine/auth": "^1.0.0"                           │
+│  │     "@mfe-runtine/auth-ui": "^1.0.0"                        │
+│  │     "@mfe-runtine/dynamic-loader": "^1.0.0"                 │
 │  └── .github/workflows/deploy-k8s.yml                       │
 └────────────────────────────────────────────────────────────┘
 
@@ -307,7 +307,7 @@ A **global API** exposed by the shell for cross-MFE navigation.
 3. Shell.ts bootstrap begins:
    ├── tokenManager.initialize() → checks HttpOnly cookie
    ├── If cookie: refreshes and gets access token
-   ├── If no cookie: renders <LoginPage /> from @mf-mono/auth-ui
+   ├── If no cookie: renders <LoginPage /> from @mfe-runtine/auth-ui
    └── Sets up window.__MFE_AUTH__ global
    ↓
 4. Fetch manifest-prod.json
@@ -358,12 +358,12 @@ A **global API** exposed by the shell for cross-MFE navigation.
 
 **Package split:**
 
-- `@mf-mono/auth` - TokenManager class only (no UI)
-- `@mf-mono/auth-ui` - LoginPage/LogoutPage components (corporate branded)
+- `@mfe-runtine/auth` - TokenManager class only (no UI)
+- `@mfe-runtine/auth-ui` - LoginPage/LogoutPage components (corporate branded)
 
 ### 3. Login Location (ADR-0003)
 
-**Login is NOT an MFE.** It's a React component in `@mf-mono/auth-ui` npm package.
+**Login is NOT an MFE.** It's a React component in `@mfe-runtine/auth-ui` npm package.
 
 **Why:**
 
@@ -544,7 +544,7 @@ federation({
 **Coordination mechanisms:**
 
 - **PNPM catalog** - Source of truth for versions in mf-catalog
-- **`@mf-mono/versions`** - npm package publishes required/supported versions
+- **`@mfe-runtine/versions`** - npm package publishes required/supported versions
 - **Runtime validation** - Shell checks MFE versions on load
 - **Compatibility matrix** - Documented per-MFE version status
 
@@ -614,7 +614,7 @@ shared: {
 ### Phase 0: Thin-Shell Refactor (in-progress)
 
 - [x] `refactor-to-thin-shell` — vanilla shell bootstrap, slot-based mounting, manifest v2 (chrome+features), route guards
-- [ ] `extract-auth-ui-package` — LoginPage / AuthProvider live in `@mf-mono/auth-ui`
+- [ ] `extract-auth-ui-package` — LoginPage / AuthProvider live in `@mfe-runtine/auth-ui`
 - [ ] `mfe-lifecycle-contract` — MFEs export `bootstrap`/`mount`/`unmount`/`update`
 - [ ] `navigation-bridge` — `window.__MFE_NAVIGATION__` global
 - [ ] `chrome-mfe-header` — first chrome MFE
@@ -622,9 +622,9 @@ shared: {
 
 ### Phase 1: Package Preparation
 
-- [ ] Extract auth logic to `@mf-mono/auth` (no UI)
-- [ ] Create `@mf-mono/auth-ui` with LoginPage component
-- [ ] Enhance `@mf-mono/dynamic-loader` for slot-based mounting
+- [ ] Extract auth logic to `@mfe-runtine/auth` (no UI)
+- [ ] Create `@mfe-runtine/auth-ui` with LoginPage component
+- [ ] Enhance `@mfe-runtine/dynamic-loader` for slot-based mounting
 - [ ] Publish packages to npm registry
 - [ ] Document package APIs
 

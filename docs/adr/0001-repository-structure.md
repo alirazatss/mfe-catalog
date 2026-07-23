@@ -29,7 +29,7 @@ Split into **four repository types**:
 ### Alternative 1: Single Monorepo (current state)
 
 ```
-mf-mono/
+mfe-runtine/
 ├── apps/website, apps/mfe-widget
 ├── packages/*
 └── .github/workflows/ (12+ workflow files for 3 shells × 4 envs)

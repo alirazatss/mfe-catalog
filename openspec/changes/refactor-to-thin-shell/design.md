@@ -49,7 +49,7 @@ The current shell (`apps/website`) evolved from a demo/prototype into a producti
 **Non-Goals:**
 
 - Creating the header/sidebar/footer chrome MFEs (deferred to `chrome-mfe-header` change)
-- Extracting `LoginPage` into `@mf-mono/auth-ui` (deferred to `extract-auth-ui-package` change)
+- Extracting `LoginPage` into `@mfe-runtine/auth-ui` (deferred to `extract-auth-ui-package` change)
 - Migrating MFEs to lifecycle contract (deferred to `mfe-lifecycle-contract` change)
 - Introducing the navigation bridge API (deferred to `navigation-bridge` change)
 - Multi-shell repository split (deferred to a later infrastructure change)
@@ -98,7 +98,7 @@ Add four fixed slot elements at build time:
 - Dynamic slot creation from manifest (rejected — adds runtime complexity, harder to CSS-target)
 - Web Components with `<slot>` (rejected — requires shadow DOM strategy first)
 
-### Decision 3: Preserve `TokenManager` (`@mf-mono/auth`), delete `AuthProvider` React wrapper
+### Decision 3: Preserve `TokenManager` (`@mfe-runtine/auth`), delete `AuthProvider` React wrapper
 
 `packages/auth/TokenManager.ts` is framework-agnostic and stays. `apps/website/src/providers/AuthProvider.tsx` (React Context wrapper) is deleted. The shell bootstrap calls `tokenManager.initialize()` directly and exposes state on `window.__MFE_AUTH__`.
 

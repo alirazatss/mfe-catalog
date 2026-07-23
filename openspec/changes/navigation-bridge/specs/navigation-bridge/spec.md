@@ -2,7 +2,7 @@
 
 ### Requirement: Shell SHALL expose `window.__MFE_NAVIGATION__` global bridge
 
-The shell bootstrap SHALL create a Navigation Bridge instance and expose it at `window.__MFE_NAVIGATION__` matching the `MFENavigationAPI` interface exported from `@mf-mono/dynamic-loader`.
+The shell bootstrap SHALL create a Navigation Bridge instance and expose it at `window.__MFE_NAVIGATION__` matching the `MFENavigationAPI` interface exported from `@mfe-runtine/dynamic-loader`.
 
 #### Scenario: Bridge exposed at bootstrap
 

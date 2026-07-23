@@ -1,5 +1,5 @@
 {
-  "name": "@mf-mono/dynamic-loader",
+  "name": "@mfe-runtine/dynamic-loader",
   "version": "0.1.0",
   "description": "Runtime dynamic loader for Module Federation micro-frontends",
   "keywords": [
@@ -26,7 +26,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@mf-mono/remote-config": "workspace:*"
+    "@mfe-runtine/remote-config": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -1,8 +1,8 @@
 ## 1. Package Scaffold
 
-- [ ] 1.1 Create `apps/mfe-header/` with `package.json` (name `@mf-mono/mfe-header`, private, version `0.1.0`)
+- [ ] 1.1 Create `apps/mfe-header/` with `package.json` (name `@mfe-runtine/mfe-header`, private, version `0.1.0`)
 - [ ] 1.2 Copy the workspace structure from `apps/mfe-widget/` as a starting point (vite config, tsconfig, vitest config)
-- [ ] 1.3 Add dependencies: `react`, `react-dom` via catalog; workspace deps on `@mf-mono/auth`, `@mf-mono/events`, `@mf-mono/dynamic-loader` (for types)
+- [ ] 1.3 Add dependencies: `react`, `react-dom` via catalog; workspace deps on `@mfe-runtine/auth`, `@mfe-runtine/events`, `@mfe-runtine/dynamic-loader` (for types)
 - [ ] 1.4 Add dev dependencies aligned with widget (testing-library, happy-dom, `@module-federation/vite`)
 - [ ] 1.5 Configure `vite.config.ts` with Module Federation: `name: "header"`, `exposes: { "./lifecycle": "./src/index.tsx", "./Header": "./src/Header.tsx" }`, shared React singletons
 - [ ] 1.6 Configure `vitest.config.ts` with happy-dom env, coverage thresholds (statements 90, branches 85, functions 90, lines 90)
@@ -103,7 +103,7 @@
 
 ## 14. Verification
 
-- [ ] 14.1 `pnpm build --filter @mf-mono/mfe-header` succeeds with size under 50 KB
+- [ ] 14.1 `pnpm build --filter @mfe-runtine/mfe-header` succeeds with size under 50 KB
 - [ ] 14.2 `pnpm test` at repo root passes (existing 117+ tests plus new header tests)
 - [ ] 14.3 Manual verification: shell renders the header on load; navigating between routes preserves the header; token refresh updates the user menu
 - [ ] 14.4 Manual verification: opening the shell without `window.__MFE_AUTH__` (simulate misconfig) renders unauthenticated header and logs a warning

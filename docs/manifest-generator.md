@@ -144,7 +144,7 @@ Unit tests are located in `packages/monorepo-tools/src/`:
 Run tests:
 
 ```bash
-pnpm test --filter @mf-mono/monorepo-tools
+pnpm test --filter @mfe-runtine/monorepo-tools
 ```
 
 ## Integration with Shell
@@ -153,7 +153,7 @@ The shell application can fetch and consume the manifest:
 
 ```typescript
 import { fetchManifest } from "./shell/manifest";
-import { DynamicLoader } from "@mf-mono/dynamic-loader";
+import { DynamicLoader } from "@mfe-runtine/dynamic-loader";
 
 const manifest = await fetchManifest("https://cdn.example.com/manifest.json");
 const loader = new DynamicLoader();

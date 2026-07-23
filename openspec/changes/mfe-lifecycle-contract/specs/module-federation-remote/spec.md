@@ -2,7 +2,7 @@
 
 ### Requirement: Remote application SHALL expose components as federated modules
 
-The remote application SHALL expose a `./lifecycle` module as its primary Module Federation entry point. The `./lifecycle` module SHALL implement the `MFELifecycle` contract from `@mf-mono/dynamic-loader`. Remotes MAY additionally expose framework-specific artefacts (e.g., `./App` React component) for testing or ad-hoc usage.
+The remote application SHALL expose a `./lifecycle` module as its primary Module Federation entry point. The `./lifecycle` module SHALL implement the `MFELifecycle` contract from `@mfe-runtine/dynamic-loader`. Remotes MAY additionally expose framework-specific artefacts (e.g., `./App` React component) for testing or ad-hoc usage.
 
 **(Previously: Remotes exposed React components directly via `./App`, and hosts imported them with `React.lazy`)**
 

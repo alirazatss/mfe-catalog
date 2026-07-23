@@ -43,7 +43,7 @@ The system SHALL allow MFEs to import configService singleton as alternative to 
 
 #### Scenario: MFE imports config service
 
-- **WHEN** MFE imports configService from @mf-mono/config
+- **WHEN** MFE imports configService from @mfe-runtine/config
 - **THEN** MFE receives same instance as shell
 - **AND** config values are accessible
 

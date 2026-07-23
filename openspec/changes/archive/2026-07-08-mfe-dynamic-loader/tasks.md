@@ -3,9 +3,9 @@
 ## 1. Create Dynamic Loader Package Structure
 
 - [ ] 1.1 Create `packages/dynamic-loader/` directory
-- [ ] 1.2 Initialize package.json: name `@mf-mono/dynamic-loader`, version `0.1.0`
+- [ ] 1.2 Initialize package.json: name `@mfe-runtine/dynamic-loader`, version `0.1.0`
 - [ ] 1.3 Add TypeScript config with strict mode
-- [ ] 1.4 Add dependency: `@mf-mono/remote-config` (workspace protocol)
+- [ ] 1.4 Add dependency: `@mfe-runtine/remote-config` (workspace protocol)
 - [ ] 1.5 Create src/ structure: `DynamicLoader.ts`, `config.ts`, `events.ts`
 - [ ] 1.6 Export DynamicLoader class from `index.ts`
 
@@ -20,7 +20,7 @@
 - [ ] 2.3 Implement environment detection (NODE_ENV) for config file selection
 - [ ] 2.4 Implement fallback chain: `.{env}.json` → `.json`
 - [ ] 2.5 Add retry logic (2 retries with 1-second delay)
-- [ ] 2.6 Integrate validation using `@mf-mono/remote-config`
+- [ ] 2.6 Integrate validation using `@mfe-runtine/remote-config`
 - [ ] 2.7 Cache validated config in memory
 - [ ] 2.8 Write unit tests for config fetching
 

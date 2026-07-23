@@ -2,7 +2,7 @@
 
 ### Requirement: Package SHALL provide a customizable `LoginPage` component
 
-The `@mf-mono/auth-ui` package SHALL export a React `LoginPage` component that renders a corporate-branded login form and delegates authentication to `TokenManager` from `@mf-mono/auth`.
+The `@mfe-runtine/auth-ui` package SHALL export a React `LoginPage` component that renders a corporate-branded login form and delegates authentication to `TokenManager` from `@mfe-runtine/auth`.
 
 #### Scenario: Login succeeds with default branding
 
@@ -146,7 +146,7 @@ The package SHALL export a `theme.ts` module and a set of CSS custom properties 
 
 #### Scenario: Theme tokens exported as JavaScript object
 
-- **GIVEN** a consumer imports `theme` from `@mf-mono/auth-ui`
+- **GIVEN** a consumer imports `theme` from `@mfe-runtine/auth-ui`
 - **WHEN** the consumer reads `theme.colors.primary`
 - **THEN** the value SHALL be a valid CSS color string
 - **AND** the object SHALL include `colors.primary`, `colors.background`, `colors.error`, `fonts.body`, `radii.md`
@@ -166,13 +166,13 @@ The package SHALL provide subpath exports so consumers can import only the surfa
 
 #### Scenario: Login subpath import
 
-- **GIVEN** a shell imports `import { LoginPage } from '@mf-mono/auth-ui/login'`
+- **GIVEN** a shell imports `import { LoginPage } from '@mfe-runtine/auth-ui/login'`
 - **WHEN** the bundler builds the shell
 - **THEN** unused modules (`LogoutPage`, `ForgotPasswordPage`, `AuthProvider`, `setupAuthBridge`) SHALL NOT appear in the final shell bundle
 
 #### Scenario: Bridge subpath import
 
-- **GIVEN** a vanilla shell imports `import { setupAuthBridge } from '@mf-mono/auth-ui/bridge'`
+- **GIVEN** a vanilla shell imports `import { setupAuthBridge } from '@mfe-runtine/auth-ui/bridge'`
 - **WHEN** the bundler builds the shell
 - **THEN** no React components SHALL be included in the final shell bundle
 - **AND** React SHALL NOT be resolved as a dependency of the bridge import

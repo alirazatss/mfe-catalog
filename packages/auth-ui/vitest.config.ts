@@ -2,7 +2,7 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
-    name: "@mf-mono/auth-ui",
+    name: "@mfe-runtine/auth-ui",
     environment: "happy-dom",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],

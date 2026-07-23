@@ -4,7 +4,7 @@ Micro-frontends need environment-specific configuration (API base URLs, feature 
 
 ## What Changes
 
-- **Config Package**: Create `@mf-mono/config` package with runtime configuration loader
+- **Config Package**: Create `@mfe-runtine/config` package with runtime configuration loader
 - **Environment Detection**: Auto-detect environment from hostname or explicit override
 - **Config Provider**: Shell loads config once at startup, shares with all MFEs via props and singleton
 - **Type Safety**: TypeScript interfaces for all config values with IntelliSense support

@@ -78,7 +78,7 @@ All tests are written and can be run (once monorepo-tools package.json has test 
 pnpm test
 
 # Run specific package tests
-pnpm test --filter @mf-mono/monorepo-tools
+pnpm test --filter @mfe-runtine/monorepo-tools
 ```
 
 ## What's Ready for Production MVP

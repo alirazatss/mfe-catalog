@@ -29,7 +29,7 @@ Deletion happens as part of the follow-up changes:
 | `components/NotFoundPage.tsx`            | `index.html` template `shell-template-not-found` | this change                   |
 | `components/ErrorBoundary.tsx`           | `graceful-failure-boundaries` change             | `graceful-failure-boundaries` |
 | `components/LoadingSpinner.tsx`          | future MFE-owned loading UI                      | MFEs bring their own          |
-| `pages/Login.tsx`                        | login page in `@mf-mono/auth-ui`                 | `extract-auth-ui-package`     |
+| `pages/Login.tsx`                        | login page in `@mfe-runtine/auth-ui`             | `extract-auth-ui-package`     |
 | `providers/*`                            | superseded by `window.__MFE_AUTH__` bridge       | this change                   |
 | `config/remotes.ts`                      | replaced by `apps/website/src/shell/manifest.ts` | this change                   |
 | `hooks/*`                                | absorbed into MFE-side utilities                 | this change                   |

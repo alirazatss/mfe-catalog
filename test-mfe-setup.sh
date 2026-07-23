@@ -37,8 +37,8 @@ sleep 1
 
 # Start MFE dev server
 log_info "Starting MFE dev server on port 5174..."
-cd /Users/ali.raza/dev/mf-mono
-pnpm turbo dev --filter '@mf-mono/mfe-widget' > /tmp/mfe-dev.log 2>&1 &
+cd /Users/ali.raza/dev/mfe-runtine
+pnpm turbo dev --filter '@mfe-runtine/mfe-widget' > /tmp/mfe-dev.log 2>&1 &
 MFE_PID=$!
 PIDS+=($MFE_PID)
 
@@ -105,7 +105,7 @@ done
 # Test 3: Check shell loads
 log_info "Test 3: Checking shell loads..."
 SHELL_HTML=$(curl -s http://localhost:5173/)
-if echo "$SHELL_HTML" | grep -q "app\|mf-mono"; then
+if echo "$SHELL_HTML" | grep -q "app\|mfe-runtine"; then
   log_success "Shell HTML loads successfully"
 else
   log_error "Shell HTML doesn't load properly"

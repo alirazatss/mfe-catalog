@@ -5,7 +5,7 @@ import LoadingSpinner from "./components/LoadingSpinner.js";
 import ErrorBoundary from "./components/ErrorBoundary.js";
 import { ProtectedRoute } from "./components/ProtectedRoute.js";
 import { useAuth } from "./providers/AuthProvider.js";
-import { tokenManager } from "@mf-mono/auth";
+import { tokenManager } from "@mfe-runtine/auth";
 
 // Lazy-load pages
 const HomePage = lazy(() => import("./components/HomePage.js"));

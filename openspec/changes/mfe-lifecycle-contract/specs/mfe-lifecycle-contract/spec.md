@@ -37,11 +37,11 @@ Every micro-frontend loaded through the dynamic loader SHALL export `bootstrap`,
 
 ### Requirement: `MFEProps` SHALL be the shared prop shape between shell and MFEs
 
-The `@mf-mono/dynamic-loader` package SHALL export a `MFEProps` TypeScript interface that captures the props flowing from the shell to every MFE.
+The `@mfe-runtine/dynamic-loader` package SHALL export a `MFEProps` TypeScript interface that captures the props flowing from the shell to every MFE.
 
 #### Scenario: `MFEProps` provides required and optional fields
 
-- **GIVEN** a developer imports `MFEProps` from `@mf-mono/dynamic-loader`
+- **GIVEN** a developer imports `MFEProps` from `@mfe-runtine/dynamic-loader`
 - **WHEN** the interface is inspected
 - **THEN** the interface SHALL require `container: HTMLElement`
 - **AND** SHALL optionally include `slot`, `user`, `isAuthenticated`, `theme`, `locale`, `basePath`, `config`, `onNavigate`

@@ -2,7 +2,7 @@
 
 **Analysis Date**: 2026-07-09  
 **Core Framework**: `/Users/ali.raza/dev/core-framework`  
-**MF Mono**: `/Users/ali.raza/dev/mf-mono`
+**MF Mono**: `/Users/ali.raza/dev/mfe-runtine`
 
 ---
 

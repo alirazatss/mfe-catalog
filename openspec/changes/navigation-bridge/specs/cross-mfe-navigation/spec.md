@@ -2,7 +2,7 @@
 
 ### Requirement: MFEs SHALL emit navigation events for cross-MFE routing
 
-Micro-frontends SHALL request cross-MFE navigation by calling `window.__MFE_NAVIGATION__.navigate(path, options?)` when the bridge is available. MFEs MAY dispatch a `mfe:navigate` custom event via `@mf-mono/events` as a fallback when the bridge is not yet initialized.
+Micro-frontends SHALL request cross-MFE navigation by calling `window.__MFE_NAVIGATION__.navigate(path, options?)` when the bridge is available. MFEs MAY dispatch a `mfe:navigate` custom event via `@mfe-runtine/events` as a fallback when the bridge is not yet initialized.
 
 **(Previously: MFEs SHALL dispatch the `mfe:navigate` custom event as the only mechanism)**
 

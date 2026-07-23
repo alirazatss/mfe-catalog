@@ -116,9 +116,9 @@ Each feature MFE brings its own header/footer.
 ### Shell Bootstrap (shell.ts)
 
 ```typescript
-import { tokenManager } from "@mf-mono/auth";
-import { setupAuthBridge } from "@mf-mono/auth";
-import { MFELoader } from "@mf-mono/dynamic-loader";
+import { tokenManager } from "@mfe-runtine/auth";
+import { setupAuthBridge } from "@mfe-runtine/auth";
+import { MFELoader } from "@mfe-runtine/dynamic-loader";
 
 async function bootstrap() {
   // 1. Initialize authentication

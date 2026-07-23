@@ -1,5 +1,5 @@
-import { validateRemoteConfig } from "@mf-mono/remote-config";
-import type { RemoteConfig } from "@mf-mono/remote-config";
+import { validateRemoteConfig } from "@mfe-runtine/remote-config";
+import type { RemoteConfig } from "@mfe-runtine/remote-config";
 
 /**
  * Config fetch options

@@ -42,7 +42,7 @@ The thin shell (from `refactor-to-thin-shell`) leaves the `header-slot` empty ex
 
 **Affected dependencies:**
 
-- `apps/mfe-header/package.json` — `react`, `react-dom` (peer/direct via catalog), `@mf-mono/dynamic-loader: workspace:*` (for types), `@mf-mono/events: workspace:*` (for navigation event fallback), `@mf-mono/auth: workspace:*` (for JWT decode utility)
+- `apps/mfe-header/package.json` — `react`, `react-dom` (peer/direct via catalog), `@mfe-runtine/dynamic-loader: workspace:*` (for types), `@mfe-runtine/events: workspace:*` (for navigation event fallback), `@mfe-runtine/auth: workspace:*` (for JWT decode utility)
 - No new npm dependencies
 
 **Affected tests:**
@@ -54,5 +54,5 @@ The thin shell (from `refactor-to-thin-shell`) leaves the `header-slot` empty ex
 
 - Requires `mfe-lifecycle-contract` change to be in place (loader must support the contract)
 - Requires the manifest schema to include `chrome` section (from `refactor-to-thin-shell` change)
-- Corporate branding tokens must align with `@mf-mono/auth-ui` — coordinate with Design team; short-term, inline the corporate colors here and refactor into `@mf-mono/ui-components` in a later change
+- Corporate branding tokens must align with `@mfe-runtine/auth-ui` — coordinate with Design team; short-term, inline the corporate colors here and refactor into `@mfe-runtine/ui-components` in a later change
 - CDN deployment pipeline is not built yet — during this change, the MFE is served via `pnpm dev` and the shell manifest points at localhost; production CDN deploy is a follow-up infrastructure change

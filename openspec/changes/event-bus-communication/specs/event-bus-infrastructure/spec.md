@@ -6,8 +6,8 @@ The system SHALL provide a singleton EventBus instance shared across shell and a
 
 #### Scenario: Single event bus instance shared
 
-- **WHEN** shell imports eventBus from @mf-mono/events
-- **AND** MFE imports eventBus from @mf-mono/events
+- **WHEN** shell imports eventBus from @mfe-runtine/events
+- **AND** MFE imports eventBus from @mfe-runtine/events
 - **THEN** both receive the same instance (reference equality)
 - **AND** events emitted by shell are received by MFE listeners
 

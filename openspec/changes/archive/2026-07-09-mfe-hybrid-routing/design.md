@@ -466,7 +466,7 @@ const basePath = import.meta.env.MODE === "standalone" ? "/" : "/products";
 
 ## Open Questions
 
-1. **Should we create a shared `@mf-mono/routing-utils` package?**
+1. **Should we create a shared `@mfe-runtine/routing-utils` package?**
    - Utilities for: `navigateTo()`, `useMFERouter()`, route config types
    - Pro: Reduces duplication across MFEs
    - Con: Adds dependency coupling

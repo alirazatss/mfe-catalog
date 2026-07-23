@@ -211,7 +211,7 @@ POST /api/auth/logout
   },
   "auth": {
     "keycloakUrl": "http://localhost:8080",
-    "realm": "mf-mono",
+    "realm": "mfe-runtine",
     "clientId": "frontend"
   },
   "features": {

@@ -1,4 +1,27 @@
-import type { RemoteConfig, Remote } from "@mf-mono/remote-config";
+import type { RemoteConfig } from "@mfe-runtine/remote-config";
+
+export interface MFEProps {
+  container: HTMLElement;
+  slot?: string;
+  user?: unknown;
+  isAuthenticated?: boolean;
+  theme?: string;
+  locale?: string;
+  basePath?: string;
+  config?: Record<string, unknown>;
+  onNavigate?: (
+    path: string,
+    options?: { replace?: boolean; state?: unknown },
+  ) => void | Promise<void>;
+  [key: string]: unknown;
+}
+
+export interface MFELifecycle {
+  bootstrap?: (props: MFEProps) => Promise<void>;
+  mount: (props: MFEProps) => Promise<void>;
+  unmount: (props: MFEProps) => Promise<void>;
+  update?: (props: MFEProps) => Promise<void>;
+}
 
 /**
  * Loader status information

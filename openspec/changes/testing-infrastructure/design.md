@@ -2,7 +2,7 @@
 
 ## Context
 
-Currently, the mf-mono project has zero test coverage. As the codebase grows and production deployment approaches, we need comprehensive testing to:
+Currently, the mfe-runtine project has zero test coverage. As the codebase grows and production deployment approaches, we need comprehensive testing to:
 
 - Prevent regressions during rapid development
 - Enable confident refactoring

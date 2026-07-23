@@ -22,7 +22,7 @@
 - [x] 2.2 Add `generateConfig()` function that takes discovered mfes + options
 - [x] 2.3 Implement environment-specific URL generation (dev: localhost, prod: /mfe-{name}/)
 - [x] 2.4 Support git hash versioning via environment variable VITE_GIT_HASH
-- [x] 2.5 Derive scope from package name (camelCase, strip @mf-mono/ prefix)
+- [x] 2.5 Derive scope from package name (camelCase, strip @mfe-runtine/ prefix)
 - [x] 2.6 Add $schema reference to generated config
 - [x] 2.7 Validate generated config against JSON Schema before returning
 - [x] 2.8 Return generated config object
@@ -50,7 +50,7 @@
 ## 4. Integrate into Turborepo Pipeline
 
 - [x] 4.1 Update `turbo.json` to add `generate:config` task
-- [x] 4.2 Configure task with `"dependsOn": ["@mf-mono/monorepo-tools#build"]`
+- [x] 4.2 Configure task with `"dependsOn": ["@mfe-runtine/monorepo-tools#build"]`
 - [x] 4.3 Configure task with `"outputs": ["apps/website/public/remotes.config.json"]`
 - [x] 4.4 Add `prebuild` script to website package.json
 - [x] 4.5 Update website build task to depend on generate:config

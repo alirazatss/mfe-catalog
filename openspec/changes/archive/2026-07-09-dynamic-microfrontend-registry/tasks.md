@@ -17,7 +17,7 @@
 ## 2. Rename Existing Remote to Follow Convention
 
 - [ ] 2.1 Rename `apps/remote-widget/` to `apps/mfe-widget/`
-- [ ] 2.2 Update `apps/mfe-widget/package.json` name to `@mf-mono/mfe-widget`
+- [ ] 2.2 Update `apps/mfe-widget/package.json` name to `@mfe-runtine/mfe-widget`
 - [ ] 2.3 Update all import paths referencing remote-widget
 - [ ] 2.4 Update root `package.json` scripts (dev:remote → dev:mfe-widget)
 - [ ] 2.5 Test: `turbo build` should build mfe-widget successfully
@@ -30,10 +30,10 @@
 ## 3. Create Monorepo Tools Package Structure
 
 - [ ] 3.1 Create `packages/monorepo-tools/` directory
-- [ ] 3.2 Initialize package.json: name `@mf-mono/monorepo-tools`, version `0.1.0`
+- [ ] 3.2 Initialize package.json: name `@mfe-runtine/monorepo-tools`, version `0.1.0`
 - [ ] 3.3 Add TypeScript config with strict mode
 - [ ] 3.4 Create src/ directory structure: `discovery.ts`, `config-generator.ts`, `types.ts`
-- [ ] 3.5 Add dependencies: `glob`, `@mf-mono/remote-config` (workspace protocol)
+- [ ] 3.5 Add dependencies: `glob`, `@mfe-runtine/remote-config` (workspace protocol)
 - [ ] 3.6 Export main functions from `index.ts`
 - [ ] 3.7 Add to Turborepo pipeline (no-op for now, will add tasks later)
 
@@ -44,7 +44,7 @@
 ## 4. Create Remote Config Package Structure
 
 - [ ] 4.1 Create `packages/remote-config/` directory
-- [ ] 4.2 Initialize package.json: name `@mf-mono/remote-config`, version `0.1.0`
+- [ ] 4.2 Initialize package.json: name `@mfe-runtine/remote-config`, version `0.1.0`
 - [ ] 4.3 Add TypeScript config with strict mode
 - [ ] 4.4 Create `schema.json` (JSON Schema Draft 7) in root of package
 - [ ] 4.5 Create `src/types.ts` with TypeScript interfaces matching schema
@@ -79,7 +79,7 @@
 - [ ] 6.2 Add `generateConfig()` function that takes discovered mfes + options
 - [ ] 6.3 Implement environment-specific URL generation (dev: localhost, prod: /mfe-{name}/)
 - [ ] 6.4 Support git hash versioning via environment variable VITE_GIT_HASH
-- [ ] 6.5 Derive scope from package name (camelCase, strip @mf-mono/ prefix)
+- [ ] 6.5 Derive scope from package name (camelCase, strip @mfe-runtine/ prefix)
 - [ ] 6.6 Add $schema reference to generated config
 - [ ] 6.7 Validate generated config against JSON Schema before returning
 - [ ] 6.8 Return generated config object
@@ -132,9 +132,9 @@
 ## 10. Create Dynamic Loader Package Structure
 
 - [ ] 10.1 Create `packages/dynamic-loader/` directory
-- [ ] 10.2 Initialize package.json: name `@mf-mono/dynamic-loader`, version `0.1.0`
+- [ ] 10.2 Initialize package.json: name `@mfe-runtine/dynamic-loader`, version `0.1.0`
 - [ ] 10.3 Add TypeScript config with strict mode
-- [ ] 10.4 Add dependency: `@mf-mono/remote-config` (workspace protocol)
+- [ ] 10.4 Add dependency: `@mfe-runtine/remote-config` (workspace protocol)
 - [ ] 10.5 Create src/ structure: `DynamicLoader.ts`, `config.ts`, `events.ts`
 - [ ] 10.6 Export DynamicLoader class from `index.ts`
 
@@ -149,7 +149,7 @@
 - [ ] 11.3 Implement environment detection (NODE_ENV) for config file selection
 - [ ] 11.4 Implement fallback chain: `.{env}.json` → `.json`
 - [ ] 11.5 Add retry logic (2 retries with 1-second delay) for network failures
-- [ ] 11.6 Integrate validation using `@mf-mono/remote-config` validateRemoteConfig
+- [ ] 11.6 Integrate validation using `@mfe-runtine/remote-config` validateRemoteConfig
 - [ ] 11.7 Cache validated config in memory
 - [ ] 11.8 Write unit tests for config fetching (success, 404, network error, validation failure)
 
@@ -188,7 +188,7 @@
 
 ## 14. Integrate Dynamic Loader into Host Application
 
-- [ ] 14.1 Update `apps/website/package.json` to add dependency: `@mf-mono/dynamic-loader`
+- [ ] 14.1 Update `apps/website/package.json` to add dependency: `@mfe-runtine/dynamic-loader`
 - [ ] 14.2 Update `apps/website/src/config/remotes.ts` to import and use DynamicLoader
 - [ ] 14.3 Initialize loader: `const loader = new DynamicLoader(); await loader.init();`
 - [ ] 14.4 Update `apps/website/src/RemoteWidgetLoader.ts` to use `loader.loadRemote('mfe-widget')`
@@ -232,7 +232,7 @@
 ## 17. Create Second Micro-Frontend for Testing
 
 - [ ] 17.1 Create `apps/mfe-dashboard/` by copying mfe-widget structure
-- [ ] 17.2 Update package.json: name `@mf-mono/mfe-dashboard`, version `1.0.0`
+- [ ] 17.2 Update package.json: name `@mfe-runtine/mfe-dashboard`, version `1.0.0`
 - [ ] 17.3 Implement simple dashboard component (different from counter)
 - [ ] 17.4 Update vite.config.ts with Module Federation config (expose dashboard)
 - [ ] 17.5 Run `turbo build` and verify both mfes discovered in generated config
@@ -284,7 +284,7 @@
   - Scope derivation from package name
   - Validation against schema
 - [ ] 19.3 Achieve >80% code coverage for monorepo-tools package
-- [ ] 19.4 Run: `turbo test --filter @mf-mono/monorepo-tools`
+- [ ] 19.4 Run: `turbo test --filter @mfe-runtine/monorepo-tools`
 
 **Depends on**: Section 6 (generation logic complete)  
 **Owner**: Developer familiar with testing frameworks  
@@ -301,7 +301,7 @@
   - Invalid URLs
 - [ ] 20.2 Test type guard `isValidRemoteConfig()` with TypeScript narrowing
 - [ ] 20.3 Achieve >80% code coverage
-- [ ] 20.4 Run: `turbo test --filter @mf-mono/remote-config`
+- [ ] 20.4 Run: `turbo test --filter @mfe-runtine/remote-config`
 
 **Depends on**: Section 4 (remote-config package complete)  
 **Owner**: Developer  
@@ -323,7 +323,7 @@
   - Request deduplication
 - [ ] 21.3 Write tests for event emission (all event types)
 - [ ] 21.4 Achieve >80% code coverage
-- [ ] 21.5 Run: `turbo test --filter @mf-mono/dynamic-loader`
+- [ ] 21.5 Run: `turbo test --filter @mfe-runtine/dynamic-loader`
 
 **Depends on**: Section 13 (loader complete)  
 **Owner**: Developer  

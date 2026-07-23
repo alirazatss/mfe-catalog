@@ -34,7 +34,7 @@ packages/auth/src/
 ### 1. Shell Initialization (apps/website/src/App.tsx)
 
 ```typescript
-import { tokenManager } from "@mf-mono/auth";
+import { tokenManager } from "@mfe-runtine/auth";
 
 export default function App() {
   // Expose auth methods globally for MFEs
@@ -255,7 +255,7 @@ Content-Type: application/json
 **File**: `apps/website/src/App.tsx`
 
 ```typescript
-import { tokenManager } from "@mf-mono/auth";
+import { tokenManager } from "@mfe-runtine/auth";
 
 export default function App() {
   useEffect(() => {
@@ -270,7 +270,7 @@ export default function App() {
 
 **What's happening:**
 
-- `tokenManager` is imported from `@mf-mono/auth` package
+- `tokenManager` is imported from `@mfe-runtine/auth` package
 - It's a **singleton** (same instance across entire app)
 - `window.__AUTH__` exposes two methods:
   - `getAccessToken()` → Returns current token from memory
@@ -458,7 +458,7 @@ class TokenManager {
 
 ```typescript
 // ❌ MFE directly importing tokenManager
-import { tokenManager } from "@mf-mono/auth";
+import { tokenManager } from "@mfe-runtine/auth";
 
 apiClient.interceptors.request.use((config) => {
   const token = tokenManager.getAccessToken();
@@ -491,7 +491,7 @@ apiClient.interceptors.request.use((config) => {
 
 ```typescript
 // apps/website/src/App.tsx
-import { tokenManager } from "@mf-mono/auth";
+import { tokenManager } from "@mfe-runtine/auth";
 
 useEffect(() => {
   (window as any).__AUTH__ = {

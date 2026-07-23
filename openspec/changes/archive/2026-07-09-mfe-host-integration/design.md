@@ -3,7 +3,7 @@
 We have successfully implemented:
 
 - **Phase 0-2**: Auto-discovery, config generation, and Turborepo integration
-- **Phase 3**: Runtime dynamic loader (`@mf-mono/dynamic-loader`)
+- **Phase 3**: Runtime dynamic loader (`@mfe-runtine/dynamic-loader`)
 
 **Current state**: The host application (`apps/website`) uses hardcoded Module Federation imports:
 
@@ -76,7 +76,7 @@ remotes: {
 
 ```typescript
 // apps/website/src/config/remotes.ts
-import { loader } from "@mf-mono/dynamic-loader";
+import { loader } from "@mfe-runtine/dynamic-loader";
 
 export async function initializeRemotes() {
   try {
@@ -202,7 +202,7 @@ if (import.meta.env.DEV) {
 **Rationale**:
 
 - Consistency with auto-discovery convention
-- Matches package name `@mf-mono/mfe-widget`
+- Matches package name `@mfe-runtine/mfe-widget`
 - Aligns with generated config structure
 - Easier to understand what's a micro-frontend
 
@@ -315,7 +315,7 @@ if (import.meta.env.DEV) {
 
 **Steps**:
 
-1. Add `@mf-mono/dynamic-loader` dependency
+1. Add `@mfe-runtine/dynamic-loader` dependency
 2. Update remote initialization code
 3. Update remote loading code
 4. Update error boundaries

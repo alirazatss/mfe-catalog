@@ -3,6 +3,8 @@ export type { ResolvedMFE } from "./DynamicLoader.js";
 export { LoaderEvents } from "./events.js";
 export { fetchConfig } from "./config.js";
 export type {
+  MFEProps,
+  MFELifecycle,
   LoaderStatus,
   LoaderEventType,
   LoaderEventListener,

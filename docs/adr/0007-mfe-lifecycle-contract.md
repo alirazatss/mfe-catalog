@@ -132,7 +132,7 @@ export interface MFELifecycle {
 import { createRoot, type Root } from 'react-dom/client';
 import { StrictMode } from 'react';
 import App from './App';
-import type { MFELifecycle, MFEProps } from '@mf-mono/dynamic-loader';
+import type { MFELifecycle, MFEProps } from '@mfe-runtine/dynamic-loader';
 
 let root: Root | null = null;
 
@@ -210,7 +210,7 @@ export default lifecycle;
 // mfe-header/src/index.tsx
 import { createRoot, type Root } from 'react-dom/client';
 import Header from './Header';
-import type { MFELifecycle, MFEProps } from '@mf-mono/dynamic-loader';
+import type { MFELifecycle, MFEProps } from '@mfe-runtine/dynamic-loader';
 
 let root: Root | null = null;
 let navigationCleanup: (() => void) | null = null;
@@ -288,7 +288,7 @@ export default defineConfig({
         react: { singleton: true, requiredVersion: "^19" },
         "react-dom": { singleton: true, requiredVersion: "^19" },
         "react-router": { singleton: true, requiredVersion: "^8" },
-        "@mf-mono/dynamic-loader": { singleton: true, requiredVersion: "^1" },
+        "@mfe-runtine/dynamic-loader": { singleton: true, requiredVersion: "^1" },
       },
     }),
   ],
@@ -435,7 +435,7 @@ export const mfeLoader = new MFELoader();
 
 ```typescript
 // shell/src/shell.ts
-import { mfeLoader } from "@mf-mono/dynamic-loader";
+import { mfeLoader } from "@mfe-runtine/dynamic-loader";
 
 async function bootstrap() {
   await tokenManager.initialize();

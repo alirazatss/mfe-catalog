@@ -4,7 +4,7 @@
 - [ ] 1.2 Create `packages/events/package.json` with zero dependencies
 - [ ] 1.3 Create `packages/events/tsconfig.json` extending base config
 - [ ] 1.4 Add build script to package.json
-- [ ] 1.5 Add `@mf-mono/events` to workspace in pnpm-workspace.yaml
+- [ ] 1.5 Add `@mfe-runtine/events` to workspace in pnpm-workspace.yaml
 
 **Depends on**: None (starting point)  
 **Skill**: Backend developer or frontend developer  

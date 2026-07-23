@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { fetchManifest } from "./manifest.js";
+import { FALLBACK_REMOTES } from "../config/remotes.js";
 
 const validManifest = {
   schemaVersion: "2.0.0",
@@ -52,7 +53,7 @@ describe("fetchManifest", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
-  it("returns null after exhausting retries", async () => {
+  it("returns fallback config after exhausting retries", async () => {
     globalThis.fetch = vi
       .fn()
       .mockImplementation(async () => new Response("boom", { status: 500 })) as any;
@@ -63,10 +64,10 @@ describe("fetchManifest", () => {
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
     const manifest = await promise;
-    expect(manifest).toBeNull();
+    expect(manifest).toEqual(FALLBACK_REMOTES);
   });
 
-  it("returns null when response is invalid JSON", async () => {
+  it("returns fallback config when response is invalid JSON", async () => {
     globalThis.fetch = vi
       .fn()
       .mockImplementation(async () => new Response("not json", { status: 200 })) as any;
@@ -76,10 +77,10 @@ describe("fetchManifest", () => {
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
     const manifest = await promise;
-    expect(manifest).toBeNull();
+    expect(manifest).toEqual(FALLBACK_REMOTES);
   });
 
-  it("returns null when JSON is valid but fails schema validation", async () => {
+  it("returns fallback config when JSON is valid but fails schema validation", async () => {
     globalThis.fetch = vi
       .fn()
       .mockImplementation(
@@ -91,6 +92,6 @@ describe("fetchManifest", () => {
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
     const manifest = await promise;
-    expect(manifest).toBeNull();
+    expect(manifest).toEqual(FALLBACK_REMOTES);
   });
 });

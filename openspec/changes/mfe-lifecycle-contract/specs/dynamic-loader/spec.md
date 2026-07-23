@@ -112,11 +112,11 @@ The loader SHALL emit lifecycle events on the shared event bus so shells and mon
 
 ### Requirement: Loader SHALL export `MFELifecycle` and `MFEProps` types
 
-The `@mf-mono/dynamic-loader` package SHALL publicly export the TypeScript interfaces used across the lifecycle contract so MFE authors can implement them.
+The `@mfe-runtine/dynamic-loader` package SHALL publicly export the TypeScript interfaces used across the lifecycle contract so MFE authors can implement them.
 
 #### Scenario: Type imports resolve
 
-- **GIVEN** an MFE author imports `import type { MFELifecycle, MFEProps } from '@mf-mono/dynamic-loader'`
+- **GIVEN** an MFE author imports `import type { MFELifecycle, MFEProps } from '@mfe-runtine/dynamic-loader'`
 - **WHEN** the TypeScript compiler resolves the imports
 - **THEN** the import SHALL succeed with no type errors
 - **AND** the `MFELifecycle` type SHALL declare `bootstrap`, `mount`, `unmount`, and optional `update` all typed as `(props: MFEProps) => Promise<void>`

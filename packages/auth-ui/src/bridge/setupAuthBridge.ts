@@ -1,5 +1,5 @@
 /**
- * @mf-mono/auth-ui/bridge — vanilla `window.__MFE_AUTH__` setup.
+ * @mfe-runtine/auth-ui/bridge — vanilla `window.__MFE_AUTH__` setup.
  *
  * Populate the global auth API that MFEs consume. Called ONCE from the shell
  * bootstrap, ideally before any MFE mounts. No React dependency.
@@ -7,8 +7,8 @@
  * See ADR-0002 (Authentication Ownership) and openspec/changes/extract-auth-ui-package/.
  */
 
-import { tokenManager } from "@mf-mono/auth";
-import { emitMFEEvent, onMFEEvent, MFE_EVENTS } from "@mf-mono/events";
+import { tokenManager } from "@mfe-runtine/auth";
+import { emitMFEEvent, onMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
 
 const BRIDGE_VERSION = "1.0.0";
 

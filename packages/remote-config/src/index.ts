@@ -1,5 +1,5 @@
 /**
- * @mf-mono/remote-config
+ * @mfe-runtine/remote-config
  *
  * JSON Schema and TypeScript types for remote micro-frontend configuration.
  * Also provides validation utilities using Ajv.

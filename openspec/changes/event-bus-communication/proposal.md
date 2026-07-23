@@ -4,7 +4,7 @@ Micro-frontends need a lightweight, type-safe way to communicate without tight c
 
 ## What Changes
 
-- **Event Bus Package**: Create `@mf-mono/events` package with native ES6 EventTarget-based event bus
+- **Event Bus Package**: Create `@mfe-runtine/events` package with native ES6 EventTarget-based event bus
 - **Standard Event Names**: Define naming convention and event catalog for auth, navigation, and errors
 - **Type-Safe Helpers**: Provide TypeScript-typed event emission and subscription functions
 - **Memory Leak Prevention**: Ensure cleanup functions prevent listener leaks in React components

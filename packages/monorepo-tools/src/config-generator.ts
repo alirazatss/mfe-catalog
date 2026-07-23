@@ -1,4 +1,4 @@
-import { validateRemoteConfig } from "@mf-mono/remote-config";
+import { validateRemoteConfig } from "@mfe-runtine/remote-config";
 import type {
   MicroFrontend,
   RemoteConfig,
@@ -53,7 +53,7 @@ export async function generateConfig(
         scope: mfe.scope,
         version: gitHash || mfe.version,
         basePath,
-        requiresAuth: true,
+        requiresAuth: false,
         requiredRoles: [],
         enabled: true,
       };
@@ -62,7 +62,7 @@ export async function generateConfig(
   }
 
   const config: RemoteConfig = {
-    $schema: "../node_modules/@mf-mono/remote-config/schema.json",
+    $schema: "../node_modules/@mfe-runtine/remote-config/schema.json",
     schemaVersion: "2.0.0",
     chrome,
     features,

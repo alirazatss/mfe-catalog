@@ -6,7 +6,7 @@ import type { RemoteConfig } from "./types.js";
 // Kept in sync with packages/remote-config/schema.json.
 const schema = {
   $schema: "http://json-schema.org/draft-07/schema#",
-  $id: "https://mf-mono.local/schemas/remote-config.json",
+  $id: "https://mfe-runtine.local/schemas/remote-config.json",
   title: "Remote Manifest",
   description:
     "Manifest listing chrome MFEs (always mounted) and feature MFEs (route-based) for a shell.",

@@ -133,8 +133,8 @@ The system SHALL provide npm scripts for testing workflows.
 
 #### Scenario: Run tests for specific package
 
-- **WHEN** `pnpm test --filter=@mf-mono/auth` is run
-- **THEN** only @mf-mono/auth tests run
+- **WHEN** `pnpm test --filter=@mfe-runtine/auth` is run
+- **THEN** only @mfe-runtine/auth tests run
 
 #### Scenario: UI mode
 

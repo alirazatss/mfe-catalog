@@ -35,7 +35,7 @@ The micro-frontend architecture currently has mock authentication that cannot be
 **Goals:**
 
 - Implement production-ready authentication in shell application
-- Create shared token management package (`@mf-mono/auth`)
+- Create shared token management package (`@mfe-runtine/auth`)
 - Establish standard pattern for passing auth from shell to MFEs
 - Implement automatic token refresh before expiry
 - Protect routes requiring authentication

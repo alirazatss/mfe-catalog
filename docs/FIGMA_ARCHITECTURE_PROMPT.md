@@ -82,10 +82,10 @@ Create a comprehensive architecture diagram showing the complete flow of a produ
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  apps/                  packages/                            │
-│  ├─ website (Shell)     ├─ @mf-mono/auth                    │
-│  ├─ mfe-widget         ├─ @mf-mono/events                   │
-│  └─ mfe-*              ├─ @mf-mono/dynamic-loader           │
-│                         └─ @mf-mono/remote-config           │
+│  ├─ website (Shell)     ├─ @mfe-runtine/auth                    │
+│  ├─ mfe-widget         ├─ @mfe-runtine/events                   │
+│  └─ mfe-*              ├─ @mfe-runtine/dynamic-loader           │
+│                         └─ @mfe-runtine/remote-config           │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -138,7 +138,7 @@ Draw a container representing `apps/mfe-widget/` with:
 
 ### 4. **Shared Packages (Bottom Section)**
 
-#### **@mf-mono/auth Package**
+#### **@mfe-runtine/auth Package**
 
 ```
 ┌─────────────────────────────────────┐
@@ -158,7 +158,7 @@ Draw a container representing `apps/mfe-widget/` with:
 └─────────────────────────────────────┘
 ```
 
-#### **@mf-mono/events Package**
+#### **@mfe-runtine/events Package**
 
 ```
 ┌─────────────────────────────────────┐
@@ -377,9 +377,9 @@ Events:
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  Packages:                                                   │
-│  • @mf-mono/auth: 22 tests (100% coverage)                 │
-│  • @mf-mono/events: 31 tests (94.44% coverage)             │
-│  • @mf-mono/dynamic-loader: 9 tests                         │
+│  • @mfe-runtine/auth: 22 tests (100% coverage)                 │
+│  • @mfe-runtine/events: 31 tests (94.44% coverage)             │
+│  • @mfe-runtine/dynamic-loader: 9 tests                         │
 │                                                              │
 │  Apps:                                                       │
 │  • website (shell): 26 tests (25 pass, 1 skip)             │

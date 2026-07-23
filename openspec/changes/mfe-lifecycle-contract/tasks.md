@@ -40,7 +40,7 @@
 - [ ] 5.1 Update `apps/mfe-widget/vite.config.ts` to add `'./lifecycle': './src/index.tsx'` under `exposes`
 - [ ] 5.2 Keep `'./App': './src/App.tsx'` exposed as a secondary export for tests
 - [ ] 5.3 Keep `'./CounterWidget'` exposed for consumers that use the framework-agnostic class
-- [ ] 5.4 Verify `pnpm build --filter @mf-mono/mfe-widget` produces `remoteEntry.js` including the new module
+- [ ] 5.4 Verify `pnpm build --filter @mfe-runtine/mfe-widget` produces `remoteEntry.js` including the new module
 
 ## 6. Sample MFE Tests
 
@@ -67,6 +67,6 @@
 
 - [ ] 9.1 Run `pnpm build` at repo root and confirm zero type errors
 - [ ] 9.2 Run `pnpm test` at repo root and confirm all new and existing tests pass
-- [ ] 9.3 Run the widget in isolation (`pnpm --filter @mf-mono/mfe-widget dev`) and verify the local demo page invokes the lifecycle wrapper
+- [ ] 9.3 Run the widget in isolation (`pnpm --filter @mfe-runtine/mfe-widget dev`) and verify the local demo page invokes the lifecycle wrapper
 - [ ] 9.4 Grep for remaining `React.lazy` imports referencing MFEs (should be zero in the shell after this change)
 - [ ] 9.5 Confirm `packages/dynamic-loader/` coverage stays ≥85% after the new orchestration code lands

@@ -21,8 +21,8 @@ Clone the repository and install dependencies:
 
 ```bash
 # Clone the repository (if you haven't already)
-git clone <repo-url> mf-mono
-cd mf-mono
+git clone <repo-url> mfe-runtine
+cd mfe-runtine
 
 # Install all workspace dependencies
 pnpm install
@@ -63,7 +63,7 @@ In another terminal, start the micro-frontend:
 ```bash
 pnpm dev:remote
 # or
-pnpm turbo dev --filter '@mf-mono/mfe-widget'
+pnpm turbo dev --filter '@mfe-runtine/mfe-widget'
 ```
 
 ### Option 3: Run Only Specific Apps
@@ -219,7 +219,7 @@ pnpm test:ui
 Test a specific package:
 
 ```bash
-pnpm turbo test --filter '@mf-mono/dynamic-loader'
+pnpm turbo test --filter '@mfe-runtine/dynamic-loader'
 pnpm turbo test --filter website
 ```
 
@@ -260,7 +260,7 @@ cd apps/mfe-myfeature
 
 ```json
 {
-  "name": "@mf-mono/mfe-myfeature",
+  "name": "@mfe-runtine/mfe-myfeature",
   "version": "0.0.0",
   "private": true,
   "type": "module",

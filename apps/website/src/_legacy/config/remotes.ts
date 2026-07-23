@@ -5,7 +5,7 @@
  * from the auto-generated remotes.config.json file.
  */
 
-import { loader } from "@mf-mono/dynamic-loader";
+import { loader } from "@mfe-runtine/dynamic-loader";
 
 /**
  * Initialize the dynamic loader

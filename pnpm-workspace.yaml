@@ -10,12 +10,12 @@ catalog:
   "@testing-library/jest-dom": ^6.6.4
   "@testing-library/react": ^16.3.2
   "@testing-library/user-event": ^14.5.2
-  "@types/node": ^24
+  "@types/node": ^25
   "@types/react": ^19
   "@types/react-dom": ^19
   "@vitejs/plugin-react": ^4.3.4
-  "@vitest/coverage-v8": ^3.2.7
-  "@vitest/ui": ^3.2.0
+  "@vitest/coverage-v8": ^4.1.10
+  "@vitest/ui": ^4.1.10
   ajv: ^8.17.1
   ajv-formats: ^3.0.1
   glob: ^11.0.0
@@ -29,7 +29,7 @@ catalog:
   typescript: ^5
   vite: npm:@voidzero-dev/vite-plus-core@0.2.4
   vite-plus: 0.2.4
-  vitest: ^3.2.0
+  vitest: ^4.1.10
   react-router-dom: ^7.18.1
 overrides:
   vite: "catalog:"

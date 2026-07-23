@@ -4,7 +4,7 @@ The Chrome MFE pattern says the shell renders empty slots and MFEs fill them (AD
 
 - `refactor-to-thin-shell` — creates slots, vanilla bootstrap, and manifest schema with `chrome` section
 - `mfe-lifecycle-contract` — defines the `bootstrap`/`mount`/`unmount`/`update` contract
-- `extract-auth-ui-package` — publishes `@mf-mono/auth-ui` with `setupAuthBridge` that populates `window.__MFE_AUTH__`
+- `extract-auth-ui-package` — publishes `@mfe-runtine/auth-ui` with `setupAuthBridge` that populates `window.__MFE_AUTH__`
 
 This change builds the first real chrome MFE — the corporate header — and validates the whole stack. It becomes the reference implementation for future chrome MFEs (`mfe-sidebar`, `mfe-footer`) and defines conventions (theme handling, active-route highlighting, cross-MFE navigation, user context).
 
@@ -21,7 +21,7 @@ This change builds the first real chrome MFE — the corporate header — and va
 - Header must respond to token change events without remounting
 - Bundle size ≤ 50 KB gzipped (chrome MFEs are always loaded — they cannot be heavy)
 - Must render usable content within 200 ms of mount (soft target)
-- Corporate branding must match `@mf-mono/auth-ui` theme tokens
+- Corporate branding must match `@mfe-runtine/auth-ui` theme tokens
 
 ## Goals / Non-Goals
 
@@ -85,7 +85,7 @@ The loader forwards this via `MFEProps.config`. The header renders navigation ba
 
 ### Decision 2: Header uses event bus for navigation (v1), migrates to bridge (v2)
 
-Until `navigation-bridge` change lands, the header emits `mfe:navigate` events on `@mf-mono/events` (the shell already listens for these). Once the bridge exists, the header calls `window.__MFE_NAVIGATION__.navigate(path)`. The header code SHALL feature-detect the bridge at runtime.
+Until `navigation-bridge` change lands, the header emits `mfe:navigate` events on `@mfe-runtine/events` (the shell already listens for these). Once the bridge exists, the header calls `window.__MFE_NAVIGATION__.navigate(path)`. The header code SHALL feature-detect the bridge at runtime.
 
 ```typescript
 function navigate(path: string) {
@@ -125,9 +125,9 @@ useEffect(() => {
 - Works without knowing anything about the shell's router
 - Cleans up properly on unmount
 
-### Decision 4: User info decoded from JWT via `@mf-mono/auth`
+### Decision 4: User info decoded from JWT via `@mfe-runtine/auth`
 
-The header uses a helper from `@mf-mono/auth` to decode the JWT and extract `email`, `name`, `roles`. It does NOT parse the JWT inline.
+The header uses a helper from `@mfe-runtine/auth` to decode the JWT and extract `email`, `name`, `roles`. It does NOT parse the JWT inline.
 
 **Rationale:**
 
@@ -146,7 +146,7 @@ The header uses a helper from `@mf-mono/auth` to decode the JWT and extract `ema
 ## Risks / Trade-offs
 
 - **[Header stale during long sessions]** → Header subscribes to `mfe:auth:token-updated` and updates the user display without remounting; test coverage includes long-session simulation with mock token refresh
-- **[Corporate branding drift with `@mf-mono/auth-ui`]** → Both packages read from the same tokens; short-term inline, follow-up change consolidates into `@mf-mono/ui-components`
+- **[Corporate branding drift with `@mfe-runtine/auth-ui`]** → Both packages read from the same tokens; short-term inline, follow-up change consolidates into `@mfe-runtine/ui-components`
 - **[Navigation event failure]** → Feature-detect bridge and fall back to event bus; both paths tested
 - **[CDN not yet available]** → Ship the MFE via local dev server for MVP; production deploy tracked separately
 - **[Header size grows]** → CI bundle-size check fails the build above 50 KB; enforce in the same PR as this change

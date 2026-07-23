@@ -4,7 +4,7 @@
 
 ### Requirement: Package structure exists
 
-The system SHALL include a @mf-mono/remote-config package with JSON Schema and validation.
+The system SHALL include a @mfe-runtine/remote-config package with JSON Schema and validation.
 
 #### Scenario: Package directory exists
 
@@ -14,7 +14,7 @@ The system SHALL include a @mf-mono/remote-config package with JSON Schema and v
 #### Scenario: Package.json configured correctly
 
 - **WHEN** `packages/remote-config/package.json` is read
-- **THEN** name is `@mf-mono/remote-config`
+- **THEN** name is `@mfe-runtine/remote-config`
 - **AND** version is `0.1.0`
 - **AND** dependencies include `ajv`
 - **AND** exports include both types and schema.json
@@ -94,7 +94,7 @@ The system SHALL build the remote-config package using vite-plus.
 
 #### Scenario: Build produces output
 
-- **WHEN** `pnpm build --filter @mf-mono/remote-config` is run
+- **WHEN** `pnpm build --filter @mfe-runtine/remote-config` is run
 - **THEN** the command exits with code 0
 - **AND** `dist/index.mjs` is created
 - **AND** `dist/index.d.mts` is created

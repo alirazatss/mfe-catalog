@@ -1,11 +1,11 @@
 ## 1. Package Scaffold
 
-- [ ] 1.1 Create `packages/auth-ui/` with `package.json` (name `@mf-mono/auth-ui`, version `0.1.0`, private `false`), matching the layout of other `@mf-mono/*` packages
+- [ ] 1.1 Create `packages/auth-ui/` with `package.json` (name `@mfe-runtine/auth-ui`, version `0.1.0`, private `false`), matching the layout of other `@mfe-runtine/*` packages
 - [ ] 1.2 Add `tsdown.config.ts` producing ESM builds with `.d.ts`; configure subpath entry points for `.`, `./login`, `./logout`, `./forgot-password`, `./bridge`
 - [ ] 1.3 Add `vitest.config.ts` with happy-dom environment and coverage thresholds (statements 90, branches 85, functions 90, lines 90)
 - [ ] 1.4 Add `tsconfig.json` extending workspace base with React JSX config and strict mode
 - [ ] 1.5 Declare peer deps on `react`, `react-dom`, `react-router` via catalog references
-- [ ] 1.6 Declare workspace dep on `@mf-mono/auth: workspace:*`
+- [ ] 1.6 Declare workspace dep on `@mfe-runtine/auth: workspace:*`
 - [ ] 1.7 Wire package into root `pnpm-workspace.yaml` (already covered by `packages/*` glob) and Turborepo `turbo.json` if any new tasks
 
 ## 2. Corporate Branding & Theme
@@ -44,7 +44,7 @@
 
 ## 6. setupAuthBridge Helper
 
-- [ ] 6.1 Create `packages/auth-ui/src/bridge/setupAuthBridge.ts` (exported from `@mf-mono/auth-ui/bridge`)
+- [ ] 6.1 Create `packages/auth-ui/src/bridge/setupAuthBridge.ts` (exported from `@mfe-runtine/auth-ui/bridge`)
 - [ ] 6.2 Populate `window.__MFE_AUTH__` with `{ version: '1.0.0', getToken, isAuthenticated, onTokenChange, logout }`
 - [ ] 6.3 Wire `onTokenChange` to `tokenManager` events; return a cleanup function on subscription
 - [ ] 6.4 Wire `logout` to `tokenManager.clearSession()` and dispatch a `mfe:auth:logout` `CustomEvent` on `window`
@@ -63,12 +63,12 @@
 - [ ] 8.1 Create `packages/auth-ui/src/index.ts` exporting `LoginPage`, `LogoutPage`, `SessionExpiredPage`, `ForgotPasswordPage`, `AuthProvider`, `useAuth`, `ProtectedRoute`, `theme`
 - [ ] 8.2 Create `packages/auth-ui/src/login.ts`, `logout.ts`, `forgot-password.ts`, `bridge/index.ts` as subpath entry points
 - [ ] 8.3 Configure `package.json` `exports` map with subpath entries and correct `types` for each
-- [ ] 8.4 Verify tree-shaking via a smoke build that imports only `@mf-mono/auth-ui/bridge` and confirms React is not resolved
+- [ ] 8.4 Verify tree-shaking via a smoke build that imports only `@mfe-runtine/auth-ui/bridge` and confirms React is not resolved
 
 ## 9. Integrate Into apps/website
 
-- [ ] 9.1 Add `@mf-mono/auth-ui: workspace:*` to `apps/website/package.json`
-- [ ] 9.2 Update the shell's bootstrap (from `refactor-to-thin-shell`) to call `setupAuthBridge()` from `@mf-mono/auth-ui/bridge`
+- [ ] 9.1 Add `@mfe-runtine/auth-ui: workspace:*` to `apps/website/package.json`
+- [ ] 9.2 Update the shell's bootstrap (from `refactor-to-thin-shell`) to call `setupAuthBridge()` from `@mfe-runtine/auth-ui/bridge`
 - [ ] 9.3 Ensure the shell still passes E2E: unauthenticated navigation to a protected route redirects to `/login` (the login route now needs a way to render `<LoginPage />` — either a small React island in the shell or a login MFE, tracked separately)
 - [ ] 9.4 Update `apps/website/src/test/*` to import mocks from the new package location if needed
 

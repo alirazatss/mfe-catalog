@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { tokenManager, type User, type LoginCredentials } from "@mf-mono/auth";
-import { emitMFEEvent, onMFEEvent, MFE_EVENTS } from "@mf-mono/events";
+import { tokenManager, type User, type LoginCredentials } from "@mfe-runtine/auth";
+import { emitMFEEvent, onMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
 
 /**
  * Auth context value available to all components

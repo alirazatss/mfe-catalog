@@ -13,8 +13,8 @@ The shell today catches errors via a single React `ErrorBoundary` and the dynami
 - Emit lifecycle events (`mfe:load:failed`, `mfe:runtime:error`, `mfe:loaded`) matching the existing lifecycle events from `mfe-lifecycle-contract`
 - Add manifest caching in `localStorage` (24 h TTL) as a fallback when the CDN is unreachable
 - Add slot-level `retryMFE(name, slotId)` helper wired to the fallback UI's `Try again` button
-- Add `SessionExpiredPage` handoff when auth cannot recover (uses component from `@mf-mono/auth-ui`)
-- Add opt-in strict version validation on MFE load (via `@mf-mono/versions` when available from ADR-0008; disabled by default in v1)
+- Add `SessionExpiredPage` handoff when auth cannot recover (uses component from `@mfe-runtine/auth-ui`)
+- Add opt-in strict version validation on MFE load (via `@mfe-runtine/versions` when available from ADR-0008; disabled by default in v1)
 
 ## Capabilities
 

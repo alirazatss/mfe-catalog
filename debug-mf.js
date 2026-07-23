@@ -64,7 +64,7 @@ async function main() {
   } catch (error) {
     console.error("❌ Error:", error.message);
     console.error("\n💡 Is the MFE dev server running?");
-    console.error("   Try: pnpm turbo dev --filter '@mf-mono/mfe-widget'");
+    console.error("   Try: pnpm turbo dev --filter '@mfe-runtine/mfe-widget'");
     process.exit(1);
   }
 }

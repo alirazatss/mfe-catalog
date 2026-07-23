@@ -1,5 +1,5 @@
 {
-  "name": "@mf-mono/auth-ui",
+  "name": "@mfe-runtine/auth-ui",
   "version": "0.0.0",
   "private": true,
   "files": [
@@ -31,8 +31,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@mf-mono/auth": "workspace:*",
-    "@mf-mono/events": "workspace:*"
+    "@mfe-runtine/auth": "workspace:*",
+    "@mfe-runtine/events": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "catalog:",

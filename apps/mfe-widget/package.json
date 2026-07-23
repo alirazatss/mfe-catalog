@@ -1,5 +1,5 @@
 {
-  "name": "@mf-mono/mfe-widget",
+  "name": "@mfe-runtine/mfe-widget",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@mf-mono/events": "workspace:*",
+    "@mfe-runtine/events": "workspace:*",
     "axios": "^1.7.9",
     "react": "catalog:",
     "react-dom": "catalog:",

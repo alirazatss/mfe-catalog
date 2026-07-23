@@ -40,8 +40,8 @@ The system SHALL read each discovered micro-frontend's package.json and extract 
 
 #### Scenario: Package.json metadata extracted
 
-- **WHEN** `apps/mfe-widget/package.json` contains `{ "name": "@mf-mono/mfe-widget", "version": "1.0.0", "description": "Counter widget" }`
-- **THEN** discovery SHALL extract name as "mfe-widget" (strip @mf-mono/ prefix)
+- **WHEN** `apps/mfe-widget/package.json` contains `{ "name": "@mfe-runtine/mfe-widget", "version": "1.0.0", "description": "Counter widget" }`
+- **THEN** discovery SHALL extract name as "mfe-widget" (strip @mfe-runtine/ prefix)
 - **AND** discovery SHALL extract version as "1.0.0"
 - **AND** discovery SHALL extract description as "Counter widget"
 
@@ -130,7 +130,7 @@ The system SHALL expose programmatic API for discovering micro-frontends.
 Example TypeScript usage:
 
 ```typescript
-import { discoverMicroFrontends } from "@mf-mono/monorepo-tools";
+import { discoverMicroFrontends } from "@mfe-runtine/monorepo-tools";
 
 const mfes = await discoverMicroFrontends();
 // [

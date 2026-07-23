@@ -337,7 +337,7 @@ turbo.json                 # Turborepo pipeline configuration
 ```typescript
 const pkg = JSON.parse(await fs.readFile("apps/mfe-widget/package.json", "utf-8"));
 const remote = {
-  name: pkg.name.replace("@mf-mono/", ""), // "mfe-widget"
+  name: pkg.name.replace("@mfe-runtine/", ""), // "mfe-widget"
   version: pkg.version, // "1.0.0"
   description: pkg.description,
   // ... generate URLs
@@ -368,7 +368,7 @@ const remote = {
 
 ```json
 {
-  "name": "@mf-mono/mfe-widget",
+  "name": "@mfe-runtine/mfe-widget",
   "mfe": {
     "port": 5174
   }
@@ -500,7 +500,7 @@ apps/website/public/remotes.config.json
 2. Create `turbo.json` with basic pipeline configuration
 3. Update root `package.json` scripts to use `turbo` instead of `vp run`
 4. Rename `apps/remote-widget/` to `apps/mfe-widget/`
-5. Update package.json name to `@mf-mono/mfe-widget`
+5. Update package.json name to `@mfe-runtine/mfe-widget`
 6. Test Turborepo: `turbo build` and verify both apps build
 7. Verify caching: `turbo build` again should be instant (cached)
 

@@ -19,8 +19,8 @@ sleep 1
 
 # Start MFE
 log_info "Starting MFE dev server on port 5174..."
-cd /Users/ali.raza/dev/mf-mono
-pnpm turbo dev --filter '@mf-mono/mfe-widget' > /tmp/mfe-dev.log 2>&1 &
+cd /Users/ali.raza/dev/mfe-runtine
+pnpm turbo dev --filter '@mfe-runtine/mfe-widget' > /tmp/mfe-dev.log 2>&1 &
 MFE_PID=$!
 
 # Start Shell

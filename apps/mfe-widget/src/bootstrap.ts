@@ -7,16 +7,14 @@
 
 import { StrictMode, createElement, type ComponentProps } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import type { MFEProps } from "@mfe-runtine/dynamic-loader";
 import App from "./App.js";
 
 export { CounterWidget } from "./components/CounterWidget.js";
 export { App };
 
-interface LifecycleProps {
-  container: HTMLElement;
-  basePath?: string;
-  isAuthenticated?: boolean;
-  user?: ComponentProps<typeof App>["user"];
+interface LifecycleProps extends MFEProps {
+  user: ComponentProps<typeof App>["user"];
 }
 
 const roots = new Map<HTMLElement, Root>();

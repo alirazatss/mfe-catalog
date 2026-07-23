@@ -40,7 +40,7 @@ MFEs currently expose React components via `exposes: { "./App": "./src/App.tsx" 
 
 **Goals:**
 
-- Single `MFELifecycle` TypeScript interface exported from `@mf-mono/dynamic-loader`
+- Single `MFELifecycle` TypeScript interface exported from `@mfe-runtine/dynamic-loader`
 - Single `MFEProps` interface capturing the shared prop surface
 - Loader loads every MFE via the lifecycle contract, not raw React component import
 - Reference implementation in `apps/mfe-widget/src/index.tsx` demonstrating a React MFE
@@ -84,7 +84,7 @@ export default { bootstrap, mount, unmount };
 
 ### Decision 2: Standard `MFEProps` shape defined in the loader package
 
-All shared props flow through a single `MFEProps` interface exported by `@mf-mono/dynamic-loader`. Shells populate it from their bootstrap; MFEs consume the fields they need.
+All shared props flow through a single `MFEProps` interface exported by `@mfe-runtine/dynamic-loader`. Shells populate it from their bootstrap; MFEs consume the fields they need.
 
 ```typescript
 interface MFEProps {

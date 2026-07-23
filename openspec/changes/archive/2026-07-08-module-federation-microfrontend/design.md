@@ -1,6 +1,6 @@
 ## Context
 
-The mf-mono project is a Vite Plus monorepo with a single website application (`apps/website`) and utility packages. The current architecture bundles all frontend code into a single deployable unit, limiting team autonomy and deployment flexibility. As the application scales, we need to enable microfrontend architecture using Module Federation to allow:
+The mfe-runtine project is a Vite Plus monorepo with a single website application (`apps/website`) and utility packages. The current architecture bundles all frontend code into a single deployable unit, limiting team autonomy and deployment flexibility. As the application scales, we need to enable microfrontend architecture using Module Federation to allow:
 
 - Independent development and deployment of feature modules
 - Faster build times by avoiding full application rebuilds

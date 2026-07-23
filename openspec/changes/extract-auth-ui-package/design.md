@@ -18,7 +18,7 @@ Login and related auth UI are shared concerns across every current and future sh
 **Target state:**
 
 - `packages/auth-ui/` is a new npm package
-- Shells import components from `@mf-mono/auth-ui`
+- Shells import components from `@mfe-runtine/auth-ui`
 - Shells still using a small React tree for their `/login` route get a plug-and-play component
 - Shells using pure vanilla bootstrap call `setupAuthBridge()` and load a login MFE or minimal login route separately
 
@@ -42,7 +42,7 @@ Login and related auth UI are shared concerns across every current and future sh
 
 - Single source of truth for corporate-branded auth UI
 - Zero shell-specific code inside the package (all configuration flows via props)
-- Package builds with `tsdown` producing ESM + `.d.ts` (consistent with other `@mf-mono/*` packages)
+- Package builds with `tsdown` producing ESM + `.d.ts` (consistent with other `@mfe-runtine/*` packages)
 - `setupAuthBridge()` exposes `window.__MFE_AUTH__` matching the ADR-0002 contract
 - Package has ≥90% test coverage on components and helper
 - Corporate branding centralized in `theme.ts` with prop overrides supported
@@ -57,19 +57,19 @@ Login and related auth UI are shared concerns across every current and future sh
 
 ## Decisions
 
-### Decision 1: Two-package split — logic in `@mf-mono/auth`, UI in `@mf-mono/auth-ui`
+### Decision 1: Two-package split — logic in `@mfe-runtine/auth`, UI in `@mfe-runtine/auth-ui`
 
 Keep `packages/auth/` framework-agnostic (TokenManager, JWT utils, types). Create `packages/auth-ui/` for React components. `auth-ui` depends on `auth`.
 
 **Rationale:**
 
-- `@mf-mono/auth` is already published-shaped and reused by MFE tests
+- `@mfe-runtine/auth` is already published-shaped and reused by MFE tests
 - Framework-agnostic logic can be consumed from future non-React tools (CLI, backend adapters)
 - React components are UI-only — cleaner boundary
 
 **Alternatives considered:**
 
-- Single package `@mf-mono/auth` with UI included (rejected — forces React peer dep on consumers that only need TokenManager)
+- Single package `@mfe-runtine/auth` with UI included (rejected — forces React peer dep on consumers that only need TokenManager)
 - Three packages `auth`, `auth-react`, `auth-ui` (rejected — over-engineering for the current scope)
 
 ### Decision 2: Customization via props with sensible corporate defaults
@@ -103,11 +103,11 @@ Some shells will keep a small React tree for their auth pages and want a `useAut
 
 ```ts
 // Vanilla bootstrap use
-import { setupAuthBridge } from '@mf-mono/auth-ui/bridge';
+import { setupAuthBridge } from '@mfe-runtine/auth-ui/bridge';
 setupAuthBridge(); // populates window.__MFE_AUTH__
 
 // React use
-import { AuthProvider, useAuth } from '@mf-mono/auth-ui';
+import { AuthProvider, useAuth } from '@mfe-runtine/auth-ui';
 <AuthProvider>...</AuthProvider>
 ```
 
@@ -119,7 +119,7 @@ import { AuthProvider, useAuth } from '@mf-mono/auth-ui';
 
 ### Decision 4: Package built with `tsdown`, ESM only, `.d.ts` included
 
-Match the build strategy of other `@mf-mono/*` packages (`packages/auth`, `packages/events`, `packages/dynamic-loader`).
+Match the build strategy of other `@mfe-runtine/*` packages (`packages/auth`, `packages/events`, `packages/dynamic-loader`).
 
 **Rationale:**
 
@@ -140,9 +140,9 @@ Match the build strategy of other `@mf-mono/*` packages (`packages/auth`, `packa
 ## Risks / Trade-offs
 
 - **[Corporate branding drift]** → Design team owns `theme.ts`; require design review for prop overrides that alter primary color/logo
-- **[Bundle size]** → Ship subpath exports (`@mf-mono/auth-ui/login`, `@mf-mono/auth-ui/bridge`) so shells only pay for what they import
+- **[Bundle size]** → Ship subpath exports (`@mfe-runtine/auth-ui/login`, `@mfe-runtine/auth-ui/bridge`) so shells only pay for what they import
 - **[Test coverage of visual components]** → Use `@testing-library/react` for behavior tests; visual regression is deferred (Chromatic/Percy in future ADR)
-- **[Version skew between shells]** → Enforce a minimum `@mf-mono/auth-ui` version in `@mf-mono/versions` (published as part of ADR-0008 version management)
+- **[Version skew between shells]** → Enforce a minimum `@mfe-runtine/auth-ui` version in `@mfe-runtine/versions` (published as part of ADR-0008 version management)
 - **[Shells that never render React]** → Provide `setupAuthBridge` and `theme.ts` tokens (CSS variables) so pure vanilla shells can still theme their static login route without React
 - **[Publishing the package]** → Requires npm registry setup; before registry is ready, `workspace:*` linking works within the monorepo
 
@@ -159,10 +159,10 @@ Match the build strategy of other `@mf-mono/*` packages (`packages/auth`, `packa
 7. Wire package into `apps/website/package.json` via `workspace:*` so the shell can consume it
 8. Add the package to Turborepo pipeline (`build`, `test`, `test:coverage`)
 
-**Phase 2 — Publish (deferred, tracked in `@mf-mono/versions` and repo-split changes):**
+**Phase 2 — Publish (deferred, tracked in `@mfe-runtine/versions` and repo-split changes):**
 
 - Configure private npm registry credentials in CI
-- Publish `@mf-mono/auth-ui@1.0.0`
+- Publish `@mfe-runtine/auth-ui@1.0.0`
 - External shell repos start consuming from npm instead of workspace
 
 **Phase 3 — Deprecate direct imports of removed shell files:**

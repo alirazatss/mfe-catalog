@@ -48,7 +48,7 @@ Now we need a real strategy. ADR-0006 defined five layers of failure handling. T
 
 - Choosing an error-tracking vendor (Sentry, DataDog, etc.) — the bridge is vendor-agnostic; a follow-up change wires up a specific tool
 - Automatic MFE version rollback on failure (v1 shows the error; rollback is a manual operator action for now)
-- Version manifest strict enforcement (`@mf-mono/versions` may not exist yet; strict mode is opt-in and disabled by default)
+- Version manifest strict enforcement (`@mfe-runtine/versions` may not exist yet; strict mode is opt-in and disabled by default)
 - SSR error handling (out of scope)
 - Handling malicious MFEs (assume all MFEs are trusted first-party or first-party audited)
 

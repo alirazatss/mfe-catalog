@@ -11,8 +11,8 @@ Current state:
 This change establishes the foundation for the dynamic micro-frontend system by:
 
 1. Adopting the `apps/mfe-*` directory naming convention
-2. Creating `@mf-mono/monorepo-tools` package for discovery and config generation logic
-3. Creating `@mf-mono/remote-config` package for JSON Schema and validation
+2. Creating `@mfe-runtine/monorepo-tools` package for discovery and config generation logic
+3. Creating `@mfe-runtine/remote-config` package for JSON Schema and validation
 
 ## Goals / Non-Goals
 
@@ -42,7 +42,7 @@ This change establishes the foundation for the dynamic micro-frontend system by:
 - `apps/microfrontends/widget/` — rejected as too deeply nested, harder to filter in Turborepo
 - No prefix (just `apps/widget/`) — rejected as ambiguous (is widget an MFE or standalone app?)
 
-### Decision 2: Use scoped package names (`@mf-mono/mfe-widget`)
+### Decision 2: Use scoped package names (`@mfe-runtine/mfe-widget`)
 
 **Rationale**: Follows npm conventions, avoids name collisions, clearly identifies packages as part of this monorepo.
 
@@ -104,7 +104,7 @@ This change establishes the foundation for the dynamic micro-frontend system by:
 **Deployment steps**:
 
 1. ✅ Rename `apps/remote-widget/` → `apps/mfe-widget/`
-2. ✅ Update package.json to `@mf-mono/mfe-widget`
+2. ✅ Update package.json to `@mfe-runtine/mfe-widget`
 3. ✅ Update root scripts to use scoped package name
 4. ✅ Create `packages/monorepo-tools/` structure
 5. ✅ Create `packages/remote-config/` structure

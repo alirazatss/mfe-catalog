@@ -73,7 +73,7 @@ The system SHALL provide standard pattern for configuring authenticated API clie
 #### Scenario: API client uses token manager singleton
 
 - **WHEN** MFE creates Axios instance in api/client.ts
-- **THEN** instance imports tokenManager from @mf-mono/auth
+- **THEN** instance imports tokenManager from @mfe-runtine/auth
 - **AND** request interceptor calls tokenManager.getAccessToken()
 - **AND** client is configured with withCredentials: true for cookies
 

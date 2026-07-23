@@ -1,4 +1,4 @@
-# @mf-mono/dynamic-loader
+# @mfe-runtine/dynamic-loader
 
 Runtime dynamic loader for Module Federation micro-frontends. Fetches generated `remotes.config.json` at runtime and dynamically loads remotes with retry logic, events, and caching.
 
@@ -16,7 +16,7 @@ Runtime dynamic loader for Module Federation micro-frontends. Fetches generated 
 ## Installation
 
 ```bash
-pnpm add @mf-mono/dynamic-loader
+pnpm add @mfe-runtine/dynamic-loader
 ```
 
 ## Usage
@@ -24,7 +24,7 @@ pnpm add @mf-mono/dynamic-loader
 ### Basic Usage
 
 ```typescript
-import loader from "@mf-mono/dynamic-loader";
+import loader from "@mfe-runtine/dynamic-loader";
 
 // Initialize loader (fetches config)
 await loader.init();
@@ -40,7 +40,7 @@ const Component = factory();
 ### With Event Listeners
 
 ```typescript
-import loader from "@mf-mono/dynamic-loader";
+import loader from "@mfe-runtine/dynamic-loader";
 
 // Listen to lifecycle events
 loader.on("config:fetch:success", ({ config }) => {
@@ -61,7 +61,7 @@ await loader.init();
 ### Preloading for Performance
 
 ```typescript
-import loader from "@mf-mono/dynamic-loader";
+import loader from "@mfe-runtine/dynamic-loader";
 
 await loader.init();
 
@@ -75,7 +75,7 @@ const container = await loader.loadRemote("mfe-analytics");
 ### Custom Config Path
 
 ```typescript
-import loader from "@mf-mono/dynamic-loader";
+import loader from "@mfe-runtine/dynamic-loader";
 
 await loader.init({
   configPath: "/custom-config.json",
@@ -87,7 +87,7 @@ await loader.init({
 ### Checking Status
 
 ```typescript
-import loader from "@mf-mono/dynamic-loader";
+import loader from "@mfe-runtine/dynamic-loader";
 
 const status = loader.getStatus();
 console.log(status);
@@ -101,7 +101,7 @@ console.log(status);
 ### Clear Cache
 
 ```typescript
-import loader from "@mf-mono/dynamic-loader";
+import loader from "@mfe-runtine/dynamic-loader";
 
 // Clear all cached data
 loader.clearCache();
@@ -191,7 +191,7 @@ Remove an event listener.
 ## Error Handling
 
 ```typescript
-import loader from "@mf-mono/dynamic-loader";
+import loader from "@mfe-runtine/dynamic-loader";
 
 try {
   await loader.init();
@@ -248,7 +248,7 @@ import type {
   LoaderEventType,
   LoaderEventData,
   Container,
-} from "@mf-mono/dynamic-loader";
+} from "@mfe-runtine/dynamic-loader";
 ```
 
 ## Testing

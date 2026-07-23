@@ -7,7 +7,7 @@ A modern **Vite+ monorepo** demonstrating **auto-discovered Module Federation** 
 ### Auto-Discovery System
 
 - **Zero-config micro-frontends** - Just create `apps/mfe-*` and it's automatically discovered
-- **Convention-based naming** - Package names like `@mf-mono/mfe-widget` auto-generate config
+- **Convention-based naming** - Package names like `@mfe-runtine/mfe-widget` auto-generate config
 - **Automatic port allocation** - Alphabetically sorted, starting at 5174, with conflict detection
 - **Generated configuration** - `remotes.config.json` created at build time (gitignored)
 
@@ -76,7 +76,7 @@ A modern **Vite+ monorepo** demonstrating **auto-discovered Module Federation** 
 ## Project Structure
 
 ```
-mf-mono/
+mfe-runtine/
 ├── apps/
 │   ├── website/                    # Host application (port 5173)
 │   │   ├── public/
@@ -178,14 +178,14 @@ This will:
 **Start all at once (recommended):**
 
 ```bash
-pnpm turbo dev --filter=website --filter=@mf-mono/mfe-widget
+pnpm turbo dev --filter=website --filter=@mfe-runtine/mfe-widget
 ```
 
 **Or start individually:**
 
 ```bash
 # Terminal 1: Start the remote
-pnpm --filter @mf-mono/mfe-widget dev
+pnpm --filter @mfe-runtine/mfe-widget dev
 
 # Terminal 2: Start the host
 pnpm --filter website dev
@@ -211,17 +211,17 @@ NODE_ENV=production pnpm generate:config
 pnpm turbo test
 
 # Specific package
-pnpm --filter @mf-mono/dynamic-loader test
+pnpm --filter @mfe-runtine/dynamic-loader test
 
 # Watch mode
-pnpm --filter @mf-mono/dynamic-loader test -- --watch
+pnpm --filter @mfe-runtine/dynamic-loader test -- --watch
 ```
 
 ### Build Individual Packages
 
 ```bash
 # Build dynamic-loader
-pnpm turbo build --filter=@mf-mono/dynamic-loader
+pnpm turbo build --filter=@mfe-runtine/dynamic-loader
 
 # Build website
 pnpm turbo build --filter=website
@@ -240,7 +240,7 @@ cd apps/mfe-analytics
 
 ```json
 {
-  "name": "@mf-mono/mfe-analytics",
+  "name": "@mfe-runtine/mfe-analytics",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -255,7 +255,7 @@ cd apps/mfe-analytics
 
 **Key points**:
 
-- Name MUST follow `@mf-mono/mfe-*` pattern
+- Name MUST follow `@mfe-runtine/mfe-*` pattern
 - Add `mf-config.port` for desired port (optional, auto-assigned if missing)
 
 ### Step 3: Add `vite.config.ts`
@@ -308,8 +308,8 @@ Output:
 
 ```
 ✅ Found 2 micro-frontend(s):
-   - mfe-widget (@mf-mono/mfe-widget) on port 5174
-   - mfe-analytics (@mf-mono/mfe-analytics) on port 5175
+   - mfe-widget (@mfe-runtine/mfe-widget) on port 5174
+   - mfe-analytics (@mfe-runtine/mfe-analytics) on port 5175
 ```
 
 ### Step 6: Load in Host
@@ -335,7 +335,7 @@ new AnalyticsDashboard(container);
 
 ```json
 {
-  "$schema": "../node_modules/@mf-mono/remote-config/schema.json",
+  "$schema": "../node_modules/@mfe-runtine/remote-config/schema.json",
   "remotes": [
     {
       "name": "mfe-widget",
@@ -376,7 +376,7 @@ new AnalyticsDashboard(container);
 #### Initialize Loader
 
 ```typescript
-import { loader } from "@mf-mono/dynamic-loader";
+import { loader } from "@mfe-runtine/dynamic-loader";
 
 await loader.init({
   configPath: "/remotes.config.json",
@@ -422,7 +422,7 @@ loader.clearCache(); // Clear all cached remote containers
 The loader emits 7 lifecycle events:
 
 ```typescript
-import { loader } from "@mf-mono/dynamic-loader";
+import { loader } from "@mfe-runtine/dynamic-loader";
 
 // Config events
 loader.on("config:fetch:start", ({ configPath }) => {
@@ -479,9 +479,9 @@ Ports are auto-assigned using this algorithm:
 Example:
 
 ```
-@mf-mono/mfe-analytics  → 5174  (alphabetically first)
-@mf-mono/mfe-dashboard  → 5175
-@mf-mono/mfe-widget     → 5176  (alphabetically last)
+@mfe-runtine/mfe-analytics  → 5174  (alphabetically first)
+@mfe-runtine/mfe-dashboard  → 5175
+@mfe-runtine/mfe-widget     → 5176  (alphabetically last)
 ```
 
 With explicit port:
@@ -489,7 +489,7 @@ With explicit port:
 ```json
 // apps/mfe-widget/package.json
 {
-  "name": "@mf-mono/mfe-widget",
+  "name": "@mfe-runtine/mfe-widget",
   "mf-config": {
     "port": 5174 // Explicit port assignment
   }
@@ -581,11 +581,11 @@ Turborepo caches build outputs based on:
 Example:
 
 ```bash
-pnpm turbo build --filter=@mf-mono/dynamic-loader
+pnpm turbo build --filter=@mfe-runtine/dynamic-loader
 # Cache miss, executing...
 # ✓ Build complete
 
-pnpm turbo build --filter=@mf-mono/dynamic-loader
+pnpm turbo build --filter=@mfe-runtine/dynamic-loader
 # Cache hit, replaying logs
 # ⚡ FULL TURBO
 ```
@@ -614,7 +614,7 @@ declare module "mfe-widget/CounterWidget" {
 ### Loader Types
 
 ```typescript
-import type { DynamicLoader, LoaderConfig, LoaderStatus } from "@mf-mono/dynamic-loader";
+import type { DynamicLoader, LoaderConfig, LoaderStatus } from "@mfe-runtine/dynamic-loader";
 
 const config: LoaderConfig = {
   configPath: "/remotes.config.json",
@@ -788,13 +788,13 @@ Benefits:
 pnpm turbo test
 
 # Run specific package tests
-pnpm --filter @mf-mono/dynamic-loader test
+pnpm --filter @mfe-runtine/dynamic-loader test
 
 # Watch mode
-pnpm --filter @mf-mono/dynamic-loader test -- --watch
+pnpm --filter @mfe-runtine/dynamic-loader test -- --watch
 
 # Coverage
-pnpm --filter @mf-mono/dynamic-loader test -- --coverage
+pnpm --filter @mfe-runtine/dynamic-loader test -- --coverage
 ```
 
 ### Integration Tests
@@ -810,7 +810,7 @@ The host application has integration tests for:
 
 ```bash
 # Start dev servers
-pnpm turbo dev --filter=website --filter=@mf-mono/mfe-widget
+pnpm turbo dev --filter=website --filter=@mfe-runtine/mfe-widget
 
 # Visit http://localhost:5173
 # - Widget should load automatically
@@ -835,7 +835,7 @@ pnpm turbo dev --filter=website --filter=@mf-mono/mfe-widget
 1. Ensure remote is running:
 
    ```bash
-   pnpm --filter @mf-mono/mfe-widget dev
+   pnpm --filter @mfe-runtine/mfe-widget dev
    ```
 
 2. Check config exists:
@@ -872,7 +872,7 @@ pnpm turbo dev --filter=website --filter=@mf-mono/mfe-widget
 
 3. Build the remote package first:
    ```bash
-   pnpm turbo build --filter=@mf-mono/mfe-widget
+   pnpm turbo build --filter=@mfe-runtine/mfe-widget
    ```
 
 ### Port conflicts

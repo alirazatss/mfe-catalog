@@ -6,12 +6,12 @@
  * global. See openspec/changes/refactor-to-thin-shell/specs/thin-shell-bootstrap/.
  *
  * This is a shell-local implementation. A cleaner version — including the
- * `setupAuthBridge` helper published from `@mf-mono/auth-ui` — arrives in the
+ * `setupAuthBridge` helper published from `@mfe-runtine/auth-ui` — arrives in the
  * `extract-auth-ui-package` change.
  */
 
-import { tokenManager } from "@mf-mono/auth";
-import { onMFEEvent, MFE_EVENTS } from "@mf-mono/events";
+import { tokenManager } from "@mfe-runtine/auth";
+import { onMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
 
 interface MFEAuthBridge {
   version: string;

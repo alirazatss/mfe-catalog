@@ -5,7 +5,7 @@ Production micro-frontends require secure authentication with centralized token 
 ## What Changes
 
 - **Shell Auth System**: Implement real authentication provider in shell application with login/logout flows, JWT token management, and automatic token refresh
-- **Token Manager Package**: Create shared `@mf-mono/auth` package managing access tokens in memory and refresh tokens via HttpOnly cookies
+- **Token Manager Package**: Create shared `@mfe-runtine/auth` package managing access tokens in memory and refresh tokens via HttpOnly cookies
 - **Auth Propagation**: Establish pattern for passing authentication context from shell to MFEs via props and events
 - **Protected Routes**: Implement route guards in shell that require authentication before rendering MFEs
 - **MFE Integration**: Update MFE examples to consume auth tokens for authenticated API calls using Axios interceptors

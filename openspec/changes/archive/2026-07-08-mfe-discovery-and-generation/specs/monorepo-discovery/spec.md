@@ -82,12 +82,12 @@ The system SHALL derive Module Federation scope by converting package name to ca
 
 #### Scenario: Scoped package name converted
 
-- **WHEN** package name is `@mf-mono/mfe-widget`
+- **WHEN** package name is `@mfe-runtine/mfe-widget`
 - **THEN** scope is `widget` (strips scope and mfe- prefix, camelCase)
 
 #### Scenario: Multi-word name converted
 
-- **WHEN** package name is `@mf-mono/mfe-user-profile`
+- **WHEN** package name is `@mfe-runtine/mfe-user-profile`
 - **THEN** scope is `userProfile` (camelCase conversion)
 
 #### Scenario: Custom scope override

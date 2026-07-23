@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { onMFEEvent, MFE_EVENTS } from "@mf-mono/events";
+import { onMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
 
 /**
  * Component that listens for cross-MFE navigation events
