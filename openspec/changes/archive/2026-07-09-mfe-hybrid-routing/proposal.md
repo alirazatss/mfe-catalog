@@ -31,8 +31,8 @@ As micro-frontends grow in complexity, they need their own internal routing (e.g
 
 **Code Changes:**
 
-- `apps/website/` - Add React Router, route configuration, layout components, route guards
-- `apps/mfe-widget/` - Update to accept `basePath` prop, add internal routing (example)
+- `apps/shells/website/` - Add React Router, route configuration, layout components, route guards
+- `apps/mfes/mfe-widget/` - Update to accept `basePath` prop, add internal routing (example)
 - `packages/` - New shared package for routing utilities (optional)
 
 **Dependencies:**

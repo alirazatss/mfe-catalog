@@ -31,29 +31,29 @@ The shell today catches errors via a single React `ErrorBoundary` and the dynami
 
 **Affected code:**
 
-- New: `apps/website/src/error-bridge.ts` — implementation of `ErrorBridge` class and `setupErrorBridge()` populating `window.__MFE_ERROR__`
-- `apps/website/src/main.ts` — bootstrap calls `setupErrorBridge()` before setting up other bridges
-- `apps/website/src/critical-error.ts` — renders critical-error template into `#app` on unrecoverable failures
-- `apps/website/index.html` — includes CSS for critical-error and slot-error placeholders
+- New: `apps/shells/website/src/error-bridge.ts` — implementation of `ErrorBridge` class and `setupErrorBridge()` populating `window.__MFE_ERROR__`
+- `apps/shells/website/src/main.ts` — bootstrap calls `setupErrorBridge()` before setting up other bridges
+- `apps/shells/website/src/critical-error.ts` — renders critical-error template into `#app` on unrecoverable failures
+- `apps/shells/website/index.html` — includes CSS for critical-error and slot-error placeholders
 - `packages/dynamic-loader/src/DynamicLoader.ts` — adds `retryLoad(name, slotId)` method; wraps `loader.load` steps with error boundary that emits standard events and renders slot fallback via a caller-provided renderer
 - `packages/dynamic-loader/src/error-renderer.ts` — default slot fallback renderer (vanilla DOM) that the shell wires up
-- `apps/mfe-widget/src/App.tsx` (and any future MFE) — wrap the root in `react-error-boundary` and report via `window.__MFE_ERROR__.report()`
+- `apps/mfes/mfe-widget/src/App.tsx` (and any future MFE) — wrap the root in `react-error-boundary` and report via `window.__MFE_ERROR__.report()`
 - `packages/auth/src/TokenManager.ts` — expose `refreshWithBackoff()` and `clearSession()` if not already exposed; emit `refresh:failed` events
-- `apps/website/src/main.ts` — subscribe to `refresh:failed`; call `tokenManager.refreshWithBackoff()`; on final failure `tokenManager.clearSession()` and redirect to `/login?returnUrl=<current>`
-- `apps/website/public/manifest-cache.ts` (client cache utility) — reads/writes the manifest to `localStorage` with a 24 h TTL
+- `apps/shells/website/src/main.ts` — subscribe to `refresh:failed`; call `tokenManager.refreshWithBackoff()`; on final failure `tokenManager.clearSession()` and redirect to `/login?returnUrl=<current>`
+- `apps/shells/website/public/manifest-cache.ts` (client cache utility) — reads/writes the manifest to `localStorage` with a 24 h TTL
 
 **Affected dependencies:**
 
-- `apps/mfe-widget/package.json` — add `react-error-boundary` (small, common package)
+- `apps/mfes/mfe-widget/package.json` — add `react-error-boundary` (small, common package)
 - Future MFEs — same
 
 **Affected tests:**
 
-- New: `apps/website/src/error-bridge.test.ts` covering API shape, event dispatch, subscribers
+- New: `apps/shells/website/src/error-bridge.test.ts` covering API shape, event dispatch, subscribers
 - New: `packages/dynamic-loader/src/error-renderer.test.ts` covering fallback rendering, retry button wiring
-- New: `apps/website/src/critical-error.test.ts` covering the render helper
+- New: `apps/shells/website/src/critical-error.test.ts` covering the render helper
 - Updated: `packages/dynamic-loader/src/DynamicLoader.test.ts` — cover retry, fallback rendering, error event emission
-- New: MFE error-boundary tests in `apps/mfe-widget/src/App.test.tsx` (throw a synthetic error, assert fallback appears, assert `window.__MFE_ERROR__.report` was called)
+- New: MFE error-boundary tests in `apps/mfes/mfe-widget/src/App.test.tsx` (throw a synthetic error, assert fallback appears, assert `window.__MFE_ERROR__.report` was called)
 - New: integration test that simulates a failed remote fetch and asserts other slots remain functional
 
 **Migration risk:**

@@ -8,8 +8,8 @@ Cross-MFE navigation today goes through the `mfe:navigate` event bus. This works
 - Shell wires the bridge into its bootstrap: bridge coordinates `history.pushState`, notifies subscribers, and drives the MFE loader for feature route changes
 - Update `packages/dynamic-loader/` types to export a `MFENavigationAPI` interface so MFEs and shells share the contract
 - Update the existing `mfe:navigate` event bus listener to internally call the bridge — MFEs that emit the event still work; MFEs that call the bridge directly get the richer API
-- Update `apps/mfe-widget/src/utils/navigation.ts` to feature-detect and prefer the bridge; keep event-bus emission as a fallback for zero-cost migration
-- Update `apps/mfe-header` (once it exists per `chrome-mfe-header`) to use the bridge for nav clicks and active-route highlighting
+- Update `apps/mfes/mfe-widget/src/utils/navigation.ts` to feature-detect and prefer the bridge; keep event-bus emission as a fallback for zero-cost migration
+- Update `apps/mfes/mfe-header` (once it exists per `chrome-mfe-header`) to use the bridge for nav clicks and active-route highlighting
 - Emit `mfe:navigation:changed` events for observability (analytics MFEs can subscribe)
 
 ## Capabilities
@@ -26,11 +26,11 @@ Cross-MFE navigation today goes through the `mfe:navigate` event bus. This works
 
 **Affected code:**
 
-- New: `apps/website/src/navigation-bridge.ts` — implementation of `NavigationBridge` class and `setupNavigationBridge(loader)` helper called from bootstrap
-- `apps/website/src/main.ts` — bootstrap invokes `setupNavigationBridge(loader)` after auth setup and manifest load; existing `mfe:navigate` handling remains but delegates to the bridge
+- New: `apps/shells/website/src/navigation-bridge.ts` — implementation of `NavigationBridge` class and `setupNavigationBridge(loader)` helper called from bootstrap
+- `apps/shells/website/src/main.ts` — bootstrap invokes `setupNavigationBridge(loader)` after auth setup and manifest load; existing `mfe:navigate` handling remains but delegates to the bridge
 - `packages/dynamic-loader/src/index.ts` — export `MFENavigationAPI`, `NavigationEvent`, `NavigateOptions` types
-- `apps/mfe-widget/src/utils/navigation.ts` — prefer bridge, fall back to event bus
-- `apps/mfe-header/src/utils/navigate.ts` (once created in `chrome-mfe-header`) — prefer bridge, fall back to event bus
+- `apps/mfes/mfe-widget/src/utils/navigation.ts` — prefer bridge, fall back to event bus
+- `apps/mfes/mfe-header/src/utils/navigate.ts` (once created in `chrome-mfe-header`) — prefer bridge, fall back to event bus
 - Docs: update `packages/dynamic-loader/README.md` with bridge API reference
 
 **Affected dependencies:**
@@ -40,8 +40,8 @@ Cross-MFE navigation today goes through the `mfe:navigate` event bus. This works
 
 **Affected tests:**
 
-- New: `apps/website/src/navigation-bridge.test.ts` covering the full API (navigate, back, forward, popstate handling, subscriber notifications, active route matching)
-- Updated: `apps/mfe-widget/src/utils/navigation.test.ts` — assert bridge is preferred when available and event-bus fallback works otherwise
+- New: `apps/shells/website/src/navigation-bridge.test.ts` covering the full API (navigate, back, forward, popstate handling, subscriber notifications, active route matching)
+- Updated: `apps/mfes/mfe-widget/src/utils/navigation.test.ts` — assert bridge is preferred when available and event-bus fallback works otherwise
 - New: integration test verifying that emitting `mfe:navigate` still works AFTER the bridge is set up (bridge intercepts and normalizes)
 
 **Migration risk:**

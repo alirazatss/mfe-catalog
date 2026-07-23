@@ -5,7 +5,7 @@ We have successfully implemented:
 - **Phase 0-2**: Auto-discovery, config generation, and Turborepo integration
 - **Phase 3**: Runtime dynamic loader (`@mfe-runtine/dynamic-loader`)
 
-**Current state**: The host application (`apps/website`) uses hardcoded Module Federation imports:
+**Current state**: The host application (`apps/shells/website`) uses hardcoded Module Federation imports:
 
 ```typescript
 // Hardcoded import
@@ -75,7 +75,7 @@ remotes: {
 **Implementation**:
 
 ```typescript
-// apps/website/src/config/remotes.ts
+// apps/shells/website/src/config/remotes.ts
 import { loader } from "@mfe-runtine/dynamic-loader";
 
 export async function initializeRemotes() {
@@ -112,7 +112,7 @@ export { loader };
 **Implementation**:
 
 ```typescript
-// apps/website/src/RemoteWidgetLoader.tsx
+// apps/shells/website/src/RemoteWidgetLoader.tsx
 import { loader } from "./config/remotes";
 
 const CounterWidget = lazy(async () => {
@@ -177,7 +177,7 @@ federation({
 **Implementation**:
 
 ```typescript
-// apps/website/src/config/remotes.ts
+// apps/shells/website/src/config/remotes.ts
 if (import.meta.env.DEV) {
   loader.on("config:fetch:success", ({ config }) => {
     console.log("Remotes config loaded:", config);

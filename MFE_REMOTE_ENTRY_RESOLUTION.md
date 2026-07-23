@@ -30,7 +30,7 @@ Module Federation requires a bootstrap entry point that:
 
 ### Files Modified
 
-#### 1. `apps/mfe-widget/src/bootstrap.ts` (NEW)
+#### 1. `apps/mfes/mfe-widget/src/bootstrap.ts` (NEW)
 
 ```typescript
 // Module Federation Bootstrap Entry Point
@@ -50,7 +50,7 @@ export async function bootstrap(): Promise<void> {
 - Implements `bootstrap()` for standalone mode
 - Uses type-safe globalThis handling for development mode detection
 
-#### 2. `apps/mfe-widget/vite.config.ts` (UPDATED)
+#### 2. `apps/mfes/mfe-widget/vite.config.ts` (UPDATED)
 
 ```typescript
 federation({
@@ -74,7 +74,7 @@ federation({
 - Shared dependencies marked as singleton (only one instance across app)
 - React versions pinned for compatibility
 
-#### 3. `apps/mfe-widget/src/main.ts` (SIMPLIFIED)
+#### 3. `apps/mfes/mfe-widget/src/main.ts` (SIMPLIFIED)
 
 ```typescript
 /**
@@ -153,8 +153,8 @@ pnpm dev:all
 
 - [GETTING_STARTED.md](./GETTING_STARTED.md) - Setup and development guide
 - [executive_summary.md](./executive_summary.md) - Business overview
-- [apps/website/src/config/remotes.ts](./apps/website/src/config/remotes.ts) - Fallback configuration
-- [apps/website/src/shell/manifest.ts](./apps/website/src/shell/manifest.ts) - Configuration loader with fallback
+- [apps/shells/website/src/config/remotes.ts](./apps/shells/website/src/config/remotes.ts) - Fallback configuration
+- [apps/shells/website/src/shell/manifest.ts](./apps/shells/website/src/shell/manifest.ts) - Configuration loader with fallback
 
 ## Next Steps
 

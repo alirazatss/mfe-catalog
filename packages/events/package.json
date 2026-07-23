@@ -16,7 +16,7 @@
     "build": "vp pack",
     "dev": "vp pack --watch",
     "clean": "rm -rf dist",
-    "test": "vitest",
+    "test": "vitest run",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
   },

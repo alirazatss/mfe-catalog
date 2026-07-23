@@ -6,7 +6,7 @@ A modern **Vite+ monorepo** demonstrating **auto-discovered Module Federation** 
 
 ### Auto-Discovery System
 
-- **Zero-config micro-frontends** - Just create `apps/mfe-*` and it's automatically discovered
+- **Zero-config micro-frontends** - Just create `apps/mfes/mfe-*` and it's automatically discovered
 - **Convention-based naming** - Package names like `@mfe-runtine/mfe-widget` auto-generate config
 - **Automatic port allocation** - Alphabetically sorted, starting at 5174, with conflict detection
 - **Generated configuration** - `remotes.config.json` created at build time (gitignored)
@@ -40,7 +40,7 @@ A modern **Vite+ monorepo** demonstrating **auto-discovered Module Federation** 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     Host Application                             │
-│                     (apps/website)                               │
+│                     (apps/shells/website)                               │
 │                                                                   │
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │  Dynamic Loader                                           │   │
@@ -63,7 +63,7 @@ A modern **Vite+ monorepo** demonstrating **auto-discovered Module Federation** 
 ┌─────────────────────────────────────────────────────────────────┐
 │                  Auto-Discovery Pipeline                         │
 │                                                                   │
-│  1. Scan apps/mfe-* directories                                 │
+│  1. Scan apps/mfes/mfe-* directories                                 │
 │  2. Read package.json for name and port                         │
 │  3. Detect port conflicts (alphabetical fallback)               │
 │  4. Derive scope from package name (mfe-widget → widget)        │
@@ -232,8 +232,8 @@ pnpm turbo build --filter=website
 ### Step 1: Create Package
 
 ```bash
-mkdir -p apps/mfe-analytics
-cd apps/mfe-analytics
+mkdir -p apps/mfes/mfe-analytics
+cd apps/mfes/mfe-analytics
 ```
 
 ### Step 2: Add `package.json`
@@ -331,7 +331,7 @@ new AnalyticsDashboard(container);
 
 ### Auto-Generated Config Format
 
-`apps/website/public/remotes.config.json`:
+`apps/shells/website/public/remotes.config.json`:
 
 ```json
 {
@@ -455,7 +455,7 @@ loader.on("remote:preload:success", ({ name }) => {
 });
 ```
 
-**Development mode** (in `apps/website/src/config/remotes.ts`):
+**Development mode** (in `apps/shells/website/src/config/remotes.ts`):
 
 ```typescript
 if (import.meta.env.DEV) {
@@ -487,7 +487,7 @@ Example:
 With explicit port:
 
 ```json
-// apps/mfe-widget/package.json
+// apps/mfes/mfe-widget/package.json
 {
   "name": "@mfe-runtine/mfe-widget",
   "mf-config": {
@@ -520,7 +520,7 @@ The host application has error boundaries that display specific messages:
 
 ### Fallback Strategy
 
-If dynamic loader fails, uncomment static config in `apps/website/vite.config.ts`:
+If dynamic loader fails, uncomment static config in `apps/shells/website/vite.config.ts`:
 
 ```typescript
 federation({
@@ -564,7 +564,7 @@ pnpm turbo build --filter=website --force
     },
     "generate:config": {
       "cache": false,
-      "outputs": ["apps/website/public/remotes.config.json"]
+      "outputs": ["apps/shells/website/public/remotes.config.json"]
     }
   }
 }
@@ -595,7 +595,7 @@ pnpm turbo build --filter=@mfe-runtine/dynamic-loader
 ### Remote Type Declarations
 
 ```typescript
-// apps/website/src/types/remotes.d.ts
+// apps/shells/website/src/types/remotes.d.ts
 declare module "mfe-widget/CounterWidget" {
   export class CounterWidget {
     constructor(
@@ -658,10 +658,10 @@ pnpm generate:config
 pnpm turbo build
 
 # 4. Deploy host to hosting (Vercel, Netlify, etc.)
-# Deploy apps/website/dist/
+# Deploy apps/shells/website/dist/
 
 # 5. Deploy each remote to CDN
-# Deploy apps/mfe-widget/dist/ to cdn.example.com/mfe-widget/v{hash}/
+# Deploy apps/mfes/mfe-widget/dist/ to cdn.example.com/mfe-widget/v{hash}/
 ```
 
 ### Versioning Strategy
@@ -738,10 +738,10 @@ pnpm tsx scripts/validate-manifest.ts manifest.production.json
 
 The system supports two formats:
 
-| Format                | Purpose                        | Environment | Location               |
-| --------------------- | ------------------------------ | ----------- | ---------------------- |
-| `remotes.config.json` | Development runtime config     | Development | `apps/website/public/` |
-| `manifest.json`       | Production deployment manifest | Production  | CDN root               |
+| Format                | Purpose                        | Environment | Location                      |
+| --------------------- | ------------------------------ | ----------- | ----------------------------- |
+| `remotes.config.json` | Development runtime config     | Development | `apps/shells/website/public/` |
+| `manifest.json`       | Production deployment manifest | Production  | CDN root                      |
 
 **Development** uses `remotes.config.json` with localhost URLs for hot reloading.  
 **Production** uses `manifest.json` fetched from CDN with versioned, immutable URLs and integrity hashes.
@@ -841,7 +841,7 @@ pnpm turbo dev --filter=website --filter=@mfe-runtine/mfe-widget
 2. Check config exists:
 
    ```bash
-   cat apps/website/public/remotes.config.json
+   cat apps/shells/website/public/remotes.config.json
    ```
 
 3. Regenerate config:
@@ -864,7 +864,7 @@ pnpm turbo dev --filter=website --filter=@mfe-runtine/mfe-widget
 1. Check type declarations exist:
 
    ```bash
-   cat apps/website/src/types/remotes.d.ts
+   cat apps/shells/website/src/types/remotes.d.ts
    ```
 
 2. Restart TypeScript server (VS Code):
@@ -934,7 +934,7 @@ pnpm turbo dev --filter=website --filter=@mfe-runtine/mfe-widget
 ## Documentation
 
 - [Production Deployment Guide](./docs/PRODUCTION_DEPLOYMENT.md) - Production URL configuration
-- [Remote Widget README](./apps/mfe-widget/README.md) - Remote application docs
+- [Remote Widget README](./apps/mfes/mfe-widget/README.md) - Remote application docs
 - [OpenSpec Specifications](./openspec/specs/) - Living documentation
   - [Monorepo Discovery](./openspec/specs/monorepo-discovery/spec.md)
   - [Config Generation](./openspec/specs/config-generation/spec.md)

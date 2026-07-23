@@ -2,7 +2,7 @@
 
 ## 1. Add Dynamic Loader Dependency
 
-- [x] 1.1 Update `apps/website/package.json` to add `@mfe-runtine/dynamic-loader` dependency
+- [x] 1.1 Update `apps/shells/website/package.json` to add `@mfe-runtine/dynamic-loader` dependency
 - [x] 1.2 Run `pnpm install` to link workspace package
 
 **Depends on**: mfe-dynamic-loader complete  
@@ -11,7 +11,7 @@
 
 ## 2. Initialize Dynamic Loader
 
-- [x] 2.1 Update `apps/website/src/config/remotes.ts` to import DynamicLoader
+- [x] 2.1 Update `apps/shells/website/src/config/remotes.ts` to import DynamicLoader
 - [x] 2.2 Initialize loader: `const loader = new DynamicLoader(); await loader.init();`
 - [x] 2.3 Export loader instance for use in other modules
 - [x] 2.4 Add event listeners for logging (console.log on events)
@@ -22,7 +22,7 @@
 
 ## 3. Update Remote Loading
 
-- [x] 3.1 Update `apps/website/src/RemoteWidgetLoader.ts` to use loader
+- [x] 3.1 Update `apps/shells/website/src/RemoteWidgetLoader.ts` to use loader
 - [x] 3.2 Replace `import("remoteWidget/CounterWidget")` with `loader.loadRemote('mfe-widget')`
 - [x] 3.3 Update remote name from "remoteWidget" to "mfe-widget"
 - [x] 3.4 Handle loader Promise (loading states, errors)

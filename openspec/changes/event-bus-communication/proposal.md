@@ -26,9 +26,9 @@ Micro-frontends need a lightweight, type-safe way to communicate without tight c
 
 **Affected Code**:
 
-- `apps/website/src/utils/navigation.ts` — Use event bus package instead of direct CustomEvent
-- `apps/website/src/components/NavigationEventListener.tsx` — Use event bus subscription
-- `apps/mfe-widget/src/utils/navigation.ts` — Use event bus package
+- `apps/shells/website/src/utils/navigation.ts` — Use event bus package instead of direct CustomEvent
+- `apps/shells/website/src/components/NavigationEventListener.tsx` — Use event bus subscription
+- `apps/mfes/mfe-widget/src/utils/navigation.ts` — Use event bus package
 
 **New Files**:
 

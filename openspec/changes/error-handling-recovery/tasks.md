@@ -1,6 +1,6 @@
 ## 1. Enhanced Error Boundary Component
 
-- [ ] 1.1 Update `apps/website/src/components/ErrorBoundary.tsx`
+- [ ] 1.1 Update `apps/shells/website/src/components/ErrorBoundary.tsx`
 - [ ] 1.2 Add retry state (retryCount, maxRetries)
 - [ ] 1.3 Add retry handler that resets error state
 - [ ] 1.4 Add componentName prop for contextual error messages
@@ -17,7 +17,7 @@
 
 ## 2. MFE Error Fallback Component
 
-- [ ] 2.1 Create `apps/website/src/components/MFEErrorFallback.tsx`
+- [ ] 2.1 Create `apps/shells/website/src/components/MFEErrorFallback.tsx`
 - [ ] 2.2 Accept mfeName prop (e.g., "Widget Dashboard")
 - [ ] 2.3 Show friendly message: "Unable to load {mfeName}"
 - [ ] 2.4 Include retry button
@@ -33,7 +33,7 @@
 
 ## 3. Wrap MFE Routes with Error Boundaries
 
-- [ ] 3.1 Update `apps/website/src/App.tsx`
+- [ ] 3.1 Update `apps/shells/website/src/App.tsx`
 - [ ] 3.2 Wrap each lazy-loaded MFE route with ErrorBoundary
 - [ ] 3.3 Use MFEErrorFallback as fallback component
 - [ ] 3.4 Pass mfeName prop to each boundary
@@ -63,7 +63,7 @@
 
 ## 5. API Error Retry Interceptor
 
-- [ ] 5.1 Update `apps/mfe-widget/src/api/client.ts` (or create shared API utils)
+- [ ] 5.1 Update `apps/mfes/mfe-widget/src/api/client.ts` (or create shared API utils)
 - [ ] 5.2 Add Axios response interceptor for network errors
 - [ ] 5.3 Implement exponential backoff (1s, 2s, 4s)
 - [ ] 5.4 Max 3 retry attempts
@@ -79,7 +79,7 @@
 
 ## 6. Toast Notification for API Errors
 
-- [ ] 6.1 Create `apps/website/src/components/ApiErrorToast.tsx`
+- [ ] 6.1 Create `apps/shells/website/src/components/ApiErrorToast.tsx`
 - [ ] 6.2 Listen for MFE_EVENTS.ERROR_API_FAILED
 - [ ] 6.3 Show toast notification on API error
 - [ ] 6.4 Display user-friendly message
@@ -111,7 +111,7 @@
 
 ## 8. Degraded Mode Banner
 
-- [ ] 8.1 Create `apps/website/src/components/DegradedModeBanner.tsx`
+- [ ] 8.1 Create `apps/shells/website/src/components/DegradedModeBanner.tsx`
 - [ ] 8.2 Show banner when MFE load failures detected
 - [ ] 8.3 Message: "Some features are currently unavailable"
 - [ ] 8.4 Include refresh button

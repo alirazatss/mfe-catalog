@@ -65,19 +65,19 @@
 - [ ] 8.3 Configure `package.json` `exports` map with subpath entries and correct `types` for each
 - [ ] 8.4 Verify tree-shaking via a smoke build that imports only `@mfe-runtine/auth-ui/bridge` and confirms React is not resolved
 
-## 9. Integrate Into apps/website
+## 9. Integrate Into apps/shells/website
 
-- [ ] 9.1 Add `@mfe-runtine/auth-ui: workspace:*` to `apps/website/package.json`
+- [ ] 9.1 Add `@mfe-runtine/auth-ui: workspace:*` to `apps/shells/website/package.json`
 - [ ] 9.2 Update the shell's bootstrap (from `refactor-to-thin-shell`) to call `setupAuthBridge()` from `@mfe-runtine/auth-ui/bridge`
 - [ ] 9.3 Ensure the shell still passes E2E: unauthenticated navigation to a protected route redirects to `/login` (the login route now needs a way to render `<LoginPage />` — either a small React island in the shell or a login MFE, tracked separately)
-- [ ] 9.4 Update `apps/website/src/test/*` to import mocks from the new package location if needed
+- [ ] 9.4 Update `apps/shells/website/src/test/*` to import mocks from the new package location if needed
 
 ## 10. Documentation
 
 - [ ] 10.1 Write `packages/auth-ui/README.md` covering: install, quick start, props API, theming, subpath imports, examples
 - [ ] 10.2 Add example snippet showing pure-vanilla-shell usage via `setupAuthBridge`
 - [ ] 10.3 Add example snippet showing React-tree usage via `AuthProvider` + `ProtectedRoute`
-- [ ] 10.4 Document breaking-change migration for shells previously importing from `apps/website/src/`
+- [ ] 10.4 Document breaking-change migration for shells previously importing from `apps/shells/website/src/`
 
 ## 11. Verification
 
@@ -85,4 +85,4 @@
 - [ ] 11.2 Run `pnpm test` at repo root and confirm all new tests pass with ≥90% coverage on `packages/auth-ui/`
 - [ ] 11.3 Manually verify in dev mode: shell renders `<LoginPage />` at `/login`, submitting valid mock credentials updates auth state, protected routes then load their MFEs
 - [ ] 11.4 Manually verify: `window.__MFE_AUTH__` is populated by `setupAuthBridge()` and matches the ADR-0002 contract
-- [ ] 11.5 Confirm no leftover references to deleted `apps/website/src/components/LoginPage.tsx`, `AuthProvider.tsx`, `ProtectedRoute.tsx`
+- [ ] 11.5 Confirm no leftover references to deleted `apps/shells/website/src/components/LoginPage.tsx`, `AuthProvider.tsx`, `ProtectedRoute.tsx`

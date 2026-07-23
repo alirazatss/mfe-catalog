@@ -8,7 +8,7 @@ Create one Playwright E2E test that validates the complete MVP user journey: una
 
 ### E2E Test File Structure
 
-**Location**: `tests/e2e/mvp-smoke.spec.ts` (or `apps/website/tests/e2e/...`)
+**Location**: `tests/e2e/mvp-smoke.spec.ts` (or `apps/shells/website/tests/e2e/...`)
 
 **Framework**: Playwright (installed in MVP environment)
 

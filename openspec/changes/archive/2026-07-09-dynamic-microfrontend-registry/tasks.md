@@ -16,8 +16,8 @@
 
 ## 2. Rename Existing Remote to Follow Convention
 
-- [ ] 2.1 Rename `apps/remote-widget/` to `apps/mfe-widget/`
-- [ ] 2.2 Update `apps/mfe-widget/package.json` name to `@mfe-runtine/mfe-widget`
+- [ ] 2.1 Rename `apps/mfes/remote-widget/` to `apps/mfes/mfe-widget/`
+- [ ] 2.2 Update `apps/mfes/mfe-widget/package.json` name to `@mfe-runtine/mfe-widget`
 - [ ] 2.3 Update all import paths referencing remote-widget
 - [ ] 2.4 Update root `package.json` scripts (dev:remote → dev:mfe-widget)
 - [ ] 2.5 Test: `turbo build` should build mfe-widget successfully
@@ -60,7 +60,7 @@
 ## 5. Implement Discovery Logic
 
 - [ ] 5.1 Implement `packages/monorepo-tools/src/discovery.ts`
-- [ ] 5.2 Add `discoverMicroFrontends()` function using glob to find `apps/mfe-*/`
+- [ ] 5.2 Add `discoverMicroFrontends()` function using glob to find `apps/mfes/mfe-*/`
 - [ ] 5.3 Read package.json from each discovered directory
 - [ ] 5.4 Extract name, version, description from package.json
 - [ ] 5.5 Extract optional `mfe` config from package.json (port, scope overrides)
@@ -96,7 +96,7 @@
 - [ ] 7.3 Add CLI argument parsing (--output, --dry-run, --environment)
 - [ ] 7.4 Implement main function: discover → generate → write to file
 - [ ] 7.5 Add error handling with helpful messages
-- [ ] 7.6 Default output path: `apps/website/public/remotes.config.json`
+- [ ] 7.6 Default output path: `apps/shells/website/public/remotes.config.json`
 - [ ] 7.7 Create parent directories if not exist
 - [ ] 7.8 Add execute permission and test: `tsx scripts/generate-config.ts`
 
@@ -108,11 +108,11 @@
 
 - [ ] 8.1 Update `turbo.json` to add `generate:config` task
 - [ ] 8.2 Configure task with `"dependsOn": ["^build"]` (depends on all mfe builds)
-- [ ] 8.3 Configure task with `"outputs": ["apps/website/public/remotes.config.json"]`
+- [ ] 8.3 Configure task with `"outputs": ["apps/shells/website/public/remotes.config.json"]`
 - [ ] 8.4 Add `prebuild` script to website package.json calling generate:config
 - [ ] 8.5 Update website build task in turbo.json to depend on generate:config
 - [ ] 8.6 Test: `turbo build --filter website` should auto-generate config
-- [ ] 8.7 Test: Verify config appears in `apps/website/public/` directory
+- [ ] 8.7 Test: Verify config appears in `apps/shells/website/public/` directory
 - [ ] 8.8 Test: Second run should use cache (instant)
 
 **Depends on**: Section 7 (CLI script ready)  
@@ -121,7 +121,7 @@
 
 ## 9. Gitignore Generated Config
 
-- [ ] 9.1 Add `apps/website/public/remotes.config.json` to `.gitignore`
+- [ ] 9.1 Add `apps/shells/website/public/remotes.config.json` to `.gitignore`
 - [ ] 9.2 Verify git status doesn't show config as untracked after generation
 - [ ] 9.3 Document in README that config is auto-generated (don't edit manually)
 
@@ -188,10 +188,10 @@
 
 ## 14. Integrate Dynamic Loader into Host Application
 
-- [ ] 14.1 Update `apps/website/package.json` to add dependency: `@mfe-runtine/dynamic-loader`
-- [ ] 14.2 Update `apps/website/src/config/remotes.ts` to import and use DynamicLoader
+- [ ] 14.1 Update `apps/shells/website/package.json` to add dependency: `@mfe-runtine/dynamic-loader`
+- [ ] 14.2 Update `apps/shells/website/src/config/remotes.ts` to import and use DynamicLoader
 - [ ] 14.3 Initialize loader: `const loader = new DynamicLoader(); await loader.init();`
-- [ ] 14.4 Update `apps/website/src/RemoteWidgetLoader.ts` to use `loader.loadRemote('mfe-widget')`
+- [ ] 14.4 Update `apps/shells/website/src/RemoteWidgetLoader.ts` to use `loader.loadRemote('mfe-widget')`
 - [ ] 14.5 Replace hardcoded `import("remoteWidget/CounterWidget")` with dynamic loader
 - [ ] 14.6 Keep static vite.config.ts remotes as fallback (commented, documented)
 - [ ] 14.7 Add event listeners for logging (console.log on config/remote load events)
@@ -231,7 +231,7 @@
 
 ## 17. Create Second Micro-Frontend for Testing
 
-- [ ] 17.1 Create `apps/mfe-dashboard/` by copying mfe-widget structure
+- [ ] 17.1 Create `apps/mfes/mfe-dashboard/` by copying mfe-widget structure
 - [ ] 17.2 Update package.json: name `@mfe-runtine/mfe-dashboard`, version `1.0.0`
 - [ ] 17.3 Implement simple dashboard component (different from counter)
 - [ ] 17.4 Update vite.config.ts with Module Federation config (expose dashboard)
@@ -368,8 +368,8 @@
 ## 24. Documentation - README Updates
 
 - [ ] 24.1 Update root `README.md` with "Monorepo Structure" section
-- [ ] 24.2 Document `apps/mfe-*` naming convention
-- [ ] 24.3 Document how to add new micro-frontend (create apps/mfe-{name}/)
+- [ ] 24.2 Document `apps/mfes/mfe-*` naming convention
+- [ ] 24.3 Document how to add new micro-frontend (create apps/mfes/mfe-{name}/)
 - [ ] 24.4 Document Turborepo commands:
   - `turbo build` - Build all apps
   - `turbo dev` - Start all dev servers
@@ -420,7 +420,7 @@
 - [ ] 27.3 Add template vite.config.ts with Module Federation setup
 - [ ] 27.4 Add template src/ structure with example component
 - [ ] 27.5 Create generator script: `scripts/create-mfe.ts`
-- [ ] 27.6 Script prompts for name, copies template to `apps/mfe-{name}/`
+- [ ] 27.6 Script prompts for name, copies template to `apps/mfes/mfe-{name}/`
 - [ ] 27.7 Script replaces placeholders in package.json
 - [ ] 27.8 Test: Run script to create new mfe, verify it works end-to-end
 

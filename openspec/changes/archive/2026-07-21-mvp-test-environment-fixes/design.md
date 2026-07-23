@@ -14,7 +14,7 @@ Fix 59 failing tests by: (1) configuring DOM environments in all vitest.config.t
 
 **Files affected**:
 
-- 9 vitest.config.ts files (packages/auth, packages/auth-ui, packages/dynamic-loader, packages/events, packages/monorepo-tools, packages/remote-config, apps/website, apps/mfe-widget, root)
+- 9 vitest.config.ts files (packages/auth, packages/auth-ui, packages/dynamic-loader, packages/events, packages/monorepo-tools, packages/remote-config, apps/shells/website, apps/mfes/mfe-widget, root)
 
 **Implementation**:
 
@@ -58,7 +58,7 @@ interface MFEAuthBridge {
 
 ### Shell Test Setup
 
-**Approach**: Enhance `apps/website/src/shell/` tests to mock DynamicLoader lifecycle.
+**Approach**: Enhance `apps/shells/website/src/shell/` tests to mock DynamicLoader lifecycle.
 
 **Mock methods needed**:
 
@@ -71,7 +71,7 @@ interface MFEAuthBridge {
 - `getSlotOccupant(slotId)` → returns MFE name or null
 - `clearSlot(slotId)`
 
-**Location**: `apps/website/src/test/mock-loader.ts`
+**Location**: `apps/shells/website/src/test/mock-loader.ts`
 
 ## Trade-offs
 

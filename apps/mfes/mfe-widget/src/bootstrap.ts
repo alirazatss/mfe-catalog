@@ -14,7 +14,7 @@ export { CounterWidget } from "./components/CounterWidget.js";
 export { App };
 
 interface LifecycleProps extends MFEProps {
-  user: ComponentProps<typeof App>["user"];
+  user?: ComponentProps<typeof App>["user"];
 }
 
 const roots = new Map<HTMLElement, Root>();

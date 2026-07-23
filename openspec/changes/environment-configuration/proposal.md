@@ -27,8 +27,8 @@ None - this is additive, doesn't modify existing capabilities
 
 **Affected Code**:
 
-- `apps/website/src/main.tsx` — Load config before rendering app
-- `apps/mfe-widget/src/App.tsx` — Receive config from shell via props
+- `apps/shells/website/src/main.tsx` — Load config before rendering app
+- `apps/mfes/mfe-widget/src/App.tsx` — Receive config from shell via props
 - API clients will use `config.apiBaseUrl` instead of hardcoded URLs
 
 **New Files**:

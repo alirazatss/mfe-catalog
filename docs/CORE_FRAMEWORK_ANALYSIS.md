@@ -104,7 +104,7 @@ apiClient.interceptors.response.use(
 
 ### How to Implement in Our MFEs
 
-**File**: `apps/mfe-widget/src/utils/apiClient.ts`
+**File**: `apps/mfes/mfe-widget/src/utils/apiClient.ts`
 
 Add this to response interceptor:
 
@@ -309,7 +309,7 @@ These are already in `ROADMAP.md`:
 
 **Files to update:**
 
-1. `apps/mfe-widget/src/utils/apiClient.ts`
+1. `apps/mfes/mfe-widget/src/utils/apiClient.ts`
 2. Any future MFE's `apiClient.ts`
 
 **Code to add** (see "How to Implement" section above)

@@ -81,18 +81,18 @@
 
 ---
 
-## 6. Configure Shell Testing (apps/website)
+## 6. Configure Shell Testing (apps/shells/website)
 
-- [ ] 6.1 Create `apps/website/vitest.config.ts`
+- [ ] 6.1 Create `apps/shells/website/vitest.config.ts`
 - [ ] 6.2 Configure happy-dom environment
 - [ ] 6.3 Add @vitejs/plugin-react to config
 - [ ] 6.4 Configure path aliases to match tsconfig
 - [ ] 6.5 Set coverage thresholds (70/65/70/70)
-- [ ] 6.6 Add test scripts to `apps/website/package.json`
-- [ ] 6.7 Create `apps/website/src/test/` directory
-- [ ] 6.8 Create `apps/website/src/test/setup.ts`
-- [ ] 6.9 Create `apps/website/src/test/utils.tsx` (renderWithAuth, renderWithRouter)
-- [ ] 6.10 Create `apps/website/src/test/mocks.ts` (mockUser, mockApiResponse)
+- [ ] 6.6 Add test scripts to `apps/shells/website/package.json`
+- [ ] 6.7 Create `apps/shells/website/src/test/` directory
+- [ ] 6.8 Create `apps/shells/website/src/test/setup.ts`
+- [ ] 6.9 Create `apps/shells/website/src/test/utils.tsx` (renderWithAuth, renderWithRouter)
+- [ ] 6.10 Create `apps/shells/website/src/test/mocks.ts` (mockUser, mockApiResponse)
 
 **Depends on**: Section 1  
 **Owner**: Frontend developer  
@@ -154,17 +154,17 @@
 
 ---
 
-## 10. Configure MFE Testing (apps/mfe-widget)
+## 10. Configure MFE Testing (apps/mfes/mfe-widget)
 
-- [ ] 10.1 Create `apps/mfe-widget/vitest.config.ts`
+- [ ] 10.1 Create `apps/mfes/mfe-widget/vitest.config.ts`
 - [ ] 10.2 Configure happy-dom environment
 - [ ] 10.3 Add @vitejs/plugin-react to config
 - [ ] 10.4 Set coverage thresholds (70/65/70/70)
-- [ ] 10.5 Add test scripts to `apps/mfe-widget/package.json`
-- [ ] 10.6 Create `apps/mfe-widget/src/test/` directory
-- [ ] 10.7 Create `apps/mfe-widget/src/test/setup.ts`
-- [ ] 10.8 Create `apps/mfe-widget/src/test/utils.tsx`
-- [ ] 10.9 Create `apps/mfe-widget/src/test/mocks.ts`
+- [ ] 10.5 Add test scripts to `apps/mfes/mfe-widget/package.json`
+- [ ] 10.6 Create `apps/mfes/mfe-widget/src/test/` directory
+- [ ] 10.7 Create `apps/mfes/mfe-widget/src/test/setup.ts`
+- [ ] 10.8 Create `apps/mfes/mfe-widget/src/test/utils.tsx`
+- [ ] 10.9 Create `apps/mfes/mfe-widget/src/test/mocks.ts`
 
 **Depends on**: Section 1  
 **Owner**: Frontend developer  
@@ -284,7 +284,7 @@
 
 - packages/auth: 10 unit tests (~80% coverage)
 - packages/events: 9 unit tests (~80% coverage)
-- apps/website: ~25 tests (unit + integration, ~70% coverage)
-- apps/mfe-widget: ~15 tests (unit + integration, ~70% coverage)
+- apps/shells/website: ~25 tests (unit + integration, ~70% coverage)
+- apps/mfes/mfe-widget: ~15 tests (unit + integration, ~70% coverage)
 
 **Total Test Files**: ~15-20 test files

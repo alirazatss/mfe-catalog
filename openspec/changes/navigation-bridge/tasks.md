@@ -6,7 +6,7 @@
 
 ## 2. NavigationBridge Implementation
 
-- [ ] 2.1 Create `apps/website/src/navigation-bridge.ts` with `NavigationBridge` class implementing `MFENavigationAPI`
+- [ ] 2.1 Create `apps/shells/website/src/navigation-bridge.ts` with `NavigationBridge` class implementing `MFENavigationAPI`
 - [ ] 2.2 Implement `navigate(path, options?)`: dedupe same-path calls, build URL from path + query, push or replace state, notify subscribers, drive loader
 - [ ] 2.3 Implement `back`, `forward`, `go(delta)` delegating to `window.history`
 - [ ] 2.4 Implement `getCurrentPath`, `getCurrentQuery` reading from `window.location`
@@ -19,18 +19,18 @@
 
 ## 3. Setup Helper
 
-- [ ] 3.1 Create `setupNavigationBridge(loader)` in `apps/website/src/navigation-bridge.ts`
+- [ ] 3.1 Create `setupNavigationBridge(loader)` in `apps/shells/website/src/navigation-bridge.ts`
 - [ ] 3.2 Make it idempotent: if `window.__MFE_NAVIGATION__` already exists, return the existing instance
-- [ ] 3.3 Wire the bridge into `apps/website/src/main.ts` bootstrap AFTER auth setup and BEFORE any `loader.load(...)` call
+- [ ] 3.3 Wire the bridge into `apps/shells/website/src/main.ts` bootstrap AFTER auth setup and BEFORE any `loader.load(...)` call
 - [ ] 3.4 Ensure test hooks are exposed to reset the bridge between tests
 
 ## 4. Sample MFE Updates
 
-- [ ] 4.1 Update `apps/mfe-widget/src/utils/navigation.ts` to feature-detect `window.__MFE_NAVIGATION__`
+- [ ] 4.1 Update `apps/mfes/mfe-widget/src/utils/navigation.ts` to feature-detect `window.__MFE_NAVIGATION__`
 - [ ] 4.2 If bridge available: call `window.__MFE_NAVIGATION__.navigate(path, options)`
 - [ ] 4.3 If bridge missing: fall back to `emitMFEEvent(MFE_EVENTS.NAVIGATE, { path, ... })`
 - [ ] 4.4 Preserve existing return type / signature so callers do not need to change
-- [ ] 4.5 Update `apps/mfe-widget/src/utils/navigation.test.ts` to cover both branches
+- [ ] 4.5 Update `apps/mfes/mfe-widget/src/utils/navigation.test.ts` to cover both branches
 - [ ] 4.6 If `chrome-mfe-header` change has landed, update its `navigate` helper the same way
 
 ## 5. Tests

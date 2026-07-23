@@ -12,9 +12,9 @@ ADR-0005 defined the target API. This change implements it while preserving the 
 
 **Current state:**
 
-- `apps/website/src/components/NavigationEventListener.tsx` listens for `mfe:navigate` events and calls React Router's `useNavigate`
+- `apps/shells/website/src/components/NavigationEventListener.tsx` listens for `mfe:navigate` events and calls React Router's `useNavigate`
 - After `refactor-to-thin-shell`, that React component is deleted and the shell handles navigation in vanilla JS
-- `apps/mfe-widget/src/utils/navigation.ts` emits `mfe:navigate` events via `@mfe-runtine/events`
+- `apps/mfes/mfe-widget/src/utils/navigation.ts` emits `mfe:navigate` events via `@mfe-runtine/events`
 
 **Target state:**
 
@@ -90,7 +90,7 @@ The bridge internally subscribes to the `mfe:navigate` event bus. When an event 
 
 **Rationale:**
 
-- Zero-break migration for existing MFEs (including `apps/mfe-widget`)
+- Zero-break migration for existing MFEs (including `apps/mfes/mfe-widget`)
 - Single code path for everything routing-related
 - Analytics get a consistent event stream regardless of MFE origin
 
@@ -163,18 +163,18 @@ Even though the bridge implementation lives in the shell, the TYPE definition li
 
 **Phase 2 — Bridge Implementation:**
 
-1. Create `apps/website/src/navigation-bridge.ts` with `NavigationBridge` class
+1. Create `apps/shells/website/src/navigation-bridge.ts` with `NavigationBridge` class
 2. Add `setupNavigationBridge(loader)` helper
 3. Register `popstate` listener; subscribe to `mfe:navigate` event bus (backward compat)
 
 **Phase 3 — Wire Into Bootstrap:**
 
-1. Update `apps/website/src/main.ts` to call `setupNavigationBridge(loader)` after auth setup and BEFORE any MFE mount
+1. Update `apps/shells/website/src/main.ts` to call `setupNavigationBridge(loader)` after auth setup and BEFORE any MFE mount
 2. Remove any legacy React Router / `NavigationEventListener` handling (already removed by `refactor-to-thin-shell`)
 
 **Phase 4 — Update Sample MFE:**
 
-1. Update `apps/mfe-widget/src/utils/navigation.ts` to feature-detect the bridge and prefer it; keep event-bus fallback
+1. Update `apps/mfes/mfe-widget/src/utils/navigation.ts` to feature-detect the bridge and prefer it; keep event-bus fallback
 2. Update tests to cover both paths
 
 **Phase 5 — Documentation & Migration Guide:**

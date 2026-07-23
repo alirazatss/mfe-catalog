@@ -1,17 +1,17 @@
 ## Why
 
-The current `LoginPage`, `AuthProvider` React logic, and related auth UI live inside `apps/website/src/`. With multiple shells planned (customer-shell, admin-shell, marketing-shell) sharing one Keycloak instance and one corporate branding (ADR-0002, ADR-0003), duplicating ~350 lines of auth UI across every shell repository is a maintenance liability. Since login is required BEFORE the MFE loader is ready (bootstrap dependency), the login UI cannot be an MFE — it must be an npm package bundled into every shell.
+The current `LoginPage`, `AuthProvider` React logic, and related auth UI live inside `apps/shells/website/src/`. With multiple shells planned (customer-shell, admin-shell, marketing-shell) sharing one Keycloak instance and one corporate branding (ADR-0002, ADR-0003), duplicating ~350 lines of auth UI across every shell repository is a maintenance liability. Since login is required BEFORE the MFE loader is ready (bootstrap dependency), the login UI cannot be an MFE — it must be an npm package bundled into every shell.
 
 ## What Changes
 
 - Create new npm package `@mfe-runtine/auth-ui` under `packages/auth-ui/` that exports React components for login, logout, session-expired, and forgot-password flows
-- Extract `LoginPage.tsx` from `apps/website/src/components/` into the new package with a customization API (logo, primaryColor, additional fields, social providers)
-- Extract `AuthProvider.tsx` React Context wrapper from `apps/website/src/providers/` into the package (kept for shells that want a React-context-based auth API)
+- Extract `LoginPage.tsx` from `apps/shells/website/src/components/` into the new package with a customization API (logo, primaryColor, additional fields, social providers)
+- Extract `AuthProvider.tsx` React Context wrapper from `apps/shells/website/src/providers/` into the package (kept for shells that want a React-context-based auth API)
 - Extract `ProtectedRoute.tsx` from the shell into the package so shells that still render some React can reuse the guard
 - Expose a single `setupAuthBridge()` helper that shells call from their vanilla bootstrap to populate `window.__MFE_AUTH__`
 - Keep `packages/auth/` focused on framework-agnostic logic (`TokenManager`, JWT utilities, types); `@mfe-runtine/auth-ui` depends on it
 - Publish `@mfe-runtine/auth-ui` to the private npm registry so shell repos in separate repositories can consume it
-- **BREAKING**: `apps/website` now imports auth UI from `@mfe-runtine/auth-ui` instead of local files (paired with `refactor-to-thin-shell` change)
+- **BREAKING**: `apps/shells/website` now imports auth UI from `@mfe-runtine/auth-ui` instead of local files (paired with `refactor-to-thin-shell` change)
 
 ## Capabilities
 
@@ -41,7 +41,7 @@ The current `LoginPage`, `AuthProvider` React logic, and related auth UI live in
 
 **Affected dependencies:**
 
-- `apps/website/package.json` — adds `@mfe-runtine/auth-ui: workspace:*`
+- `apps/shells/website/package.json` — adds `@mfe-runtine/auth-ui: workspace:*`
 - Shell repositories (future) — will add `@mfe-runtine/auth-ui: ^1.0.0` from npm
 
 **Affected tests:**

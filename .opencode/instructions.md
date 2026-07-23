@@ -52,7 +52,7 @@ brainstorming → spec-writer → team-lead →
 ### Tech Constraints
 
 - Use `vp` CLI (Vite+) for all package management
-- Convention: `apps/mfe-*` for micro-frontends
+- Convention: `apps/mfes/mfe-*` for micro-frontends
 - Auto-discovery via glob patterns
 - React Router v8 (declarative API)
 

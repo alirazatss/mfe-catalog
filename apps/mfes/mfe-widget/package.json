@@ -7,11 +7,12 @@
     "dev": "vp dev",
     "build": "tsc && vp build",
     "preview": "vp preview",
-    "test": "vitest",
+    "test": "vitest run",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@mfe-runtine/dynamic-loader": "workspace:*",
     "@mfe-runtine/events": "workspace:*",
     "axios": "^1.7.9",
     "react": "catalog:",

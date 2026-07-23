@@ -12,7 +12,7 @@ The system SHALL create `remotes.config.json` containing all discovered micro-fr
 
 #### Scenario: Config generated for single micro-frontend
 
-- **WHEN** monorepo contains `apps/mfe-widget/` only
+- **WHEN** monorepo contains `apps/mfes/mfe-widget/` only
 - **THEN** generator SHALL create config with one remote entry
 - **AND** config SHALL include name, entryUrl, scope, version from package.json
 
@@ -34,13 +34,13 @@ Example generated config:
 
 #### Scenario: Config generated for multiple micro-frontends
 
-- **WHEN** monorepo contains `apps/mfe-widget/`, `apps/mfe-dashboard/`, `apps/mfe-chart/`
+- **WHEN** monorepo contains `apps/mfes/mfe-widget/`, `apps/mfes/mfe-dashboard/`, `apps/mfes/mfe-chart/`
 - **THEN** generator SHALL create config with three remote entries in alphabetical order
 - **AND** each entry SHALL have unique name and port
 
 #### Scenario: Config generated to specific output path
 
-- **WHEN** running generator with output path `apps/website/public/remotes.config.json`
+- **WHEN** running generator with output path `apps/shells/website/public/remotes.config.json`
 - **THEN** generator SHALL write config to specified path
 - **AND** parent directory SHALL be created if not exists
 
@@ -170,8 +170,8 @@ The system SHALL provide helpful error messages when config generation fails.
 
 #### Scenario: No micro-frontends found
 
-- **WHEN** discovery returns empty array (no apps/mfe-\* directories)
-- **THEN** generator SHALL emit warning "No micro-frontends found matching apps/mfe-\*"
+- **WHEN** discovery returns empty array (no apps/mfes/mfe-\* directories)
+- **THEN** generator SHALL emit warning "No micro-frontends found matching apps/mfes/mfe-\*"
 - **AND** generator SHALL create empty config with `"remotes": []`
 - **AND** generation SHALL NOT fail
 
@@ -185,7 +185,7 @@ The system SHALL provide helpful error messages when config generation fails.
 
 - **WHEN** discovery skips micro-frontend due to invalid package.json
 - **THEN** generator SHALL exclude that micro-frontend from config
-- **AND** generator SHALL emit warning "Skipping apps/mfe-{name}/ due to invalid package.json"
+- **AND** generator SHALL emit warning "Skipping apps/mfes/mfe-{name}/ due to invalid package.json"
 - **AND** generator SHALL continue with other micro-frontends
 
 ### Requirement: System SHALL support config generation as Turborepo task
@@ -305,7 +305,7 @@ import { generateConfig } from "@mfe-runtine/monorepo-tools";
 
 const config = await generateConfig({
   environment: "production",
-  outputPath: "apps/website/public/remotes.config.json",
+  outputPath: "apps/shells/website/public/remotes.config.json",
   gitHash: process.env.VITE_GIT_HASH,
 });
 
@@ -318,7 +318,7 @@ The system SHALL ensure generated config is not committed to git (regenerated on
 
 #### Scenario: Generated config path in gitignore
 
-- **WHEN** config is generated to `apps/website/public/remotes.config.json`
+- **WHEN** config is generated to `apps/shells/website/public/remotes.config.json`
 - **THEN** that path SHALL be listed in `.gitignore`
 - **AND** git status SHALL not show config as untracked
 

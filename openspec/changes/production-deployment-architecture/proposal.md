@@ -32,7 +32,7 @@ Production micro-frontends require independent deployment and versioning to enab
 **Affected Code**:
 
 - `packages/dynamic-loader` — Add manifest fetching and parsing
-- `apps/website/src/config/remotes.ts` — Switch from static config to manifest-based loading
+- `apps/shells/website/src/config/remotes.ts` — Switch from static config to manifest-based loading
 - `scripts/generate-config.ts` — Add production manifest generation mode
 
 **New Files**:

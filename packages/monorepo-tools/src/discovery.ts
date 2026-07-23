@@ -9,9 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 /**
- * Discover all micro-frontends in the monorepo by scanning apps/mfe-* directories
+ * Discover all micro-frontends in the monorepo by scanning apps/mfes/mfe-* directories
  *
- * Scans for directories matching `apps/mfe-*` pattern, reads their package.json,
+ * Scans for directories matching `apps/mfes/mfe-*` pattern, reads their package.json,
  * and extracts metadata including name, version, description, and port assignments.
  *
  * @param rootDir - Root directory of the monorepo (defaults to workspace root)
@@ -21,8 +21,8 @@ export async function discoverMicroFrontends(_rootDir: string = ""): Promise<Mic
   // Default to workspace root (3 levels up from this file)
   const workspaceRoot = _rootDir || join(__dirname, "../../../");
 
-  // Find all apps/mfe-* directories
-  const pattern = "apps/mfe-*/package.json";
+  // Find all apps/mfes/mfe-* directories
+  const pattern = "apps/mfes/mfe-*/package.json";
   const packageJsonPaths = await glob(pattern, {
     cwd: workspaceRoot,
     absolute: true,
@@ -45,7 +45,7 @@ export async function discoverMicroFrontends(_rootDir: string = ""): Promise<Mic
       const pkgContent = await readFile(pkgPath, "utf-8");
       const pkg = JSON.parse(pkgContent);
 
-      // Extract directory name (e.g., "mfe-widget" from ".../apps/mfe-widget/package.json")
+      // Extract directory name (e.g., "mfe-widget" from ".../apps/mfes/mfe-widget/package.json")
       const pkgDir = dirname(pkgPath);
       const shortName = pkgDir.split("/").pop() || "";
 

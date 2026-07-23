@@ -90,10 +90,10 @@
 
 ## 7. Migrate Navigation Events
 
-- [ ] 7.1 Update `apps/website/src/utils/navigation.ts` to use eventBus.emit
-- [ ] 7.2 Update `apps/website/src/components/NavigationEventListener.tsx` to use eventBus.on
+- [ ] 7.1 Update `apps/shells/website/src/utils/navigation.ts` to use eventBus.emit
+- [ ] 7.2 Update `apps/shells/website/src/components/NavigationEventListener.tsx` to use eventBus.on
 - [ ] 7.3 Add cleanup function return in NavigationEventListener useEffect
-- [ ] 7.4 Update `apps/mfe-widget/src/utils/navigation.ts` to use eventBus.emit
+- [ ] 7.4 Update `apps/mfes/mfe-widget/src/utils/navigation.ts` to use eventBus.emit
 - [ ] 7.5 Test cross-MFE navigation still works
 - [ ] 7.6 Remove direct CustomEvent usage (verify no magic strings remain)
 

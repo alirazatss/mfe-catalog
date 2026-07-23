@@ -23,7 +23,7 @@ Production-ready micro-frontend architecture with:
 ### Completed Features ✅
 
 - [x] **Monorepo Setup** - Turborepo with smart builds
-- [x] **Auto-Discovery** - Convention-based MFE registration (`apps/mfe-*`)
+- [x] **Auto-Discovery** - Convention-based MFE registration (`apps/mfes/mfe-*`)
 - [x] **Dynamic Loader** - Runtime MFE loading with Module Federation
 - [x] **Hybrid Routing** - React Router v8 with shell + MFE coordination
 - [x] **Event Bus** - Native EventTarget-based communication (8.39 KB)

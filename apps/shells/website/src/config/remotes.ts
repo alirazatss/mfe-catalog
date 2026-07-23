@@ -6,7 +6,7 @@
  * - This fallback is used if fetching that static file fails (network error, server issue, etc.)
  * - Both the served config and this fallback contain the same MFE list in the MVP
  *
- * Keep this synchronized with `apps/website/public/remotes.config.json`.
+ * Keep this synchronized with `apps/shells/website/public/remotes.config.json`.
  *
  * Future: As the config service evolves, this fallback can serve as a bootstrap config
  * if an external config service becomes temporarily unavailable.

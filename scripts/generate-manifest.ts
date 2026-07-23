@@ -154,7 +154,7 @@ async function generateManifest(options: CLIOptions): Promise<MicroFrontendManif
   const microFrontends = await discoverMicroFrontends(rootDir);
 
   if (microFrontends.length === 0) {
-    console.warn("⚠️  No micro-frontends found in apps/mfe-*/");
+    console.warn("⚠️  No micro-frontends found in apps/mfes/mfe-*/");
   }
 
   const manifest: MicroFrontendManifest = {
@@ -182,7 +182,7 @@ async function generateManifest(options: CLIOptions): Promise<MicroFrontendManif
     // Compute SRI hash for production builds
     let integrity: string | undefined;
     if (options.env === "production" || options.env === "staging") {
-      const distPath = join(rootDir, "apps", mfe.shortName, "dist", "remoteEntry.js");
+      const distPath = join(rootDir, "apps", "mfes", mfe.shortName, "dist", "remoteEntry.js");
       integrity = await computeSRIHash(distPath);
     }
 

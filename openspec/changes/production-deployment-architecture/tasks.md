@@ -70,7 +70,7 @@
 
 ## 5. Shell Bootstrap Manifest Integration
 
-- [ ] 5.1 Update `apps/website/src/config/remotes.ts` to fetch manifest
+- [ ] 5.1 Update `apps/shells/website/src/config/remotes.ts` to fetch manifest
 - [ ] 5.2 Add environment-based manifest URL selection (dev/prod)
 - [ ] 5.3 Implement manifest fetch with retry logic (3 attempts, exponential backoff)
 - [ ] 5.4 Add timeout handling (10 second max)

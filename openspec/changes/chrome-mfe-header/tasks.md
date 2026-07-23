@@ -1,7 +1,7 @@
 ## 1. Package Scaffold
 
-- [ ] 1.1 Create `apps/mfe-header/` with `package.json` (name `@mfe-runtine/mfe-header`, private, version `0.1.0`)
-- [ ] 1.2 Copy the workspace structure from `apps/mfe-widget/` as a starting point (vite config, tsconfig, vitest config)
+- [ ] 1.1 Create `apps/mfes/mfe-header/` with `package.json` (name `@mfe-runtine/mfe-header`, private, version `0.1.0`)
+- [ ] 1.2 Copy the workspace structure from `apps/mfes/mfe-widget/` as a starting point (vite config, tsconfig, vitest config)
 - [ ] 1.3 Add dependencies: `react`, `react-dom` via catalog; workspace deps on `@mfe-runtine/auth`, `@mfe-runtine/events`, `@mfe-runtine/dynamic-loader` (for types)
 - [ ] 1.4 Add dev dependencies aligned with widget (testing-library, happy-dom, `@module-federation/vite`)
 - [ ] 1.5 Configure `vite.config.ts` with Module Federation: `name: "header"`, `exposes: { "./lifecycle": "./src/index.tsx", "./Header": "./src/Header.tsx" }`, shared React singletons
@@ -10,21 +10,21 @@
 
 ## 2. Root Header Component
 
-- [ ] 2.1 Create `apps/mfe-header/src/Header.tsx` accepting `MFEProps` (user, isAuthenticated, theme, config)
+- [ ] 2.1 Create `apps/mfes/mfe-header/src/Header.tsx` accepting `MFEProps` (user, isAuthenticated, theme, config)
 - [ ] 2.2 Render layout: Logo | Navigation | Spacer | SearchBar | ThemeToggle | UserMenu
 - [ ] 2.3 Apply theme class based on `props.theme` (light default; dark applies `.header--dark`)
 - [ ] 2.4 Provide a11y landmarks: outer element is `<header role="banner">`, navigation uses `<nav aria-label="Primary">`
 
 ## 3. Logo Component
 
-- [ ] 3.1 Create `apps/mfe-header/src/components/Logo.tsx`
+- [ ] 3.1 Create `apps/mfes/mfe-header/src/components/Logo.tsx`
 - [ ] 3.2 Accept `src` prop; fallback to default corporate SVG shipped inline
 - [ ] 3.3 Render as clickable element; click triggers navigation to `/`
 - [ ] 3.4 Include accessible label `Home` for screen readers
 
 ## 4. Navigation Component
 
-- [ ] 4.1 Create `apps/mfe-header/src/components/Navigation.tsx` accepting `navItems: NavItem[]` and current `pathname` + `userRoles`
+- [ ] 4.1 Create `apps/mfes/mfe-header/src/components/Navigation.tsx` accepting `navItems: NavItem[]` and current `pathname` + `userRoles`
 - [ ] 4.2 Filter items by role: item is hidden if `requiredRoles` is non-empty and none match the user's roles
 - [ ] 4.3 Compute active state: exact match OR pathname starts with item path
 - [ ] 4.4 Set `aria-current="page"` on the active item
@@ -33,7 +33,7 @@
 
 ## 5. UserMenu Component
 
-- [ ] 5.1 Create `apps/mfe-header/src/components/UserMenu.tsx`
+- [ ] 5.1 Create `apps/mfes/mfe-header/src/components/UserMenu.tsx`
 - [ ] 5.2 Read auth state via a hook (see section 8)
 - [ ] 5.3 Authenticated: show avatar/initials + display name; on click open a dropdown with `Profile`, `Settings`, `Logout`
 - [ ] 5.4 Unauthenticated: render a `Sign in` button navigating to `/login`
@@ -42,24 +42,24 @@
 
 ## 6. SearchBar and ThemeToggle Stubs
 
-- [ ] 6.1 Create `apps/mfe-header/src/components/SearchBar.tsx` — visual input with `disabled` placeholder `Search coming soon`
-- [ ] 6.2 Create `apps/mfe-header/src/components/ThemeToggle.tsx` — button that emits `mfe:theme:toggle` event and toggles a local visual state
+- [ ] 6.1 Create `apps/mfes/mfe-header/src/components/SearchBar.tsx` — visual input with `disabled` placeholder `Search coming soon`
+- [ ] 6.2 Create `apps/mfes/mfe-header/src/components/ThemeToggle.tsx` — button that emits `mfe:theme:toggle` event and toggles a local visual state
 - [ ] 6.3 Document that these are stubs in `README.md` with a link to their follow-up tickets
 
 ## 7. Navigation Helper
 
-- [ ] 7.1 Create `apps/mfe-header/src/utils/navigate.ts` exporting `navigate(path)` that prefers `window.__MFE_NAVIGATION__.navigate` and falls back to `emitMFEEvent('mfe:navigate', { path })`
+- [ ] 7.1 Create `apps/mfes/mfe-header/src/utils/navigate.ts` exporting `navigate(path)` that prefers `window.__MFE_NAVIGATION__.navigate` and falls back to `emitMFEEvent('mfe:navigate', { path })`
 - [ ] 7.2 Add tests for both branches
 
 ## 8. Hooks
 
-- [ ] 8.1 Create `apps/mfe-header/src/hooks/useCurrentUser.ts` — reads `window.__MFE_AUTH__`, subscribes to token changes via `onTokenChange`, returns `{ user, isAuthenticated }`; cleans up on unmount
-- [ ] 8.2 Create `apps/mfe-header/src/hooks/useActiveRoute.ts` — subscribes to `popstate` and (if available) navigation bridge events; returns current pathname
+- [ ] 8.1 Create `apps/mfes/mfe-header/src/hooks/useCurrentUser.ts` — reads `window.__MFE_AUTH__`, subscribes to token changes via `onTokenChange`, returns `{ user, isAuthenticated }`; cleans up on unmount
+- [ ] 8.2 Create `apps/mfes/mfe-header/src/hooks/useActiveRoute.ts` — subscribes to `popstate` and (if available) navigation bridge events; returns current pathname
 - [ ] 8.3 Add unit tests for both hooks covering subscribe/unsubscribe, event responses, missing globals
 
 ## 9. Lifecycle Wrapper
 
-- [ ] 9.1 Create `apps/mfe-header/src/index.tsx` implementing `MFELifecycle`
+- [ ] 9.1 Create `apps/mfes/mfe-header/src/index.tsx` implementing `MFELifecycle`
 - [ ] 9.2 `bootstrap`: log dev message; resolve immediately
 - [ ] 9.3 `mount(props)`: `createRoot(props.container)`; render `<StrictMode><Header {...props} /></StrictMode>`; store root at module scope
 - [ ] 9.4 `unmount`: `root?.unmount()`; null the reference
@@ -68,18 +68,18 @@
 
 ## 10. Manifest & Shell Integration
 
-- [ ] 10.1 Update `apps/website/public/remotes.config.json` to include `chrome.header`:
+- [ ] 10.1 Update `apps/shells/website/public/remotes.config.json` to include `chrome.header`:
   ```json
   { "chrome": { "header": { "mfe": "header", "entryUrl": "http://localhost:5175/remoteEntry.js", "config": { "navItems": [...] } } } }
   ```
 - [ ] 10.2 Update `scripts/generate-config.ts` to add the `chrome` section for discovered header MFE
 - [ ] 10.3 Assign a dedicated dev port (e.g., 5175) in header's `vite.config.ts`
-- [ ] 10.4 Manually verify: `pnpm dev` in both `apps/website` and `apps/mfe-header` results in the header appearing in the shell
+- [ ] 10.4 Manually verify: `pnpm dev` in both `apps/shells/website` and `apps/mfes/mfe-header` results in the header appearing in the shell
 
 ## 11. Bundle Size Enforcement
 
 - [ ] 11.1 Add a small script `scripts/check-header-size.ts` that inspects the header's `dist/` gzipped size and exits non-zero above 50 KB
-- [ ] 11.2 Wire it into `apps/mfe-header/package.json` postbuild step
+- [ ] 11.2 Wire it into `apps/mfes/mfe-header/package.json` postbuild step
 - [ ] 11.3 Wire into CI via Turborepo build task
 
 ## 12. Tests
@@ -97,7 +97,7 @@
 
 ## 13. Documentation
 
-- [ ] 13.1 Write `apps/mfe-header/README.md` documenting: purpose, run standalone, integrate into a shell, config schema, override options
+- [ ] 13.1 Write `apps/mfes/mfe-header/README.md` documenting: purpose, run standalone, integrate into a shell, config schema, override options
 - [ ] 13.2 Update `CONTEXT.md` to reference `mfe-header` as the first chrome MFE and cross-link to ADR-0004
 - [ ] 13.3 Add screenshots (optional) showing the header in customer-shell and admin-shell manifests
 

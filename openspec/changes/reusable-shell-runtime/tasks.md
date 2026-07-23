@@ -82,13 +82,13 @@
 
 - [ ] 5.1 Add website adapters for fallback Manifest policy, token-manager auth and roles, existing navigation events, explicit Slot lookup, shared props, and current critical/route/Slot error presentation.
       Requirements: REQ-SR-001, REQ-SR-002, REQ-SR-003, REQ-SR-005, REQ-SR-006, REQ-SR-008, REQ-SR-009
-      Output: `apps/website/src/shell` runtime configuration that contains website policy but no orchestration loop.
+      Output: `apps/shells/website/src/shell` runtime configuration that contains website policy but no orchestration loop.
       Owner skill(s): frontend-developer
       Verification: Adapter unit tests preserve current login redirect, return URL, 403, 404, Manifest fallback, auth bridge, and Slot-rendering behavior.
 
 - [ ] 5.2 Replace website bootstrap orchestration with one Shell Runtime instance and remove superseded route, listener, mount, and React-component compatibility paths.
       Requirements: REQ-SR-002, REQ-SR-004, REQ-SR-005, REQ-SR-006, REQ-SR-007, REQ-SR-010
-      Output: Thin `apps/website/src/main.ts` and lifecycle-only website integration.
+      Output: Thin `apps/shells/website/src/main.ts` and lifecycle-only website integration.
       Owner skill(s): frontend-developer
       Verification: Build the website and run route/deep-link tests proving Chrome persistence, Feature switching, same-Feature navigation, counter interaction, and clean teardown without React imports in Shell orchestration.
 

@@ -4,13 +4,13 @@ Following the Turborepo setup, the monorepo needs to adopt a consistent naming c
 
 Current state:
 
-- One micro-frontend exists: `apps/remote-widget/`
+- One micro-frontend exists: `apps/mfes/remote-widget/`
 - No convention established for naming micro-frontends
 - No packages exist for discovery or config management
 
 This change establishes the foundation for the dynamic micro-frontend system by:
 
-1. Adopting the `apps/mfe-*` directory naming convention
+1. Adopting the `apps/mfes/mfe-*` directory naming convention
 2. Creating `@mfe-runtine/monorepo-tools` package for discovery and config generation logic
 3. Creating `@mfe-runtine/remote-config` package for JSON Schema and validation
 
@@ -33,7 +33,7 @@ This change establishes the foundation for the dynamic micro-frontend system by:
 
 ## Decisions
 
-### Decision 1: Use `apps/mfe-*` naming convention
+### Decision 1: Use `apps/mfes/mfe-*` naming convention
 
 **Rationale**: Convention over configuration. All micro-frontends follow a predictable pattern that can be discovered automatically. The `mfe-` prefix clearly identifies micro-frontends vs other apps (like `website`).
 
@@ -87,7 +87,7 @@ This change establishes the foundation for the dynamic micro-frontend system by:
 
 ## Risks / Trade-offs
 
-**Risk**: Renaming `apps/remote-widget` might break existing documentation or scripts  
+**Risk**: Renaming `apps/mfes/remote-widget` might break existing documentation or scripts  
 → **Mitigation**: Updated root package.json scripts immediately. Documentation updates can follow.
 
 **Risk**: Placeholder implementations in packages might be confusing  
@@ -103,7 +103,7 @@ This change establishes the foundation for the dynamic micro-frontend system by:
 
 **Deployment steps**:
 
-1. ✅ Rename `apps/remote-widget/` → `apps/mfe-widget/`
+1. ✅ Rename `apps/mfes/remote-widget/` → `apps/mfes/mfe-widget/`
 2. ✅ Update package.json to `@mfe-runtine/mfe-widget`
 3. ✅ Update root scripts to use scoped package name
 4. ✅ Create `packages/monorepo-tools/` structure
@@ -114,7 +114,7 @@ This change establishes the foundation for the dynamic micro-frontend system by:
 
 **Rollback strategy**:
 
-- Rename `apps/mfe-widget/` back to `apps/remote-widget/`
+- Rename `apps/mfes/mfe-widget/` back to `apps/mfes/remote-widget/`
 - Restore package.json names
 - Delete `packages/monorepo-tools/` and `packages/remote-config/`
 - Remove `glob` and `ajv` from catalog

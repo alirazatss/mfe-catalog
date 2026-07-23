@@ -1,0 +1,17 @@
+{
+  "$schema": "../node_modules/@mfe-runtine/remote-config/schema.json",
+  "schemaVersion": "2.0.0",
+  "chrome": {},
+  "features": {
+    "/widget": {
+      "mfe": "mfe-widget",
+      "entryUrl": "http://localhost:5174/remoteEntry.js",
+      "scope": "widget",
+      "version": "0.0.0",
+      "basePath": "/widget",
+      "requiresAuth": false,
+      "requiredRoles": [],
+      "enabled": true
+    }
+  }
+}

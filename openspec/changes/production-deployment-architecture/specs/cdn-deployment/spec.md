@@ -25,7 +25,7 @@ The system SHALL provide a script to upload build artifacts to CDN.
 #### Scenario: Upload directory to CDN
 
 - **WHEN** running `pnpm deploy:cdn --mfe=mfe-widget --version=1.2.3`
-- **THEN** script SHALL upload all files from apps/mfe-widget/dist/ to CDN
+- **THEN** script SHALL upload all files from apps/mfes/mfe-widget/dist/ to CDN
 - **AND** SHALL preserve directory structure under /<mfe-name>/<version>/
 
 #### Scenario: Upload with progress reporting

@@ -38,15 +38,15 @@ Fix 59 failing tests by configuring DOM environments and updating auth bridge mo
 - [ ] Add `environment: 'happy-dom'` to test config
 - [ ] Run `pnpm -F @mfe-runtine/dynamic-loader test:run`
 
-### 1.5 Add happy-dom environment to apps/website/vitest.config.ts
+### 1.5 Add happy-dom environment to apps/shells/website/vitest.config.ts
 
-- [ ] Open `apps/website/vitest.config.ts`
+- [ ] Open `apps/shells/website/vitest.config.ts`
 - [ ] Add `environment: 'happy-dom'` to test config
 - [ ] Run `pnpm -F website test:run`
 
-### 1.6 Add happy-dom environment to apps/mfe-widget/vitest.config.ts
+### 1.6 Add happy-dom environment to apps/mfes/mfe-widget/vitest.config.ts
 
-- [ ] Open `apps/mfe-widget/vitest.config.ts`
+- [ ] Open `apps/mfes/mfe-widget/vitest.config.ts`
 - [ ] Add `environment: 'happy-dom'` to test config
 - [ ] Run `pnpm -F @mfe-runtine/mfe-widget test:run`
 
@@ -68,7 +68,7 @@ Fix 59 failing tests by configuring DOM environments and updating auth bridge mo
 ### 2.1 Create shared test utilities directory
 
 - [ ] Create `src/test/` directory in packages that test auth: `packages/auth/`, `packages/auth-ui/`, `packages/dynamic-loader/`, `packages/events/`
-- [ ] Create `tests/` directory in apps: `apps/website/`, `apps/mfe-widget/`
+- [ ] Create `tests/` directory in apps: `apps/shells/website/`, `apps/mfes/mfe-widget/`
 
 ### 2.2 Implement createMockAuthBridge() factory
 
@@ -117,33 +117,33 @@ Fix 59 failing tests by configuring DOM environments and updating auth bridge mo
 
 ### 3.1 Create DynamicLoader mock utility for shell tests
 
-- [ ] Create `apps/website/src/test/mock-loader.ts`
+- [ ] Create `apps/shells/website/src/test/mock-loader.ts`
 - [ ] Export `createMockLoader()` function returning object with all DynamicLoader methods
 - [ ] Methods: `setConfig()`, `listChromeMFEs()`, `matchRoute()`, `load()`, `unload()`, `update()`, `getSlotOccupant()`, `clearSlot()`
 - [ ] Methods are spyable (use vi.fn())
 
 ### 3.2 Update shell test setup
 
-- [ ] Create `apps/website/src/test/setup-shell.ts`
+- [ ] Create `apps/shells/website/src/test/setup-shell.ts`
 - [ ] Wire up mock loader, mock auth bridge, and mock EventBus
 - [ ] Export `beforeEach`/`afterEach` hooks for shell tests
 
 ### 3.3 Update all shell tests to use new mocks
 
-- [ ] Find all shell test files in `apps/website/src/**/*.test.tsx`
+- [ ] Find all shell test files in `apps/shells/website/src/**/*.test.tsx`
 - [ ] Replace `window.__AUTH__` references with `window.__MFE_AUTH__`
 - [ ] Use mock loader from `src/test/mock-loader.ts`
 - [ ] Use `setupShell()` setup in beforeEach
 
 ### 3.4 Update mfe-widget test setup
 
-- [ ] Create `apps/mfe-widget/src/test/setup-mfe.ts`
+- [ ] Create `apps/mfes/mfe-widget/src/test/setup-mfe.ts`
 - [ ] Wire up mock auth bridge and EventBus
 - [ ] Export setup hooks
 
 ### 3.5 Update all MFE tests
 
-- [ ] Find all test files in `apps/mfe-widget/src/**/*.test.tsx`
+- [ ] Find all test files in `apps/mfes/mfe-widget/src/**/*.test.tsx`
 - [ ] Replace `window.__AUTH__` with `window.__MFE_AUTH__`
 - [ ] Use `setupMFE()` setup
 

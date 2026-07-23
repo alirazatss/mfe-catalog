@@ -10,7 +10,7 @@ Every MFE today exposes a raw React component (`./App`) via Module Federation. T
 - Update `packages/dynamic-loader/` to load remotes via the lifecycle contract: call `bootstrap` once, `mount` on slot mount, `update` when props change, `unmount` on removal
 - Extract shared prop shape (`user`, `isAuthenticated`, `theme`, `locale`, `basePath`, `container`, `slot`, `onNavigate`) into `MFEProps`, sourced from shell bootstrap
 - Add loader-side validation that rejects MFEs missing required lifecycle exports with a clear diagnostic
-- Update `apps/mfe-widget/src/index.tsx` (new file) to implement the contract, wrapping the existing `App.tsx` React tree
+- Update `apps/mfes/mfe-widget/src/index.tsx` (new file) to implement the contract, wrapping the existing `App.tsx` React tree
 - Preserve React 19 `createRoot` semantics inside `mount`/`unmount` for React MFEs
 
 ## Capabilities
@@ -32,11 +32,11 @@ Every MFE today exposes a raw React component (`./App`) via Module Federation. T
 - New: `packages/dynamic-loader/src/lifecycle.ts` — TypeScript interfaces (`MFEProps`, `MFELifecycle`), validator, error types
 - `packages/dynamic-loader/src/DynamicLoader.ts` — updated to call `bootstrap/mount/unmount/update`, track per-MFE lifecycle state, validate exports
 - `packages/dynamic-loader/src/index.ts` — re-export lifecycle types for MFE authors
-- New: `apps/mfe-widget/src/index.tsx` — lifecycle wrapper that owns the React root and renders `App.tsx`
-- `apps/mfe-widget/vite.config.ts` — change `exposes` to point to `./lifecycle`; keep `./App` optionally for tests
-- `apps/mfe-widget/src/App.tsx` — accepts full `MFEProps` (via props), still contains the internal React Router
+- New: `apps/mfes/mfe-widget/src/index.tsx` — lifecycle wrapper that owns the React root and renders `App.tsx`
+- `apps/mfes/mfe-widget/vite.config.ts` — change `exposes` to point to `./lifecycle`; keep `./App` optionally for tests
+- `apps/mfes/mfe-widget/src/App.tsx` — accepts full `MFEProps` (via props), still contains the internal React Router
 - Existing MFE tests updated to import the wrapper for lifecycle assertions
-- Shell (`apps/website/src/main.ts` from `refactor-to-thin-shell`) — calls loader with slot target and expects lifecycle contract
+- Shell (`apps/shells/website/src/main.ts` from `refactor-to-thin-shell`) — calls loader with slot target and expects lifecycle contract
 
 **Affected dependencies:**
 
@@ -46,7 +46,7 @@ Every MFE today exposes a raw React component (`./App`) via Module Federation. T
 **Affected tests:**
 
 - New unit tests in `packages/dynamic-loader/` for lifecycle validation, missing-export handling, `update` fallback (unmount + remount when `update` absent)
-- New unit tests in `apps/mfe-widget/` for the lifecycle wrapper (bootstrap called once, mount/unmount clean up React root, update re-renders with new props)
+- New unit tests in `apps/mfes/mfe-widget/` for the lifecycle wrapper (bootstrap called once, mount/unmount clean up React root, update re-renders with new props)
 - Existing MFE tests continue to pass; the React component remains testable in isolation
 
 **Migration risk:**

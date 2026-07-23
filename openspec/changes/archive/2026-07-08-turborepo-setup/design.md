@@ -1,6 +1,6 @@
 ## Context
 
-The monorepo contains multiple applications (`apps/website`, `apps/remote-widget`) and shared packages (`packages/utils`) that need coordinated builds. Prior to this change, there was no build orchestration or caching, leading to redundant builds and slow CI/CD pipelines.
+The monorepo contains multiple applications (`apps/shells/website`, `apps/mfes/remote-widget`) and shared packages (`packages/utils`) that need coordinated builds. Prior to this change, there was no build orchestration or caching, leading to redundant builds and slow CI/CD pipelines.
 
 Turborepo is the industry-standard solution for monorepo build orchestration, providing:
 

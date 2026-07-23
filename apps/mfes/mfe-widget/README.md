@@ -21,7 +21,7 @@ This application exposes a `CounterWidget` component that can be consumed by the
 ```bash
 pnpm run dev:remote
 # or from root
-cd apps/remote-widget
+cd apps/mfes/remote-widget
 pnpm dev
 ```
 
@@ -32,7 +32,7 @@ The app will start on `http://localhost:5174`
 ```bash
 pnpm run build:remote
 # or from root
-cd apps/remote-widget
+cd apps/mfes/remote-widget
 pnpm build
 ```
 

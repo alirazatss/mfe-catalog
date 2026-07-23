@@ -35,7 +35,7 @@ This change builds the first real chrome MFE — the corporate header — and va
 - Logout button calls `window.__MFE_AUTH__.logout()`
 - Theme prop from shell drives visual theme (light/dark)
 - Comprehensive unit tests (≥90% coverage)
-- Runs standalone (`pnpm dev` in `apps/mfe-header`) for isolated development
+- Runs standalone (`pnpm dev` in `apps/mfes/mfe-header`) for isolated development
 
 **Non-Goals:**
 
@@ -136,7 +136,7 @@ The header uses a helper from `@mfe-runtine/auth` to decode the JWT and extract 
 
 ### Decision 5: Bundle budget enforced in CI
 
-`apps/mfe-header/vite.config.ts` sets a size hint; a CI check fails the build if the gzipped bundle exceeds 50 KB. This prevents chrome MFEs from bloating over time.
+`apps/mfes/mfe-header/vite.config.ts` sets a size hint; a CI check fails the build if the gzipped bundle exceeds 50 KB. This prevents chrome MFEs from bloating over time.
 
 **Rationale:**
 
@@ -156,7 +156,7 @@ The header uses a helper from `@mfe-runtine/auth` to decode the JWT and extract 
 
 **Phase 1 — Package Scaffold:**
 
-1. Create `apps/mfe-header/` mirroring the `apps/mfe-widget/` layout
+1. Create `apps/mfes/mfe-header/` mirroring the `apps/mfes/mfe-widget/` layout
 2. Set up Vite + Module Federation with `./lifecycle` exposure
 3. Add tests infrastructure (`vitest.config.ts`)
 

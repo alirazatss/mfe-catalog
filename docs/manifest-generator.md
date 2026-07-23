@@ -79,7 +79,7 @@ See [manifest.schema.json](../manifest.schema.json) for the complete schema.
 
 The generator uses the same MFE discovery logic as `generate:config`:
 
-- Scans `apps/mfe-*` directories
+- Scans `apps/mfes/mfe-*` directories
 - Reads `package.json` for name and version
 - Derives scope from package name
 
@@ -88,7 +88,7 @@ The generator uses the same MFE discovery logic as `generate:config`:
 For production and staging environments, the generator computes SHA-384 integrity hashes from the built `remoteEntry.js` files:
 
 ```typescript
-// Hash is computed from: apps/mfe-widget/dist/remoteEntry.js
+// Hash is computed from: apps/mfes/mfe-widget/dist/remoteEntry.js
 "integrity": "sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"
 ```
 
@@ -179,7 +179,7 @@ loader.setConfig(manifest);
 3. Upload MFE bundles to CDN:
 
    ```
-   apps/mfe-widget/dist/ → https://your-cdn.com/mfe-widget/1.2.3/
+   apps/mfes/mfe-widget/dist/ → https://your-cdn.com/mfe-widget/1.2.3/
    ```
 
 4. Upload manifest to CDN:

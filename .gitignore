@@ -19,7 +19,6 @@ dist-ssr
 coverage
 
 # Auto-generated config files
-apps/website/public/remotes.config.json
 manifest.production.json
 manifest.staging.json
 

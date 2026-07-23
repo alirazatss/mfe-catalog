@@ -19,8 +19,8 @@ The project uses **Vitest** with **React Testing Library** for unit and integrat
 ### Test Distribution
 
 - **Packages** (`packages/*`): Unit tests for shared libraries
-- **Shell** (`apps/website`): Component and integration tests
-- **MFEs** (`apps/mfe-*`): Component, utility, and integration tests
+- **Shell** (`apps/shells/website`): Component and integration tests
+- **MFEs** (`apps/mfes/mfe-*`): Component, utility, and integration tests
 - **E2E**: Separate test suite (not covered in this document)
 
 ## Test Stack
@@ -67,10 +67,10 @@ pnpm test:ui
 cd packages/auth && pnpm test
 
 # Run tests for shell
-cd apps/website && pnpm test:run
+cd apps/shells/website && pnpm test:run
 
 # Run tests for MFE
-cd apps/mfe-widget && pnpm test:run
+cd apps/mfes/mfe-widget && pnpm test:run
 ```
 
 ## Writing Tests
@@ -253,7 +253,7 @@ The following files are excluded from coverage:
 
 ## Test Utilities
 
-### Shell Test Utilities (`apps/website/src/test/`)
+### Shell Test Utilities (`apps/shells/website/src/test/`)
 
 #### `renderWithRouter()`
 
@@ -283,7 +283,7 @@ Mock user object for testing:
 }
 ```
 
-### MFE Test Utilities (`apps/mfe-widget/src/test/`)
+### MFE Test Utilities (`apps/mfes/mfe-widget/src/test/`)
 
 #### `renderWithRouter()`
 

@@ -28,17 +28,17 @@ Production micro-frontends can fail to load due to network issues, CDN failures,
 
 **Affected Code**:
 
-- `apps/website/src/components/ErrorBoundary.tsx` — Enhance with retry and error reporting
-- `apps/website/src/App.tsx` — Add MFE load error handling to lazy-loaded routes
-- `apps/mfe-widget/src/api/client.ts` — Add standardized API error handling
+- `apps/shells/website/src/components/ErrorBoundary.tsx` — Enhance with retry and error reporting
+- `apps/shells/website/src/App.tsx` — Add MFE load error handling to lazy-loaded routes
+- `apps/mfes/mfe-widget/src/api/client.ts` — Add standardized API error handling
 - `packages/dynamic-loader/src/index.ts` — Add error detection and events
 
 **New Files**:
 
 - `packages/errors/` — New package for error utilities
 - `packages/errors/src/ErrorReporter.ts` — Centralized error reporting
-- `apps/website/src/components/MFEErrorFallback.tsx` — Fallback UI for failed MFEs
-- `apps/website/src/components/ApiErrorToast.tsx` — Toast notification for API errors
+- `apps/shells/website/src/components/MFEErrorFallback.tsx` — Fallback UI for failed MFEs
+- `apps/shells/website/src/components/ApiErrorToast.tsx` — Toast notification for API errors
 
 **Infrastructure**:
 

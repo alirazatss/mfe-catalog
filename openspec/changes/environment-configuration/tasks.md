@@ -108,7 +108,7 @@
 
 ## 8. Config Files
 
-- [ ] 8.1 Create `apps/website/public/config/` directory
+- [ ] 8.1 Create `apps/shells/website/public/config/` directory
 - [ ] 8.2 Create `config.dev.json` with development defaults
 - [ ] 8.3 Set apiBaseUrl to 'http://localhost:3000/api'
 - [ ] 8.4 Create `config.staging.json` placeholder (copy from dev)
@@ -123,7 +123,7 @@
 
 ## 9. Shell Integration
 
-- [ ] 9.1 Update `apps/website/src/main.tsx` to call loadConfig() before render
+- [ ] 9.1 Update `apps/shells/website/src/main.tsx` to call loadConfig() before render
 - [ ] 9.2 Await config load and initialize configService
 - [ ] 9.3 Add loading screen component shown during config load
 - [ ] 9.4 Remove loading screen after config ready
@@ -138,7 +138,7 @@
 
 ## 10. MFE Integration Example
 
-- [ ] 10.1 Update `apps/mfe-widget/src/App.tsx` to accept optional config prop
+- [ ] 10.1 Update `apps/mfes/mfe-widget/src/App.tsx` to accept optional config prop
 - [ ] 10.2 Add ConfigProvider or use configService directly in widget
 - [ ] 10.3 Update API client to use `configService.get('apiBaseUrl')`
 - [ ] 10.4 Test widget can access config

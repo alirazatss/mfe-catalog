@@ -478,7 +478,7 @@ const basePath = import.meta.env.MODE === "standalone" ? "/" : "/products";
    - **Recommendation:** Option A for faster UX, Option B for consistency
 
 3. **Should route configuration be auto-generated like remotes.config.json?**
-   - Discover `apps/mfe-*/routes.json` → generate shell route config
+   - Discover `apps/mfes/mfe-*/routes.json` → generate shell route config
    - Pro: Zero-config routing like zero-config discovery
    - Con: Implicit routing, harder to debug
    - **Recommendation:** Manual route config for v1, auto-generation in future

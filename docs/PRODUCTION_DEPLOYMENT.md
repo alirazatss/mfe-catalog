@@ -229,7 +229,7 @@ jobs:
 
       - name: Sync to S3
         run: |
-          aws s3 sync apps/website/dist s3://my-host-bucket/
+          aws s3 sync apps/shells/website/dist s3://my-host-bucket/
           aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DIST_ID }} --paths "/*"
 ```
 
@@ -243,7 +243,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/remote-widget/**"
+      - "apps/mfes/remote-widget/**"
 
 jobs:
   deploy:
@@ -253,7 +253,7 @@ jobs:
 
       - name: Get version
         id: version
-        run: echo "VERSION=$(node -p "require('./apps/remote-widget/package.json').version")" >> $GITHUB_OUTPUT
+        run: echo "VERSION=$(node -p "require('./apps/mfes/remote-widget/package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Build remote widget
         run: pnpm run build:remote
@@ -261,10 +261,10 @@ jobs:
       - name: Deploy to CDN
         run: |
           # Upload to versioned path
-          aws s3 sync apps/remote-widget/dist s3://my-cdn-bucket/remote-widget/${{ steps.version.outputs.VERSION }}/
+          aws s3 sync apps/mfes/remote-widget/dist s3://my-cdn-bucket/remote-widget/${{ steps.version.outputs.VERSION }}/
 
           # Update 'latest' pointer
-          aws s3 sync apps/remote-widget/dist s3://my-cdn-bucket/remote-widget/latest/
+          aws s3 sync apps/mfes/remote-widget/dist s3://my-cdn-bucket/remote-widget/latest/
 ```
 
 ## Docker Deployment
@@ -272,7 +272,7 @@ jobs:
 ### Host Dockerfile
 
 ```dockerfile
-# apps/website/Dockerfile
+# apps/shells/website/Dockerfile
 FROM node:22-alpine as builder
 
 WORKDIR /app
@@ -286,7 +286,7 @@ ENV VITE_REMOTE_WIDGET_URL=$VITE_REMOTE_WIDGET_URL
 RUN pnpm run build:host
 
 FROM nginx:alpine
-COPY --from=builder /app/apps/website/dist /usr/share/nginx/html
+COPY --from=builder /app/apps/shells/website/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
@@ -298,7 +298,7 @@ CMD ["nginx", "-g", "daemon off;"]
 docker build \
   --build-arg VITE_REMOTE_WIDGET_URL=https://cdn.example.com/remote-widget/latest/assets/remoteEntry.js \
   -t host-app:latest \
-  -f apps/website/Dockerfile .
+  -f apps/shells/website/Dockerfile .
 
 docker run -p 80:80 host-app:latest
 ```

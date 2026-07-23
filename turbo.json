@@ -15,7 +15,7 @@
     },
     "generate:config": {
       "dependsOn": ["@mfe-runtine/monorepo-tools#build"],
-      "outputs": ["apps/website/public/remotes.config.json"]
+      "outputs": ["apps/shells/website/public/remotes.config.json"]
     }
   }
 }

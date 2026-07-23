@@ -2,7 +2,7 @@
 
 Current failure paths:
 
-- Shell wraps the React tree in a single `ErrorBoundary` (`apps/website/src/components/ErrorBoundary.tsx`). A crash in any component takes down the whole page.
+- Shell wraps the React tree in a single `ErrorBoundary` (`apps/shells/website/src/components/ErrorBoundary.tsx`). A crash in any component takes down the whole page.
 - Dynamic loader retries manifest fetch 3× with backoff then emits `config:fetch:error`. If that happens, the shell renders nothing meaningful.
 - MFE code has no runtime error boundaries.
 - Token refresh failures either succeed silently or throw uncaught.
@@ -58,10 +58,10 @@ Now we need a real strategy. ADR-0006 defined five layers of failure handling. T
 
 Following ADR-0006:
 
-1. **Bootstrap** (`apps/website/src/main.ts`) — critical errors that prevent any MFE mount → render critical-error template into `#app`
+1. **Bootstrap** (`apps/shells/website/src/main.ts`) — critical errors that prevent any MFE mount → render critical-error template into `#app`
 2. **Slot** (`packages/dynamic-loader/`) — MFE fails to load/mount → render fallback UI into that slot only; other slots keep working
 3. **Runtime** (each MFE) — MFE crashes at render → `react-error-boundary` shows a scoped fallback; MFE reports the error
-4. **Auth** (`apps/website/src/main.ts` + `packages/auth`) — token refresh fails → retry with backoff → clear session and redirect to `/login?returnUrl=<current>`
+4. **Auth** (`apps/shells/website/src/main.ts` + `packages/auth`) — token refresh fails → retry with backoff → clear session and redirect to `/login?returnUrl=<current>`
 
 **Rationale:**
 
@@ -195,7 +195,7 @@ tokenManager.on("refresh:failed", async () => {
 
 **Phase 1 — Error Bridge:**
 
-1. Add `apps/website/src/error-bridge.ts` with `setupErrorBridge()`
+1. Add `apps/shells/website/src/error-bridge.ts` with `setupErrorBridge()`
 2. Wire into bootstrap BEFORE any other setup
 3. Add tests
 
@@ -208,7 +208,7 @@ tokenManager.on("refresh:failed", async () => {
 
 **Phase 3 — Runtime Boundaries in MFE:**
 
-1. Add `react-error-boundary` to `apps/mfe-widget/package.json`
+1. Add `react-error-boundary` to `apps/mfes/mfe-widget/package.json`
 2. Wrap `App.tsx` root in `<ErrorBoundary>`
 3. Report errors via `window.__MFE_ERROR__`
 4. Add tests that throw synthetic errors and assert fallback UI

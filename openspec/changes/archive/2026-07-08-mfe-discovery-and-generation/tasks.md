@@ -3,7 +3,7 @@
 ## 1. Implement Discovery Logic
 
 - [x] 1.1 Implement `packages/monorepo-tools/src/discovery.ts`
-- [x] 1.2 Add `discoverMicroFrontends()` function using glob to find `apps/mfe-*/`
+- [x] 1.2 Add `discoverMicroFrontends()` function using glob to find `apps/mfes/mfe-*/`
 - [x] 1.3 Read package.json from each discovered directory
 - [x] 1.4 Extract name, version, description from package.json
 - [x] 1.5 Extract optional `mfe` config from package.json (port, scope overrides)
@@ -39,7 +39,7 @@
 - [x] 3.3 Add CLI argument parsing (--output, --dry-run, --environment)
 - [x] 3.4 Implement main function: discover → generate → write to file
 - [x] 3.5 Add error handling with helpful messages
-- [x] 3.6 Default output path: `apps/website/public/remotes.config.json`
+- [x] 3.6 Default output path: `apps/shells/website/public/remotes.config.json`
 - [x] 3.7 Create parent directories if not exist
 - [x] 3.8 Test: `tsx scripts/generate-config.ts`
 
@@ -51,11 +51,11 @@
 
 - [x] 4.1 Update `turbo.json` to add `generate:config` task
 - [x] 4.2 Configure task with `"dependsOn": ["@mfe-runtine/monorepo-tools#build"]`
-- [x] 4.3 Configure task with `"outputs": ["apps/website/public/remotes.config.json"]`
+- [x] 4.3 Configure task with `"outputs": ["apps/shells/website/public/remotes.config.json"]`
 - [x] 4.4 Add `prebuild` script to website package.json
 - [x] 4.5 Update website build task to depend on generate:config
 - [x] 4.6 Test: `turbo build --filter website` auto-generates config
-- [x] 4.7 Test: Verify config in `apps/website/public/`
+- [x] 4.7 Test: Verify config in `apps/shells/website/public/`
 - [x] 4.8 Test: Second run uses cache (instant)
 
 **Depends on**: Section 3  
@@ -64,7 +64,7 @@
 
 ## 5. Gitignore Generated Config
 
-- [x] 5.1 Add `apps/website/public/remotes.config.json` to `.gitignore`
+- [x] 5.1 Add `apps/shells/website/public/remotes.config.json` to `.gitignore`
 - [x] 5.2 Verify git status doesn't show config as untracked
 - [x] 5.3 Document in README that config is auto-generated
 

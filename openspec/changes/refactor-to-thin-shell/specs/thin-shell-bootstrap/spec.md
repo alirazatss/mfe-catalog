@@ -58,7 +58,7 @@ The shell's `index.html` SHALL define exactly four fixed slot elements — `head
 
 #### Scenario: Slots exist on initial HTML
 
-- **GIVEN** the browser loads `apps/website/index.html`
+- **GIVEN** the browser loads `apps/shells/website/index.html`
 - **WHEN** the parser finishes
 - **THEN** the DOM SHALL contain elements with IDs `header-slot`, `sidebar-slot`, `main-slot`, `footer-slot`
 - **AND** each element SHALL carry `data-slot="<name>"`
@@ -112,18 +112,18 @@ The shell SHALL determine which feature MFE to mount by matching `window.locatio
 
 ### Requirement: Shell SHALL keep its runtime code under a strict size ceiling
 
-The shell's runtime source code (TypeScript/JavaScript inside `apps/website/src/`, excluding types and tests) SHALL NOT exceed 250 lines total. CSS SHALL be layout-only.
+The shell's runtime source code (TypeScript/JavaScript inside `apps/shells/website/src/`, excluding types and tests) SHALL NOT exceed 250 lines total. CSS SHALL be layout-only.
 
 #### Scenario: Static line-count check during build
 
 - **GIVEN** the shell's runtime source files
-- **WHEN** the build pipeline counts non-blank, non-comment lines in `apps/website/src/**/*.{ts,js}` (excluding `*.d.ts` and `*.test.*`)
+- **WHEN** the build pipeline counts non-blank, non-comment lines in `apps/shells/website/src/**/*.{ts,js}` (excluding `*.d.ts` and `*.test.*`)
 - **THEN** the total SHALL be less than or equal to 250
 - **AND** exceeding the limit SHALL fail the build with a descriptive error
 
 #### Scenario: Shell CSS contains no visual styling
 
-- **GIVEN** `apps/website/src/style.css` (or equivalent shell stylesheet)
+- **GIVEN** `apps/shells/website/src/style.css` (or equivalent shell stylesheet)
 - **WHEN** the file is reviewed
 - **THEN** the file SHALL contain only layout rules (grid, flex, sizing, positioning)
 - **AND** the file SHALL NOT contain colors, typography, spacing tokens, or component-level styling other than reset/normalize essentials

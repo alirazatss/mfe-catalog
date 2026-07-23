@@ -20,10 +20,10 @@ With all components ready (discovery, generation, dynamic loader), we need to in
 
 ### Affected Code
 
-- `apps/website/package.json` - Add dynamic-loader dependency
-- `apps/website/src/config/remotes.ts` - Initialize and use DynamicLoader
-- `apps/website/src/RemoteWidgetLoader.ts` - Replace hardcoded imports
-- `apps/website/src/ErrorBoundary.ts` - Enhanced error messages
+- `apps/shells/website/package.json` - Add dynamic-loader dependency
+- `apps/shells/website/src/config/remotes.ts` - Initialize and use DynamicLoader
+- `apps/shells/website/src/RemoteWidgetLoader.ts` - Replace hardcoded imports
+- `apps/shells/website/src/ErrorBoundary.ts` - Enhanced error messages
 
 ### Deployment Changes
 

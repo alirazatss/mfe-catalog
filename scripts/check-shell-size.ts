@@ -3,7 +3,7 @@
  * Enforce the thin-shell size ceiling.
  *
  * Counts non-blank, non-comment lines in the shell runtime source
- * (`apps/website/src/**\/*.ts` excluding `_legacy/`, `test/`, and `*.d.ts`).
+ * (`apps/shells/website/src/**\/*.ts` excluding `_legacy/`, `test/`, and `*.d.ts`).
  *
  * Target ceiling: currently 500 lines. See notes below.
  *
@@ -25,7 +25,7 @@ const SHELL_LINE_LIMIT = 500;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, "..");
-const searchRoot = path.join(rootDir, "apps/website/src");
+const searchRoot = path.join(rootDir, "apps/shells/website/src");
 
 const excludeDirs = new Set(["_legacy", "test"]);
 

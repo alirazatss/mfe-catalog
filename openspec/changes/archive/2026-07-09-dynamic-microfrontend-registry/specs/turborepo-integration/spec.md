@@ -26,7 +26,7 @@ The system SHALL use Turborepo to manage builds across all workspace packages wi
 
 #### Scenario: Turborepo rebuilds only changed app
 
-- **WHEN** changing code in `apps/mfe-widget/src/CounterWidget.ts`
+- **WHEN** changing code in `apps/mfes/mfe-widget/src/CounterWidget.ts`
 - **AND** running `turbo build`
 - **THEN** Turborepo SHALL rebuild mfe-widget only
 - **AND** Turborepo SHALL serve mfe-dashboard from cache (if exists)
@@ -86,7 +86,7 @@ Example configuration:
 {
   "pipeline": {
     "generate:config": {
-      "outputs": ["apps/website/public/remotes.config.json"]
+      "outputs": ["apps/shells/website/public/remotes.config.json"]
     }
   }
 }
@@ -98,7 +98,7 @@ The system SHALL use file content hashes (not timestamps) to determine if rebuil
 
 #### Scenario: Changed file triggers rebuild
 
-- **WHEN** modifying `apps/mfe-widget/src/CounterWidget.ts`
+- **WHEN** modifying `apps/mfes/mfe-widget/src/CounterWidget.ts`
 - **THEN** Turborepo SHALL detect content hash change
 - **AND** Turborepo SHALL invalidate mfe-widget cache
 - **AND** Turborepo SHALL rebuild mfe-widget
@@ -111,7 +111,7 @@ The system SHALL use file content hashes (not timestamps) to determine if rebuil
 
 #### Scenario: Dependency change triggers rebuild
 
-- **WHEN** `apps/mfe-widget/package.json` dependencies change
+- **WHEN** `apps/mfes/mfe-widget/package.json` dependencies change
 - **THEN** Turborepo SHALL detect hash change
 - **AND** Turborepo SHALL rebuild mfe-widget
 

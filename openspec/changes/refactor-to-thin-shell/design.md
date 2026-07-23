@@ -1,16 +1,16 @@
 ## Context
 
-The current shell (`apps/website`) evolved from a demo/prototype into a production-oriented setup. It carries React components (Layout, LoginPage, ProtectedRoute, AuthProvider) that provide value today but block the Chrome MFE pattern established in ADR-0004. As we plan to add `admin-shell`, `marketing-shell`, and potentially more shells owned by different teams, keeping business logic in each shell will multiply maintenance cost and prevent independent chrome deployment.
+The current shell (`apps/shells/website`) evolved from a demo/prototype into a production-oriented setup. It carries React components (Layout, LoginPage, ProtectedRoute, AuthProvider) that provide value today but block the Chrome MFE pattern established in ADR-0004. As we plan to add `admin-shell`, `marketing-shell`, and potentially more shells owned by different teams, keeping business logic in each shell will multiply maintenance cost and prevent independent chrome deployment.
 
 **Current state (verified 2026-07-14):**
 
-- Shell: 476+ lines of business logic in `apps/website/src/`
+- Shell: 476+ lines of business logic in `apps/shells/website/src/`
 - `AuthProvider.tsx`: 224 lines managing auth state via React Context
 - `LoginPage.tsx`: 124 lines with corporate-branded form
 - `Layout.tsx`: 128 lines rendering header, nav, footer, logout
 - `App.tsx`: React Router routes + `window.__AUTH__` exposure
 - `main.tsx`: Bootstrap sequence — initializes remotes, wraps app in `BrowserRouter` + `AuthProvider`
-- MFE `apps/mfe-widget`: Already Module-Federation-based, mounts via `App` export
+- MFE `apps/mfes/mfe-widget`: Already Module-Federation-based, mounts via `App` export
 
 **Target state:**
 
@@ -30,7 +30,7 @@ The current shell (`apps/website`) evolved from a demo/prototype into a producti
 
 - Single Keycloak instance (SSO via wildcard cookies — ADR-0002)
 - React 19 + Vite + Module Federation stack (ADR-0008)
-- Cannot break existing MFE (`apps/mfe-widget`) during migration
+- Cannot break existing MFE (`apps/mfes/mfe-widget`) during migration
 - Must preserve 117 passing tests where behavior is retained
 - Login flow will be temporarily broken until `extract-auth-ui-package` lands (accepted risk)
 
@@ -100,7 +100,7 @@ Add four fixed slot elements at build time:
 
 ### Decision 3: Preserve `TokenManager` (`@mfe-runtine/auth`), delete `AuthProvider` React wrapper
 
-`packages/auth/TokenManager.ts` is framework-agnostic and stays. `apps/website/src/providers/AuthProvider.tsx` (React Context wrapper) is deleted. The shell bootstrap calls `tokenManager.initialize()` directly and exposes state on `window.__MFE_AUTH__`.
+`packages/auth/TokenManager.ts` is framework-agnostic and stays. `apps/shells/website/src/providers/AuthProvider.tsx` (React Context wrapper) is deleted. The shell bootstrap calls `tokenManager.initialize()` directly and exposes state on `window.__MFE_AUTH__`.
 
 **Rationale:**
 
@@ -185,7 +185,7 @@ Bootstrap wraps critical steps in try/catch. Any hard failure (manifest fetch af
 - **[User loses layout during migration]** → Include a minimal built-in fallback header inside `index.html` (just a logo + reload link) shown until chrome MFEs mount; document as temporary
 - **[Existing shell tests break]** → Delete tests for removed components (LoginPage, Layout, ProtectedRoute); write new tests for bootstrap + slot management; net test count drops but coverage of remaining shell code stays high
 - **[React Router usage still needed inside MFEs]** → Keep `react-router` in MFE dependencies; only remove from shell `package.json`; document that shells never import React Router
-- **[Bootstrap complexity grows over time]** → Enforce 250-line ceiling via CI check on `apps/website/src/*.ts` line count; anything larger triggers ADR re-review
+- **[Bootstrap complexity grows over time]** → Enforce 250-line ceiling via CI check on `apps/shells/website/src/*.ts` line count; anything larger triggers ADR re-review
 - **[Vanilla DOM manipulation risks XSS]** → All manifest-driven strings must be validated; use `textContent`/`setAttribute` only, never `innerHTML` for user-derived content; template strings for error UI are static/hard-coded
 
 ## Migration Plan

@@ -5,8 +5,8 @@ The monorepo currently runs a single website application without the ability to 
 ## What Changes
 
 - Enable Vite Module Federation plugin in the build configuration
-- Create a new React microfrontend application (`apps/remote-widget`) that exposes a sample component
-- Configure the main website (`apps/website`) as a host application that can dynamically load remote modules
+- Create a new React microfrontend application (`apps/mfes/remote-widget`) that exposes a sample component
+- Configure the main website (`apps/shells/website`) as a host application that can dynamically load remote modules
 - Establish build and development workflow for both host and remote applications
 - Add TypeScript support for federated modules with proper type declarations
 - Configure runtime module loading with error boundaries and fallback UI
@@ -28,8 +28,8 @@ The monorepo currently runs a single website application without the ability to 
 **Affected Code:**
 
 - `vite.config.ts` (root and app-level) - Module Federation plugin configuration
-- `apps/website/` - Host application setup with dynamic module loading
-- New directory `apps/remote-widget/` - First microfrontend application
+- `apps/shells/website/` - Host application setup with dynamic module loading
+- New directory `apps/mfes/remote-widget/` - First microfrontend application
 - Package dependencies - Add `@module-federation/vite` and related packages
 - TypeScript configuration - Add type declarations for federated modules
 

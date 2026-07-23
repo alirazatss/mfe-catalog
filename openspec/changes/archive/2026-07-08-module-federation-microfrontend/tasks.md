@@ -1,7 +1,7 @@
 ## 1. Project Dependencies and Configuration
 
 - [ ] 1.1 Install `@module-federation/vite` package in root package.json
-- [ ] 1.2 Install `@module-federation/vite` in apps/website package.json
+- [ ] 1.2 Install `@module-federation/vite` in apps/shells/website package.json
 - [ ] 1.3 Update pnpm-lock.yaml with new dependencies
 
 **Depends on**: None  
@@ -10,12 +10,12 @@
 
 ## 2. Remote Widget Application Setup
 
-- [ ] 2.1 Create apps/remote-widget directory structure
-- [ ] 2.2 Create apps/remote-widget/package.json with React and Vite dependencies
-- [ ] 2.3 Create apps/remote-widget/vite.config.ts with federation plugin configuration
-- [ ] 2.4 Create apps/remote-widget/tsconfig.json for TypeScript configuration
-- [ ] 2.5 Create apps/remote-widget/index.html as entry point
-- [ ] 2.6 Create apps/remote-widget/src/main.tsx for standalone rendering
+- [ ] 2.1 Create apps/mfes/remote-widget directory structure
+- [ ] 2.2 Create apps/mfes/remote-widget/package.json with React and Vite dependencies
+- [ ] 2.3 Create apps/mfes/remote-widget/vite.config.ts with federation plugin configuration
+- [ ] 2.4 Create apps/mfes/remote-widget/tsconfig.json for TypeScript configuration
+- [ ] 2.5 Create apps/mfes/remote-widget/index.html as entry point
+- [ ] 2.6 Create apps/mfes/remote-widget/src/main.tsx for standalone rendering
 
 **Depends on**: Section 1 (dependencies installed)  
 **Skill**: Use #file:~/.agents/skills/frontend-developer/SKILL.md  
@@ -23,13 +23,13 @@
 
 ## 3. Sample Widget Component Implementation
 
-- [ ] 3.1 Create apps/remote-widget/src/components/CounterWidget.tsx with counter logic
+- [ ] 3.1 Create apps/mfes/remote-widget/src/components/CounterWidget.tsx with counter logic
 - [ ] 3.2 Add state management for increment/decrement functionality
-- [ ] 3.3 Create apps/remote-widget/src/components/CounterWidget.module.css for scoped styling
+- [ ] 3.3 Create apps/mfes/remote-widget/src/components/CounterWidget.module.css for scoped styling
 - [ ] 3.4 Add TypeScript prop interface for widget customization (initialValue, theme)
-- [ ] 3.5 Create apps/remote-widget/src/components/ErrorBoundary.tsx for error handling
+- [ ] 3.5 Create apps/mfes/remote-widget/src/components/ErrorBoundary.tsx for error handling
 - [ ] 3.6 Add error boundary wrapper around CounterWidget
-- [ ] 3.7 Create apps/remote-widget/src/types.d.ts for TypeScript declarations
+- [ ] 3.7 Create apps/mfes/remote-widget/src/types.d.ts for TypeScript declarations
 
 **Depends on**: Section 2 (remote app structure ready)  
 **Skill**: Use #file:~/.agents/skills/frontend-developer/SKILL.md  
@@ -37,12 +37,12 @@
 
 ## 4. Remote Federation Configuration
 
-- [ ] 4.1 Configure federation plugin in apps/remote-widget/vite.config.ts to expose CounterWidget
+- [ ] 4.1 Configure federation plugin in apps/mfes/remote-widget/vite.config.ts to expose CounterWidget
 - [ ] 4.2 Set remote name as "remoteWidget" in federation config
 - [ ] 4.3 Configure shared dependencies (react, react-dom) as singleton
 - [ ] 4.4 Set remote dev server port to 5174
 - [ ] 4.5 Configure remote build output with remoteEntry.js
-- [ ] 4.6 Add remote development script to apps/remote-widget/package.json
+- [ ] 4.6 Add remote development script to apps/mfes/remote-widget/package.json
 
 **Depends on**: Section 3 (widget component ready)  
 **Skill**: Use #file:~/.agents/skills/frontend-developer/SKILL.md  
@@ -50,7 +50,7 @@
 
 ## 5. Host Application Federation Configuration
 
-- [ ] 5.1 Configure federation plugin in apps/website/vite.config.ts as host
+- [ ] 5.1 Configure federation plugin in apps/shells/website/vite.config.ts as host
 - [ ] 5.2 Add remote "remoteWidget" with URL http://localhost:5174/assets/remoteEntry.js for dev
 - [ ] 5.3 Configure shared dependencies (react, react-dom) to match remote
 - [ ] 5.4 Set host dev server port to 5173 (default)
@@ -62,8 +62,8 @@
 
 ## 6. Host Application Integration
 
-- [ ] 6.1 Create apps/website/src/types/remotes.d.ts with module declarations for remoteWidget
-- [ ] 6.2 Create apps/website/src/components/RemoteWidgetLoader.tsx for dynamic import
+- [ ] 6.1 Create apps/shells/website/src/types/remotes.d.ts with module declarations for remoteWidget
+- [ ] 6.2 Create apps/shells/website/src/components/RemoteWidgetLoader.tsx for dynamic import
 - [ ] 6.3 Add React.lazy and Suspense wrapper for remote loading
 - [ ] 6.4 Create error boundary for remote loading failures
 - [ ] 6.5 Add loading fallback UI component
@@ -77,7 +77,7 @@
 ## 7. TypeScript Type Definitions
 
 - [ ] 7.1 Generate .d.ts file for CounterWidget component
-- [ ] 7.2 Copy type definitions to apps/website/src/types/remoteWidget.d.ts
+- [ ] 7.2 Copy type definitions to apps/shells/website/src/types/remoteWidget.d.ts
 - [ ] 7.3 Ensure TypeScript compiler recognizes remote module types
 - [ ] 7.4 Test IDE autocomplete for CounterWidget props in host application
 - [ ] 7.5 Document type definition update process in README
@@ -132,7 +132,7 @@
 
 ## 11. Documentation
 
-- [ ] 11.1 Create apps/remote-widget/README.md with setup instructions
+- [ ] 11.1 Create apps/mfes/remote-widget/README.md with setup instructions
 - [ ] 11.2 Document how to create new remote applications
 - [ ] 11.3 Document how to consume remote modules in host
 - [ ] 11.4 Add troubleshooting section for common Module Federation issues

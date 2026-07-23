@@ -2,15 +2,15 @@
 
 ### Requirement: Sample MFE SHALL demonstrate the lifecycle contract
 
-`apps/mfe-widget` SHALL serve as the reference implementation of the MFE lifecycle contract, showing how a React MFE wraps its App component in `bootstrap`/`mount`/`unmount`/`update` functions.
+`apps/mfes/mfe-widget` SHALL serve as the reference implementation of the MFE lifecycle contract, showing how a React MFE wraps its App component in `bootstrap`/`mount`/`unmount`/`update` functions.
 
 #### Scenario: Reference lifecycle module exists
 
-- **GIVEN** the sample MFE `apps/mfe-widget`
+- **GIVEN** the sample MFE `apps/mfes/mfe-widget`
 - **WHEN** the repository is inspected
-- **THEN** the file `apps/mfe-widget/src/index.tsx` SHALL exist
+- **THEN** the file `apps/mfes/mfe-widget/src/index.tsx` SHALL exist
 - **AND** the file SHALL export `bootstrap`, `mount`, `unmount` as async functions (and MAY export `update`)
-- **AND** the file SHALL be listed in `apps/mfe-widget/vite.config.ts` under `exposes` at key `./lifecycle`
+- **AND** the file SHALL be listed in `apps/mfes/mfe-widget/vite.config.ts` under `exposes` at key `./lifecycle`
 
 #### Scenario: Reference wrapper renders App into container
 

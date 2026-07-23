@@ -30,18 +30,18 @@ Production micro-frontends require secure authentication with centralized token 
 
 **Affected Code**:
 
-- `apps/website/src/main.tsx` — Wrap app with AuthProvider
-- `apps/website/src/components/LoginPage.tsx` — Replace mock login with real auth integration
-- `apps/website/src/App.tsx` — Add protected route guards, pass auth to MFEs
-- `apps/mfe-widget/src/App.tsx` — Accept auth props, integrate with API client
-- `apps/mfe-widget/src/api/` — Add Axios interceptors using shared token manager
+- `apps/shells/website/src/main.tsx` — Wrap app with AuthProvider
+- `apps/shells/website/src/components/LoginPage.tsx` — Replace mock login with real auth integration
+- `apps/shells/website/src/App.tsx` — Add protected route guards, pass auth to MFEs
+- `apps/mfes/mfe-widget/src/App.tsx` — Accept auth props, integrate with API client
+- `apps/mfes/mfe-widget/src/api/` — Add Axios interceptors using shared token manager
 
 **New Files**:
 
 - `packages/auth/` — New package for shared token manager
-- `apps/website/src/providers/AuthProvider.tsx` — Auth context provider
-- `apps/website/src/hooks/useAuth.ts` — Auth hook for components
-- `apps/website/src/guards/ProtectedRoute.tsx` — Route guard component
+- `apps/shells/website/src/providers/AuthProvider.tsx` — Auth context provider
+- `apps/shells/website/src/hooks/useAuth.ts` — Auth hook for components
+- `apps/shells/website/src/guards/ProtectedRoute.tsx` — Route guard component
 
 **Infrastructure**:
 

@@ -247,8 +247,8 @@ useEffect(() => {
 
 ### Phase 2: Migrate Existing Navigation Events
 
-1. Update `apps/website/src/utils/navigation.ts` to use event bus
-2. Update `apps/mfe-widget/src/utils/navigation.ts`
+1. Update `apps/shells/website/src/utils/navigation.ts` to use event bus
+2. Update `apps/mfes/mfe-widget/src/utils/navigation.ts`
 3. Update NavigationEventListener component
 4. Test navigation still works
 

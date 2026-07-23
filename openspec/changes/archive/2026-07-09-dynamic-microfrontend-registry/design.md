@@ -7,13 +7,13 @@ The current micro-frontend setup uses Module Federation with a single hardcoded 
 - No convention exists for auto-discovering micro-frontends
 - Deployment costs are high (rebuilding/deploying everything on every commit)
 
-The existing codebase has prepared for this with `apps/website/src/config/remotes.ts` which includes three strategies. We're implementing **build-time discovery + runtime loading** optimized for monorepo workflows.
+The existing codebase has prepared for this with `apps/shells/website/src/config/remotes.ts` which includes three strategies. We're implementing **build-time discovery + runtime loading** optimized for monorepo workflows.
 
 **Current architecture:**
 
-- Monorepo: pnpm workspace with `apps/*` and `packages/*`
-- Host: `apps/website` - Vanilla TypeScript app on Vite
-- Remote: `apps/remote-widget` - Vanilla TypeScript widget (will become `apps/mfe-widget`)
+- Monorepo: pnpm workspace with `apps/*/*` and `packages/*`
+- Host: `apps/shells/website` - Vanilla TypeScript app on Vite
+- Remote: `apps/mfes/remote-widget` - Vanilla TypeScript widget (will become `apps/mfes/mfe-widget`)
 - Build tool: Vite Plus (wrapper around Vite)
 - Module Federation: `@module-federation/vite` v1.16.12
 - Package manager: pnpm with workspace protocol
@@ -21,7 +21,7 @@ The existing codebase has prepared for this with `apps/website/src/config/remote
 
 **Constraints:**
 
-- All micro-frontends live in same monorepo (`apps/mfe-*`)
+- All micro-frontends live in same monorepo (`apps/mfes/mfe-*`)
 - Must only build/deploy changed apps (git-aware selective builds)
 - Must work with pnpm workspaces and existing Vite setup
 - Solution must be framework-agnostic (vanilla TypeScript)
@@ -29,7 +29,7 @@ The existing codebase has prepared for this with `apps/website/src/config/remote
 
 **Stakeholders:**
 
-- Frontend developers: Need to add micro-frontends by creating `apps/mfe-{name}/` folder
+- Frontend developers: Need to add micro-frontends by creating `apps/mfes/mfe-{name}/` folder
 - DevOps/CI: Need fast builds (only changed apps)
 - Monorepo maintainers: Need consistent conventions across all micro-frontends
 
@@ -37,7 +37,7 @@ The existing codebase has prepared for this with `apps/website/src/config/remote
 
 **Goals:**
 
-- Auto-discover micro-frontends by scanning `apps/mfe-*` directories
+- Auto-discover micro-frontends by scanning `apps/mfes/mfe-*` directories
 - Generate `remotes.config.json` at build time from discovered micro-frontends
 - Detect changed apps via git and only build those (selective builds)
 - Support multiple micro-frontends without manual host configuration
@@ -48,7 +48,7 @@ The existing codebase has prepared for this with `apps/website/src/config/remote
 
 **Non-Goals:**
 
-- External micro-frontends outside monorepo (all remotes are in `apps/mfe-*`)
+- External micro-frontends outside monorepo (all remotes are in `apps/mfes/mfe-*`)
 - Manual config files (everything auto-generated from filesystem)
 - CDN-based remote deployment (monorepo deploys to single domain)
 - Backend API for config management (build-time generation only)
@@ -59,16 +59,16 @@ The existing codebase has prepared for this with `apps/website/src/config/remote
 
 ## Decisions
 
-### Decision 1: Convention-based discovery via `apps/mfe-*` naming pattern
+### Decision 1: Convention-based discovery via `apps/mfes/mfe-*` naming pattern
 
-**Chosen approach:** Any directory matching `apps/mfe-*` pattern is automatically discovered as a micro-frontend.
+**Chosen approach:** Any directory matching `apps/mfes/mfe-*` pattern is automatically discovered as a micro-frontend.
 
 **Alternatives considered:**
 
 1. **Manifest file** - Require `mfe.config.json` in each micro-frontend
    - ❌ Boilerplate for every new micro-frontend
    - ❌ Can forget to create manifest
-2. **Naming convention `apps/mfe-*`** ✅
+2. **Naming convention `apps/mfes/mfe-*`** ✅
    - ✅ Zero configuration needed
    - ✅ Self-documenting (obvious which apps are micro-frontends)
    - ✅ Easy to discover via filesystem glob
@@ -83,7 +83,7 @@ The existing codebase has prepared for this with `apps/website/src/config/remote
 
 ```typescript
 // Discovery logic
-const microFrontends = await glob("apps/mfe-*/package.json");
+const microFrontends = await glob("apps/mfes/mfe-*/package.json");
 ```
 
 ### Decision 2: Build-time config generation, runtime loading
@@ -109,7 +109,7 @@ const microFrontends = await glob("apps/mfe-*/package.json");
 
 ```
 Build time:
-1. Scan apps/mfe-* directories
+1. Scan apps/mfes/mfe-* directories
 2. Read package.json from each
 3. Generate remotes.config.json
 4. Copy to public/ directory
@@ -199,7 +199,7 @@ turbo build --cache-dir=.turbo --token=$TURBO_TOKEN
 
 **How it works:**
 
-1. Developer changes `apps/mfe-widget/src/CounterWidget.ts`
+1. Developer changes `apps/mfes/mfe-widget/src/CounterWidget.ts`
 2. Developer runs `turbo build`
 3. Turborepo:
    - Detects mfe-widget changed (file hash differs)
@@ -280,7 +280,7 @@ Production (`NODE_ENV=production`):
 packages/
   monorepo-tools/          # Discovery and config generation (Node.js)
     src/
-      discovery.ts         # Scan apps/mfe-* for micro-frontends
+      discovery.ts         # Scan apps/mfes/mfe-* for micro-frontends
       config-generator.ts  # Generate remotes.config.json
       types.ts             # Shared types
     index.ts
@@ -335,7 +335,7 @@ turbo.json                 # Turborepo pipeline configuration
 **Extraction logic:**
 
 ```typescript
-const pkg = JSON.parse(await fs.readFile("apps/mfe-widget/package.json", "utf-8"));
+const pkg = JSON.parse(await fs.readFile("apps/mfes/mfe-widget/package.json", "utf-8"));
 const remote = {
   name: pkg.name.replace("@mfe-runtine/", ""), // "mfe-widget"
   version: pkg.version, // "1.0.0"
@@ -377,7 +377,7 @@ const remote = {
 
 ### Decision 8: Generated config location and versioning
 
-**Chosen approach:** Generate to `apps/website/public/remotes.config.json`, gitignore it, regenerate on every build.
+**Chosen approach:** Generate to `apps/shells/website/public/remotes.config.json`, gitignore it, regenerate on every build.
 
 **Alternatives considered:**
 
@@ -398,7 +398,7 @@ const remote = {
 **.gitignore addition:**
 
 ```
-apps/website/public/remotes.config.json
+apps/shells/website/public/remotes.config.json
 ```
 
 ## Risks / Trade-offs
@@ -422,7 +422,7 @@ apps/website/public/remotes.config.json
 
 - Wrap generation in try-catch, use fallback static config
 - Validate generated config against JSON Schema before writing
-- Emit clear error messages with hints (e.g., "Check package.json in apps/mfe-foo")
+- Emit clear error messages with hints (e.g., "Check package.json in apps/mfes/mfe-foo")
 - Fail build loudly (don't silently skip remotes)
 
 ### Risk: Turborepo cache invalidation issues
@@ -499,7 +499,7 @@ apps/website/public/remotes.config.json
 1. Install Turborepo: `pnpm add -Dw turbo`
 2. Create `turbo.json` with basic pipeline configuration
 3. Update root `package.json` scripts to use `turbo` instead of `vp run`
-4. Rename `apps/remote-widget/` to `apps/mfe-widget/`
+4. Rename `apps/mfes/remote-widget/` to `apps/mfes/mfe-widget/`
 5. Update package.json name to `@mfe-runtine/mfe-widget`
 6. Test Turborepo: `turbo build` and verify both apps build
 7. Verify caching: `turbo build` again should be instant (cached)
@@ -516,7 +516,7 @@ apps/website/public/remotes.config.json
 2. Create `packages/remote-config/` with schema and types
 3. Create `packages/dynamic-loader/` with loader skeleton
 4. Implement `packages/monorepo-tools/src/discovery.ts`
-   - Scan `apps/mfe-*/` directories
+   - Scan `apps/mfes/mfe-*/` directories
    - Read package.json from each
    - Extract name, version, description, assign ports
 5. Implement `packages/monorepo-tools/src/config-generator.ts`
@@ -528,13 +528,13 @@ apps/website/public/remotes.config.json
 **Validation:**
 
 - Running `turbo generate:config` creates valid `remotes.config.json`
-- Config includes all `apps/mfe-*` apps
+- Config includes all `apps/mfes/mfe-*` apps
 - JSON Schema validation passes
 - Turborepo caches generation (instant on re-run)
 
 ### Phase 3: Integrate config generation into host build (Week 2)
 
-1. Update `apps/website/package.json` to add `prebuild` script
+1. Update `apps/shells/website/package.json` to add `prebuild` script
    ```json
    {
      "scripts": {
@@ -550,7 +550,7 @@ apps/website/public/remotes.config.json
      "pipeline": {
        "generate:config": {
          "dependsOn": ["^build"],
-         "outputs": ["apps/website/public/remotes.config.json"]
+         "outputs": ["apps/shells/website/public/remotes.config.json"]
        },
        "build": {
          "dependsOn": ["generate:config"],
@@ -559,7 +559,7 @@ apps/website/public/remotes.config.json
      }
    }
    ```
-3. Gitignore `apps/website/public/remotes.config.json`
+3. Gitignore `apps/shells/website/public/remotes.config.json`
 4. Run `turbo build` and verify config regenerated
 5. Keep static remotes in vite.config.ts as fallback
 
@@ -573,8 +573,8 @@ apps/website/public/remotes.config.json
 
 1. Implement `packages/dynamic-loader/src/DynamicLoader.ts`
 2. Implement config fetching from `/remotes.config.json`
-3. Update `apps/website/src/config/remotes.ts` to use DynamicLoader
-4. Update `apps/website/src/RemoteWidgetLoader.ts` to use loader
+3. Update `apps/shells/website/src/config/remotes.ts` to use DynamicLoader
+4. Update `apps/shells/website/src/RemoteWidgetLoader.ts` to use loader
 5. Test locally: config loads, remote loads dynamically
 6. Add event listeners for logging
 
@@ -620,7 +620,7 @@ apps/website/public/remotes.config.json
 
 ### Phase 6: Add second micro-frontend and verify Turborepo (Week 3)
 
-1. Create `apps/mfe-dashboard/` by copying mfe-widget structure
+1. Create `apps/mfes/mfe-dashboard/` by copying mfe-widget structure
 2. Implement simple dashboard component
 3. Run `turbo generate:config` (or just `turbo build`)
 4. Verify both remotes appear in config
@@ -665,7 +665,7 @@ apps/website/public/remotes.config.json
 ### Phase 8: Documentation and finalization (Week 4)
 
 1. Update `README.md` with Turborepo commands
-2. Document monorepo conventions (`apps/mfe-*` pattern)
+2. Document monorepo conventions (`apps/mfes/mfe-*` pattern)
 3. Document how to add new micro-frontend
 4. Document Turborepo caching behavior
 5. Update `docs/PRODUCTION_DEPLOYMENT.md` with Turborepo deployment

@@ -1,6 +1,6 @@
 ## Context
 
-`apps/website/src/main.ts` currently contains the complete Shell orchestration loop: Manifest acquisition, authentication bootstrap, Chrome mounting, Feature route activation, navigation listeners, and teardown decisions. Supporting modules mix reusable decisions with website policy. For example, route matching is generic but imports the repository token manager and renders website-specific access outcomes; MFE mounting supports the accepted lifecycle contract but also retains a React-specific compatibility path.
+`apps/shells/website/src/main.ts` currently contains the complete Shell orchestration loop: Manifest acquisition, authentication bootstrap, Chrome mounting, Feature route activation, navigation listeners, and teardown decisions. Supporting modules mix reusable decisions with website policy. For example, route matching is generic but imports the repository token manager and renders website-specific access outcomes; MFE mounting supports the accepted lifecycle contract but also retains a React-specific compatibility path.
 
 The repository already provides the lower-level pieces the runtime needs:
 
@@ -20,7 +20,7 @@ The new package must coordinate these pieces without importing website modules, 
 - Provide explicit TypeScript contracts for Manifest, auth, navigation, Slot, failure, shared-prop, and observability boundaries.
 - Make startup, navigation races, partial failures, restart, and disposal deterministic and testable.
 - Reuse the existing Manifest, dynamic loader, and MFE lifecycle contracts.
-- Migrate `apps/website` to prove that the runtime can support a real Shell.
+- Migrate `apps/shells/website` to prove that the runtime can support a real Shell.
 
 **Non-Goals:**
 
@@ -154,7 +154,7 @@ The root entry point exports the factory, public contracts, and standard adapter
 
 ### 9. Migrate the website through adapters, not runtime exceptions
 
-`apps/website` will retain its fallback Manifest, auth bridge, login redirect, 403/404 rendering, critical error template, layout, and styles. A website runtime configuration module will adapt those concerns to the package contracts. `main.ts` will create and start the runtime, retaining only top-level fatal logging.
+`apps/shells/website` will retain its fallback Manifest, auth bridge, login redirect, 403/404 rendering, critical error template, layout, and styles. A website runtime configuration module will adapt those concerns to the package contracts. `main.ts` will create and start the runtime, retaining only top-level fatal logging.
 
 The website's `mfe-mount.ts` React fallback and local route orchestration will be removed after their lifecycle-only replacements are covered by integration tests. Existing navigation events may be adapted into the Navigation Adapter; they will not become a dependency of the runtime package.
 

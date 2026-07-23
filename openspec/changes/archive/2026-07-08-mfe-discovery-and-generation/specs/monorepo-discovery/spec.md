@@ -4,23 +4,23 @@
 
 ### Requirement: Discover micro-frontends by filesystem pattern
 
-The system SHALL automatically discover all micro-frontends by scanning for `apps/mfe-*/package.json` files.
+The system SHALL automatically discover all micro-frontends by scanning for `apps/mfes/mfe-*/package.json` files.
 
 #### Scenario: Single micro-frontend discovered
 
-- **WHEN** discovery runs in a monorepo with `apps/mfe-widget/package.json`
+- **WHEN** discovery runs in a monorepo with `apps/mfes/mfe-widget/package.json`
 - **THEN** discovery returns array with one MicroFrontend object
 - **AND** object contains name, shortName, version, port, scope, path
 
 #### Scenario: Multiple micro-frontends discovered
 
-- **WHEN** discovery runs with `apps/mfe-widget/` and `apps/mfe-dashboard/`
+- **WHEN** discovery runs with `apps/mfes/mfe-widget/` and `apps/mfes/mfe-dashboard/`
 - **THEN** discovery returns array with two MicroFrontend objects
 - **AND** objects are sorted alphabetically by directory name
 
 #### Scenario: No micro-frontends found
 
-- **WHEN** discovery runs and no `apps/mfe-*/` directories exist
+- **WHEN** discovery runs and no `apps/mfes/mfe-*/` directories exist
 - **THEN** discovery returns empty array
 
 ---
@@ -48,12 +48,12 @@ The system SHALL assign development ports alphabetically starting at 5174.
 
 #### Scenario: First micro-frontend gets port 5174
 
-- **WHEN** only `apps/mfe-widget/` exists
+- **WHEN** only `apps/mfes/mfe-widget/` exists
 - **THEN** mfe-widget gets port 5174
 
 #### Scenario: Multiple micro-frontends get sequential ports
 
-- **WHEN** `apps/mfe-dashboard/` and `apps/mfe-widget/` exist
+- **WHEN** `apps/mfes/mfe-dashboard/` and `apps/mfes/mfe-widget/` exist
 - **THEN** mfe-dashboard gets port 5174 (alphabetically first)
 - **AND** mfe-widget gets port 5175
 

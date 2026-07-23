@@ -88,17 +88,17 @@ The sample widget SHALL support hot module replacement during development.
 
 ### Requirement: Follow mfe-\* naming convention
 
-The system SHALL use `apps/mfe-*` naming pattern for all micro-frontends.
+The system SHALL use `apps/mfes/mfe-*` naming pattern for all micro-frontends.
 
 #### Scenario: Directory follows convention
 
 - **WHEN** filesystem is inspected
-- **THEN** `apps/mfe-widget/` directory exists
-- **AND** `apps/remote-widget/` does NOT exist
+- **THEN** `apps/mfes/mfe-widget/` directory exists
+- **AND** `apps/mfes/remote-widget/` does NOT exist
 
 #### Scenario: Package name is scoped
 
-- **WHEN** `apps/mfe-widget/package.json` is read
+- **WHEN** `apps/mfes/mfe-widget/package.json` is read
 - **THEN** name is `@mfe-runtine/mfe-widget`
 
 #### Scenario: Root scripts reference correct package
@@ -115,7 +115,7 @@ The system SHALL use `apps/mfe-*` naming pattern for all micro-frontends.
 
 #### Scenario: Module Federation scope unchanged
 
-- **WHEN** `apps/mfe-widget/vite.config.ts` is read
+- **WHEN** `apps/mfes/mfe-widget/vite.config.ts` is read
 - **THEN** federation name is still "remoteWidget"
 - **AND** host can still consume the remote
 

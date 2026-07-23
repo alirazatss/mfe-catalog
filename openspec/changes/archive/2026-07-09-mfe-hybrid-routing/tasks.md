@@ -2,7 +2,7 @@
 
 ## 1. Add React Router Dependencies
 
-- [ ] 1.1 Add `react-router-dom@^6.28.0` to `apps/website/package.json`
+- [ ] 1.1 Add `react-router-dom@^6.28.0` to `apps/shells/website/package.json`
 - [ ] 1.2 Add `@types/react-router-dom` to website dev dependencies
 - [ ] 1.3 Add `react-router-dom` to pnpm catalog for future MFEs
 - [ ] 1.4 Run `pnpm install` to update lockfile
@@ -13,10 +13,10 @@
 
 ## 2. Create Router Configuration Infrastructure
 
-- [ ] 2.1 Create `apps/website/src/router/types.ts` with route config types
-- [ ] 2.2 Create `apps/website/src/router/routes.tsx` with route definitions
-- [ ] 2.3 Create `apps/website/src/router/guards.ts` with guard utilities
-- [ ] 2.4 Create `apps/website/src/router/index.ts` exporting router instance
+- [ ] 2.1 Create `apps/shells/website/src/router/types.ts` with route config types
+- [ ] 2.2 Create `apps/shells/website/src/router/routes.tsx` with route definitions
+- [ ] 2.3 Create `apps/shells/website/src/router/guards.ts` with guard utilities
+- [ ] 2.4 Create `apps/shells/website/src/router/index.ts` exporting router instance
 - [ ] 2.5 Define RouteConfig type with path, mfeName, basePath, guards fields
 
 **Depends on**: Section 1  
@@ -25,13 +25,13 @@
 
 ## 3. Implement Shell Router with MFE Routes
 
-- [ ] 3.1 Create `apps/website/src/router/routes.tsx` with BrowserRouter setup
+- [ ] 3.1 Create `apps/shells/website/src/router/routes.tsx` with BrowserRouter setup
 - [ ] 3.2 Add route `/` → HomePage component
 - [ ] 3.3 Add route `/widget/*` → lazy-loaded mfe-widget
 - [ ] 3.4 Integrate dynamic loader with React.lazy() for MFE loading
 - [ ] 3.5 Add Suspense boundary with custom LoadingSpinner component
 - [ ] 3.6 Add ErrorBoundary component for route errors
-- [ ] 3.7 Export router instance from `apps/website/src/router/index.ts`
+- [ ] 3.7 Export router instance from `apps/shells/website/src/router/index.ts`
 
 **Depends on**: Section 2  
 **Skill**: Use #file:/Users/ali.raza/.agents/skills/frontend-developer/SKILL.md  
@@ -39,7 +39,7 @@
 
 ## 4. Create Route Loader Functions
 
-- [ ] 4.1 Create `apps/website/src/router/loaders.ts`
+- [ ] 4.1 Create `apps/shells/website/src/router/loaders.ts`
 - [ ] 4.2 Implement `loadMFERoute(mfeName: string)` function
 - [ ] 4.3 Integrate with dynamic loader: `await loader.loadRemote(mfeName)`
 - [ ] 4.4 Extract module from container: `container.get("./App")`
@@ -53,7 +53,7 @@
 
 ## 5. Update Main Entry to Use Router
 
-- [ ] 5.1 Update `apps/website/src/main.ts` to import router
+- [ ] 5.1 Update `apps/shells/website/src/main.ts` to import router
 - [ ] 5.2 Replace direct rendering with `<RouterProvider router={router} />`
 - [ ] 5.3 Keep `initializeRemotes()` call before RouterProvider
 - [ ] 5.4 Remove old RemoteWidgetLoader logic (now handled by router)
@@ -65,7 +65,7 @@
 
 ## 6. Update MFE-Widget to Accept basePath
 
-- [ ] 6.1 Update `apps/mfe-widget/src/components/CounterWidget.ts` signature
+- [ ] 6.1 Update `apps/mfes/mfe-widget/src/components/CounterWidget.ts` signature
 - [ ] 6.2 Add `basePath` prop with type `string` and default `"/"`
 - [ ] 6.3 Update any internal links to use basePath (if applicable)
 - [ ] 6.4 Add TypeScript interface for CounterWidget props including basePath
@@ -78,12 +78,12 @@
 
 ## 7. Implement Route Guards
 
-- [ ] 7.1 Create `apps/website/src/router/guards/requireAuth.ts`
-- [ ] 7.2 Create `apps/website/src/router/guards/requireRole.ts`
+- [ ] 7.1 Create `apps/shells/website/src/router/guards/requireAuth.ts`
+- [ ] 7.2 Create `apps/shells/website/src/router/guards/requireRole.ts`
 - [ ] 7.3 Implement `requireAuth()` guard function (check auth status)
 - [ ] 7.4 Implement `requireRole(role: string)` guard function
 - [ ] 7.5 Add redirect to `/auth/login` with `redirect` query param
-- [ ] 7.6 Export guards from `apps/website/src/router/guards/index.ts`
+- [ ] 7.6 Export guards from `apps/shells/website/src/router/guards/index.ts`
 - [ ] 7.7 Add guard types to route configuration
 
 **Depends on**: Section 3  
@@ -93,12 +93,12 @@
 ## 8. Create Cross-MFE Navigation Utilities
 
 - [ ] 8.1 Create `packages/routing-utils/` package (optional shared package)
-- [ ] 8.2 Create `apps/website/src/router/navigation.ts` for utilities
+- [ ] 8.2 Create `apps/shells/website/src/router/navigation.ts` for utilities
 - [ ] 8.3 Implement `navigateTo(path: string, state?: any)` helper function
 - [ ] 8.4 Helper SHALL dispatch CustomEvent `mfe:navigate`
 - [ ] 8.5 Add path validation (ensure starts with `/`, no external URLs)
 - [ ] 8.6 Add query parameter building from object
-- [ ] 8.7 Export utilities from `apps/website/src/router/index.ts`
+- [ ] 8.7 Export utilities from `apps/shells/website/src/router/index.ts`
 
 **Depends on**: Section 3  
 **Skill**: Use #file:/Users/ali.raza/.agents/skills/frontend-developer/SKILL.md  
@@ -106,7 +106,7 @@
 
 ## 9. Register Navigation Event Listeners in Shell
 
-- [ ] 9.1 Update `apps/website/src/router/index.ts` or root component
+- [ ] 9.1 Update `apps/shells/website/src/router/index.ts` or root component
 - [ ] 9.2 Add useEffect hook to register `mfe:navigate` listener
 - [ ] 9.3 Listener SHALL call `router.navigate(event.detail.path)`
 - [ ] 9.4 Add path validation before navigating
@@ -119,7 +119,7 @@
 
 ## 10. Create Layout Components
 
-- [ ] 10.1 Create `apps/website/src/components/Layout.tsx` with header/footer
+- [ ] 10.1 Create `apps/shells/website/src/components/Layout.tsx` with header/footer
 - [ ] 10.2 Add navigation menu with links to routes
 - [ ] 10.3 Add `<Outlet />` for nested routes
 - [ ] 10.4 Create `LoadingSpinner.tsx` component for Suspense fallback
@@ -132,7 +132,7 @@
 
 ## 11. Add TypeScript Declarations for Router
 
-- [ ] 11.1 Create `apps/website/src/types/router.d.ts`
+- [ ] 11.1 Create `apps/shells/website/src/types/router.d.ts`
 - [ ] 11.2 Add types for MFE component props (including basePath)
 - [ ] 11.3 Add types for route configuration
 - [ ] 11.4 Add types for guard functions
@@ -157,7 +157,7 @@
 
 ## 13. Create Example MFE with Internal Routing
 
-- [ ] 13.1 Update `apps/mfe-widget/` to have multiple "pages"
+- [ ] 13.1 Update `apps/mfes/mfe-widget/` to have multiple "pages"
 - [ ] 13.2 Add `router` prop to CounterWidget (accepts "browser" or "memory")
 - [ ] 13.3 Implement MemoryRouter when integrated (router="memory")
 - [ ] 13.4 Implement BrowserRouter when standalone (router="browser")
@@ -195,7 +195,7 @@
 
 ## 16. Create Route Guards Tests
 
-- [ ] 16.1 Create `apps/website/src/router/guards/__tests__/requireAuth.test.ts`
+- [ ] 16.1 Create `apps/shells/website/src/router/guards/__tests__/requireAuth.test.ts`
 - [ ] 16.2 Test guard passes with authenticated user
 - [ ] 16.3 Test guard redirects unauthenticated user to `/auth/login`
 - [ ] 16.4 Test guard preserves original path in redirect param
@@ -208,7 +208,7 @@
 
 ## 17. Create Integration Tests for Routing
 
-- [ ] 17.1 Create `apps/website/src/__tests__/routing.integration.test.ts`
+- [ ] 17.1 Create `apps/shells/website/src/__tests__/routing.integration.test.ts`
 - [ ] 17.2 Test navigation from `/` to `/widget` loads MFE
 - [ ] 17.3 Test deep linking to `/widget/settings` works
 - [ ] 17.4 Test back button navigates correctly

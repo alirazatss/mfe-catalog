@@ -24,7 +24,7 @@ None.
 ## Impact
 
 - Adds a new workspace package and public TypeScript API under `packages/shell-runtime`.
-- Refactors `apps/website` to configure the shared runtime instead of owning orchestration logic.
+- Refactors `apps/shells/website` to configure the shared runtime instead of owning orchestration logic.
 - Reuses `@mfe-runtine/dynamic-loader`, `@mfe-runtine/remote-config`, and the accepted MFE lifecycle contract without changing their requirements.
 - Requires consuming MFEs to expose lifecycle modules and consuming Shells to provide the required adapters.
 - Affects package build, type-check, unit-test, and website integration-test configuration; package publication remains outside this change.

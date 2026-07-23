@@ -11,7 +11,7 @@ The shell currently uses compile-time configuration (`remotes.config.json`) whic
 
 **Current State:**
 
-- Turborepo monorepo with `apps/mfe-*` pattern
+- Turborepo monorepo with `apps/mfes/mfe-*` pattern
 - Dynamic loader fetches static config at runtime
 - Config generation script discovers MFEs and generates localhost URLs
 - No versioning, no CDN, no independent deployment
@@ -277,7 +277,7 @@ jobs:
 **Implementation:**
 
 ```typescript
-// apps/website/src/config/remotes.ts
+// apps/shells/website/src/config/remotes.ts
 export async function initializeRemotes() {
   const manifestUrl = import.meta.env.PROD
     ? "https://cdn.example.com/manifest.json"
@@ -482,7 +482,7 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 
 ### Phase 5: Shell Bootstrap Update (Week 3)
 
-1. Update `apps/website/src/config/remotes.ts` to fetch manifest
+1. Update `apps/shells/website/src/config/remotes.ts` to fetch manifest
 2. Add environment-based URL selection (dev vs prod)
 3. Add error handling and retry logic
 4. Test locally with production manifest

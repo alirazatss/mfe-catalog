@@ -12,8 +12,8 @@ Currently, the mfe-runtine project has zero test coverage. As the codebase grows
 The micro-frontend architecture requires testing at multiple levels:
 
 - **Packages** (`packages/auth`, `packages/events`) - Core business logic
-- **Shell** (`apps/website`) - Auth, routing, layout, MFE integration
-- **MFEs** (`apps/mfe-widget`) - Component behavior, API integration
+- **Shell** (`apps/shells/website`) - Auth, routing, layout, MFE integration
+- **MFEs** (`apps/mfes/mfe-widget`) - Component behavior, API integration
 
 We'll use Vitest (already included with Vite+) for unit and integration tests. E2E tests (Playwright) are deferred to a future change.
 
@@ -169,7 +169,7 @@ coverage: {
 **Structure**:
 
 ```
-apps/website/
+apps/shells/website/
 └── src/
     └── test/
         ├── utils.tsx          # renderWithAuth, renderWithRouter
@@ -274,7 +274,7 @@ packages/auth/
 ### App Structure
 
 ```
-apps/website/
+apps/shells/website/
 ├── src/
 │   ├── components/
 │   │   ├── ProtectedRoute.tsx
@@ -329,7 +329,7 @@ export default defineConfig({
 });
 ```
 
-**App-specific** (`apps/website/vitest.config.ts`):
+**App-specific** (`apps/shells/website/vitest.config.ts`):
 
 ```typescript
 import { defineConfig } from "vitest/config";

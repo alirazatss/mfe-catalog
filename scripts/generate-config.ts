@@ -6,7 +6,7 @@
  * Usage:
  *   tsx scripts/generate-config.ts
  *   tsx scripts/generate-config.ts --environment production --git-hash abc123
- *   tsx scripts/generate-config.ts --output apps/website/public/remotes.config.json
+ *   tsx scripts/generate-config.ts --output apps/shells/website/public/remotes.config.json
  *   tsx scripts/generate-config.ts --dry-run
  */
 
@@ -30,7 +30,7 @@ interface CLIOptions {
 function parseArgs(): CLIOptions {
   const args = process.argv.slice(2);
   const options: CLIOptions = {
-    output: "apps/website/public/remotes.config.json",
+    output: "apps/shells/website/public/remotes.config.json",
     environment: "development",
     dryRun: false,
   };
@@ -58,7 +58,7 @@ function parseArgs(): CLIOptions {
 Usage: tsx scripts/generate-config.ts [options]
 
 Options:
-  -o, --output <path>         Output path for config file (default: apps/website/public/remotes.config.json)
+  -o, --output <path>         Output path for config file (default: apps/shells/website/public/remotes.config.json)
   -e, --environment <env>     Environment: development|production (default: development)
   -g, --git-hash <hash>       Git hash for production versioning
   -b, --base-url <url>        Base URL for production deployments
@@ -84,7 +84,7 @@ async function main() {
     const microFrontends = await discoverMicroFrontends(rootDir);
 
     if (microFrontends.length === 0) {
-      console.warn("⚠️  No micro-frontends found in apps/mfe-*/");
+      console.warn("⚠️  No micro-frontends found in apps/mfes/mfe-*/");
       return;
     }
 

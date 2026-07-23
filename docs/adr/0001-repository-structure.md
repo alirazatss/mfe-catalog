@@ -30,7 +30,7 @@ Split into **four repository types**:
 
 ```
 mfe-runtine/
-├── apps/website, apps/mfe-widget
+├── apps/shells/website, apps/mfes/mfe-widget
 ├── packages/*
 └── .github/workflows/ (12+ workflow files for 3 shells × 4 envs)
 ```

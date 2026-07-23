@@ -34,7 +34,7 @@ pnpm turbo build  # Should use cache, complete in <100ms
 
 **What you'll implement**:
 
-1. Rename `apps/remote-widget/` → `apps/mfe-widget/`
+1. Rename `apps/mfes/remote-widget/` → `apps/mfes/mfe-widget/`
 2. Create `packages/monorepo-tools/` package skeleton
 3. Create `packages/remote-config/` package skeleton with JSON Schema
 
@@ -48,7 +48,7 @@ cat openspec/changes/mfe-convention-and-packages/tasks.md
 **Verification**:
 
 ```bash
-turbo build  # Should build apps/mfe-widget successfully
+turbo build  # Should build apps/mfes/mfe-widget successfully
 ls packages/  # Should see monorepo-tools/ and remote-config/
 ```
 
@@ -81,7 +81,7 @@ cat openspec/changes/mfe-discovery-and-generation/tasks.md
 ```bash
 tsx scripts/generate-config.ts  # Should generate remotes.config.json
 turbo build --filter website  # Should auto-generate config
-cat apps/website/public/remotes.config.json  # Should see mfe-widget
+cat apps/shells/website/public/remotes.config.json  # Should see mfe-widget
 ```
 
 ---
@@ -239,12 +239,12 @@ Each change has its own `tasks.md` with checkboxes. Mark them as you complete:
 After completing all phases, you will have:
 
 ✅ Turborepo with smart caching (Phase 0)  
-✅ `apps/mfe-*` naming convention (Phase 1)  
+✅ `apps/mfes/mfe-*` naming convention (Phase 1)  
 ✅ Auto-discovery of micro-frontends (Phase 2)  
 ✅ Auto-generated `remotes.config.json` (Phase 2)  
 ✅ Dynamic runtime loader (Phase 3)  
 ✅ Host loads remotes dynamically (Phase 4)  
-✅ Adding new MFE = just create `apps/mfe-{name}/` (no host changes!)
+✅ Adding new MFE = just create `apps/mfes/mfe-{name}/` (no host changes!)
 
 **Core benefit**: Add/update micro-frontends without rebuilding the host!
 

@@ -11,7 +11,7 @@ The host application SHALL dynamically load remote federated modules and mount t
 #### Scenario: Host initializes bootstrap and loader at startup
 
 - **GIVEN** the host application is starting
-- **WHEN** the entry module `apps/website/src/main.ts` executes
+- **WHEN** the entry module `apps/shells/website/src/main.ts` executes
 - **THEN** the shell SHALL fetch `/manifest-<env>.json` (env resolved at build time)
 - **AND** the manifest SHALL be validated against the manifest schema
 - **AND** the loader SHALL cache the manifest in memory

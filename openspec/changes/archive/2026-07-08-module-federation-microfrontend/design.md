@@ -1,6 +1,6 @@
 ## Context
 
-The mfe-runtine project is a Vite Plus monorepo with a single website application (`apps/website`) and utility packages. The current architecture bundles all frontend code into a single deployable unit, limiting team autonomy and deployment flexibility. As the application scales, we need to enable microfrontend architecture using Module Federation to allow:
+The mfe-runtine project is a Vite Plus monorepo with a single website application (`apps/shells/website`) and utility packages. The current architecture bundles all frontend code into a single deployable unit, limiting team autonomy and deployment flexibility. As the application scales, we need to enable microfrontend architecture using Module Federation to allow:
 
 - Independent development and deployment of feature modules
 - Faster build times by avoiding full application rebuilds
@@ -10,7 +10,7 @@ The mfe-runtine project is a Vite Plus monorepo with a single website applicatio
 **Current state:**
 
 - Vite Plus build system with TypeScript
-- Single React application in `apps/website`
+- Single React application in `apps/shells/website`
 - Monorepo with pnpm workspaces
 - No existing module federation infrastructure
 
@@ -90,7 +90,7 @@ The mfe-runtine project is a Vite Plus monorepo with a single website applicatio
 
 ### Decision 3: Create remote application in monorepo
 
-**Choice:** Create `apps/remote-widget` as a separate Vite app in the monorepo  
+**Choice:** Create `apps/mfes/remote-widget` as a separate Vite app in the monorepo  
 **Alternatives considered:**
 
 - Separate repository for remote (complex for demo/getting started)

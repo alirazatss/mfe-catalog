@@ -5,7 +5,7 @@ With the mfe-\* naming convention and package structures established in Phase 1,
 Current state:
 
 - Package structures exist for monorepo-tools and remote-config (Phase 1)
-- One micro-frontend: `apps/mfe-widget/`
+- One micro-frontend: `apps/mfes/mfe-widget/`
 - No automated discovery or config generation yet
 
 This phase implements the complete discovery → generation → integration workflow.
@@ -14,7 +14,7 @@ This phase implements the complete discovery → generation → integration work
 
 **Goals:**
 
-- Implement filesystem-based discovery of all `apps/mfe-*` directories
+- Implement filesystem-based discovery of all `apps/mfes/mfe-*` directories
 - Generate valid `remotes.config.json` conforming to JSON Schema
 - Support environment-specific URL generation (development vs production)
 - Integrate config generation into Turborepo build pipeline
@@ -31,7 +31,7 @@ This phase implements the complete discovery → generation → integration work
 
 ### Decision 1: Use glob for filesystem discovery
 
-**Rationale**: Simple, battle-tested, works in both Node.js and build scripts. The `apps/mfe-*/package.json` pattern is clear and maintainable.
+**Rationale**: Simple, battle-tested, works in both Node.js and build scripts. The `apps/mfes/mfe-*/package.json` pattern is clear and maintainable.
 
 **Alternatives considered**:
 
@@ -144,7 +144,7 @@ Example:
 pnpm generate:config --dry-run
 
 # Test automatic generation
-rm apps/website/public/remotes.config.json
+rm apps/shells/website/public/remotes.config.json
 pnpm turbo build --filter website
 # Config should exist after build
 

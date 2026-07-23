@@ -114,7 +114,7 @@ In this setup, `mfe-widget` is a counter example you can load and interact with.
 
 ### 1. Automatic Discovery
 
-When you build or run the project, the monorepo automatically discovers all micro-frontends by scanning `apps/mfe-*` directories.
+When you build or run the project, the monorepo automatically discovers all micro-frontends by scanning `apps/mfes/mfe-*` directories.
 
 ### 2. Configuration Generation
 
@@ -159,14 +159,14 @@ Currently, the setup includes a simple widget MFE you can interact with.
 
 ### Working on the Shell
 
-1. Open `apps/website/src/` to modify shell code
+1. Open `apps/shells/website/src/` to modify shell code
 2. Make your changes (layout, navigation, shared services)
 3. Changes auto-reload in the browser
 4. If changes affect micro-frontend loading, also restart MFEs
 
 ### Working on a Micro-Frontend
 
-1. Open `apps/mfe-widget/src/` (or the MFE you're developing)
+1. Open `apps/mfes/mfe-widget/src/` (or the MFE you're developing)
 2. Make your changes (components, features, logic)
 3. Changes auto-reload in the MFE's own browser tab
 4. The shell automatically loads the updated version
@@ -178,7 +178,7 @@ Currently, the setup includes a simple widget MFE you can interact with.
 pnpm dev:all
 
 # Terminal 2: In another session, edit the widget
-# Open apps/mfe-widget/src/components/CounterWidget.tsx
+# Open apps/mfes/mfe-widget/src/components/CounterWidget.tsx
 # Make changes to the counter
 # Save and watch it reload automatically
 ```
@@ -241,8 +241,8 @@ pnpm build:remote
 
 Outputs:
 
-- Host builds to `apps/website/dist/`
-- MFEs build to `apps/mfe-widget/dist/`
+- Host builds to `apps/shells/website/dist/`
+- MFEs build to `apps/mfes/mfe-widget/dist/`
 - Packages build to `packages/*/dist/`
 
 ## Adding a New Micro-Frontend
@@ -252,8 +252,8 @@ To add a new micro-frontend to the shell:
 1. **Create the MFE directory**:
 
 ```bash
-mkdir apps/mfe-myfeature
-cd apps/mfe-myfeature
+mkdir apps/mfes/mfe-myfeature
+cd apps/mfes/mfe-myfeature
 ```
 
 2. **Create `package.json`**:
@@ -279,7 +279,7 @@ cd apps/mfe-myfeature
 }
 ```
 
-3. **Create `vite.config.ts`** with Module Federation config (see `apps/mfe-widget/vite.config.ts` as a template)
+3. **Create `vite.config.ts`** with Module Federation config (see `apps/mfes/mfe-widget/vite.config.ts` as a template)
 
 4. **Create `src/main.tsx`** with your component
 
@@ -333,7 +333,7 @@ pnpm dev:all
 
 1. Verify the MFE is running on its assigned port
 2. Check browser console for errors
-3. Inspect `apps/website/public/remotes.config.json` to ensure the MFE is listed
+3. Inspect `apps/shells/website/public/remotes.config.json` to ensure the MFE is listed
 4. Restart both the shell and the MFE
 
 ### Tests Failing
@@ -375,10 +375,10 @@ These are available in code as `import.meta.env.VITE_*`.
 
 ## Next Steps
 
-1. **Explore the codebase**: Start with `apps/website/src/main.ts` to understand how the shell initializes
+1. **Explore the codebase**: Start with `apps/shells/website/src/main.ts` to understand how the shell initializes
 2. **Read the specs**: Check `openspec/specs/` for detailed feature specifications
 3. **Review architecture**: See `CONTEXT.md` for terminology and architectural decisions
-4. **Try modifications**: Edit the widget counter in `apps/mfe-widget/src/components/CounterWidget.tsx` and watch it reload
+4. **Try modifications**: Edit the widget counter in `apps/mfes/mfe-widget/src/components/CounterWidget.tsx` and watch it reload
 
 ## Getting Help
 

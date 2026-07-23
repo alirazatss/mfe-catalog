@@ -5,7 +5,7 @@
 ### Shell (Website)
 
 ```
-apps/website/src/
+apps/shells/website/src/
 ├── App.tsx                    # Exposes window.__AUTH__ globally
 ├── providers/AuthProvider.tsx # Manages auth state, calls tokenManager
 └── main.tsx                   # Wraps app with AuthProvider
@@ -14,7 +14,7 @@ apps/website/src/
 ### MFE (Widget)
 
 ```
-apps/mfe-widget/src/
+apps/mfes/mfe-widget/src/
 ├── App.tsx                    # Calls setupAuthListeners() on mount
 └── utils/apiClient.ts         # Axios instance with interceptors
 ```
@@ -31,7 +31,7 @@ packages/auth/src/
 
 ## 🔄 Complete Integration Flow
 
-### 1. Shell Initialization (apps/website/src/App.tsx)
+### 1. Shell Initialization (apps/shells/website/src/App.tsx)
 
 ```typescript
 import { tokenManager } from "@mfe-runtine/auth";
@@ -56,7 +56,7 @@ export default function App() {
 
 ---
 
-### 2. MFE Axios Setup (apps/mfe-widget/src/utils/apiClient.ts)
+### 2. MFE Axios Setup (apps/mfes/mfe-widget/src/utils/apiClient.ts)
 
 #### Request Interceptor (Injects Token)
 
@@ -252,7 +252,7 @@ Content-Type: application/json
 
 ### Step 1: Shell Exposes TokenManager
 
-**File**: `apps/website/src/App.tsx`
+**File**: `apps/shells/website/src/App.tsx`
 
 ```typescript
 import { tokenManager } from "@mfe-runtine/auth";
@@ -280,7 +280,7 @@ export default function App() {
 
 ### Step 2: MFE Creates Axios Instance
 
-**File**: `apps/mfe-widget/src/utils/apiClient.ts`
+**File**: `apps/mfes/mfe-widget/src/utils/apiClient.ts`
 
 ```typescript
 import axios from "axios";
@@ -304,7 +304,7 @@ export const apiClient = axios.create({
 
 ### Step 3: Request Interceptor Injects Token
 
-**File**: `apps/mfe-widget/src/utils/apiClient.ts`
+**File**: `apps/mfes/mfe-widget/src/utils/apiClient.ts`
 
 ```typescript
 apiClient.interceptors.request.use(
@@ -354,7 +354,7 @@ Content-Type: application/json
 
 ### Step 4: Response Interceptor Handles Errors
 
-**File**: `apps/mfe-widget/src/utils/apiClient.ts`
+**File**: `apps/mfes/mfe-widget/src/utils/apiClient.ts`
 
 ```typescript
 apiClient.interceptors.response.use(
@@ -490,7 +490,7 @@ apiClient.interceptors.request.use((config) => {
 ### Shell Setup (One-time)
 
 ```typescript
-// apps/website/src/App.tsx
+// apps/shells/website/src/App.tsx
 import { tokenManager } from "@mfe-runtine/auth";
 
 useEffect(() => {
@@ -504,7 +504,7 @@ useEffect(() => {
 ### MFE Setup (Per MFE)
 
 ```typescript
-// apps/mfe-*/src/utils/apiClient.ts
+// apps/mfes/mfe-*/src/utils/apiClient.ts
 import axios from "axios";
 
 export const apiClient = axios.create({ baseURL: "/api" });
@@ -564,9 +564,9 @@ Login → TokenManager (memory) → window.__AUTH__ → Axios Interceptor → AP
 **Key Files:**
 
 - `packages/auth/src/TokenManager.ts` - Stores token, handles refresh
-- `apps/website/src/App.tsx` - Exposes `window.__AUTH__`
-- `apps/mfe-widget/src/utils/apiClient.ts` - Axios with interceptors
-- `apps/mfe-widget/src/App.tsx` - Calls `setupAuthListeners()`
+- `apps/shells/website/src/App.tsx` - Exposes `window.__AUTH__`
+- `apps/mfes/mfe-widget/src/utils/apiClient.ts` - Axios with interceptors
+- `apps/mfes/mfe-widget/src/App.tsx` - Calls `setupAuthListeners()`
 
 **MFE Usage:**
 

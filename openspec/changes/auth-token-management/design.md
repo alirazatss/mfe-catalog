@@ -10,7 +10,7 @@ The micro-frontend architecture currently has mock authentication that cannot be
 
 **Current State**:
 
-- `apps/website/src/components/LoginPage.tsx` has mock login (sets localStorage token)
+- `apps/shells/website/src/components/LoginPage.tsx` has mock login (sets localStorage token)
 - No real auth provider or token management
 - No integration with backend auth API
 - MFEs have no standard way to receive auth tokens

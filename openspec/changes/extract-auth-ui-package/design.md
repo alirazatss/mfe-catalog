@@ -4,9 +4,9 @@ Login and related auth UI are shared concerns across every current and future sh
 
 **Current state:**
 
-- `apps/website/src/components/LoginPage.tsx` (124 lines) with mock login logic
-- `apps/website/src/providers/AuthProvider.tsx` (224 lines) React Context wrapper
-- `apps/website/src/components/ProtectedRoute.tsx` React Router guard
+- `apps/shells/website/src/components/LoginPage.tsx` (124 lines) with mock login logic
+- `apps/shells/website/src/providers/AuthProvider.tsx` (224 lines) React Context wrapper
+- `apps/shells/website/src/components/ProtectedRoute.tsx` React Router guard
 - `packages/auth/` already contains `TokenManager` (framework-agnostic, 100% test coverage)
 
 **After `refactor-to-thin-shell` lands:**
@@ -151,12 +151,12 @@ Match the build strategy of other `@mfe-runtine/*` packages (`packages/auth`, `p
 **Phase 1 — Create the package (this change):**
 
 1. Scaffold `packages/auth-ui/` with `package.json`, `tsdown.config.ts`, `vitest.config.ts`
-2. Move `LoginPage`, `AuthProvider`, `ProtectedRoute` code out of `apps/website/src/` and into the package
+2. Move `LoginPage`, `AuthProvider`, `ProtectedRoute` code out of `apps/shells/website/src/` and into the package
 3. Generalize `LoginPage` with props API and sensible defaults
 4. Add `LogoutPage`, `SessionExpiredPage`, `ForgotPasswordPage` scaffolds
 5. Add `setupAuthBridge` helper
 6. Write tests targeting ≥90% coverage
-7. Wire package into `apps/website/package.json` via `workspace:*` so the shell can consume it
+7. Wire package into `apps/shells/website/package.json` via `workspace:*` so the shell can consume it
 8. Add the package to Turborepo pipeline (`build`, `test`, `test:coverage`)
 
 **Phase 2 — Publish (deferred, tracked in `@mfe-runtine/versions` and repo-split changes):**
@@ -167,7 +167,7 @@ Match the build strategy of other `@mfe-runtine/*` packages (`packages/auth`, `p
 
 **Phase 3 — Deprecate direct imports of removed shell files:**
 
-- After `refactor-to-thin-shell` ships, no consumers reference the deleted `apps/website/src/**/Login*` paths
+- After `refactor-to-thin-shell` ships, no consumers reference the deleted `apps/shells/website/src/**/Login*` paths
 - Add CI check preventing new imports of the removed paths
 
 **Rollback:**

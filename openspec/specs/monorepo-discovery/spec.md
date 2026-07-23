@@ -2,29 +2,29 @@
 
 ## Purpose
 
-This specification defines the monorepo discovery system that automatically scans the filesystem for micro-frontends following the `apps/mfe-*` naming convention. The system extracts metadata from package.json files, assigns development ports alphabetically, and derives Module Federation scopes while supporting custom overrides via the mfe configuration field.
+This specification defines the monorepo discovery system that automatically scans the filesystem for micro-frontends following the `apps/mfes/mfe-*` naming convention. The system extracts metadata from package.json files, assigns development ports alphabetically, and derives Module Federation scopes while supporting custom overrides via the mfe configuration field.
 
 ## Requirements
 
 ### Requirement: Discover micro-frontends by filesystem pattern
 
-The system SHALL automatically discover all micro-frontends by scanning for `apps/mfe-*/package.json` files.
+The system SHALL automatically discover all micro-frontends by scanning for `apps/mfes/mfe-*/package.json` files.
 
 #### Scenario: Single micro-frontend discovered
 
-- **WHEN** discovery runs in a monorepo with `apps/mfe-widget/package.json`
+- **WHEN** discovery runs in a monorepo with `apps/mfes/mfe-widget/package.json`
 - **THEN** discovery returns array with one MicroFrontend object
 - **AND** object contains name, shortName, version, port, scope, path
 
 #### Scenario: Multiple micro-frontends discovered
 
-- **WHEN** discovery runs with `apps/mfe-widget/` and `apps/mfe-dashboard/`
+- **WHEN** discovery runs with `apps/mfes/mfe-widget/` and `apps/mfes/mfe-dashboard/`
 - **THEN** discovery returns array with two MicroFrontend objects
 - **AND** objects are sorted alphabetically by directory name
 
 #### Scenario: No micro-frontends found
 
-- **WHEN** discovery runs and no `apps/mfe-*/` directories exist
+- **WHEN** discovery runs and no `apps/mfes/mfe-*/` directories exist
 - **THEN** discovery returns empty array
 
 ---
@@ -52,12 +52,12 @@ The system SHALL assign development ports alphabetically starting at 5174.
 
 #### Scenario: First micro-frontend gets port 5174
 
-- **WHEN** only `apps/mfe-widget/` exists
+- **WHEN** only `apps/mfes/mfe-widget/` exists
 - **THEN** mfe-widget gets port 5174
 
 #### Scenario: Multiple micro-frontends get sequential ports
 
-- **WHEN** `apps/mfe-dashboard/` and `apps/mfe-widget/` exist
+- **WHEN** `apps/mfes/mfe-dashboard/` and `apps/mfes/mfe-widget/` exist
 - **THEN** mfe-dashboard gets port 5174 (alphabetically first)
 - **AND** mfe-widget gets port 5175
 
@@ -101,31 +101,31 @@ The system SHALL derive Module Federation scope by converting package name to ca
 
 ### Requirement: System SHALL discover micro-frontends by naming convention
 
-The system SHALL scan `apps/` directory and identify any subdirectory matching `apps/mfe-*` pattern as a micro-frontend.
+The system SHALL scan `apps/` directory and identify any subdirectory matching `apps/mfes/mfe-*` pattern as a micro-frontend.
 
 #### Scenario: Single micro-frontend discovered
 
-- **WHEN** monorepo contains `apps/mfe-widget/` directory
+- **WHEN** monorepo contains `apps/mfes/mfe-widget/` directory
 - **THEN** discovery SHALL identify it as a micro-frontend
 - **AND** discovery SHALL return array with one entry
 
 #### Scenario: Multiple micro-frontends discovered
 
-- **WHEN** monorepo contains `apps/mfe-widget/`, `apps/mfe-dashboard/`, `apps/mfe-chart/`
+- **WHEN** monorepo contains `apps/mfes/mfe-widget/`, `apps/mfes/mfe-dashboard/`, `apps/mfes/mfe-chart/`
 - **THEN** discovery SHALL identify all three as micro-frontends
 - **AND** discovery SHALL return array with three entries in alphabetical order
 
 #### Scenario: Non-matching directories ignored
 
-- **WHEN** monorepo contains `apps/website/`, `apps/admin/`, `apps/mfe-widget/`
-- **THEN** discovery SHALL only identify `apps/mfe-widget/` as micro-frontend
-- **AND** `apps/website/` and `apps/admin/` SHALL be excluded
+- **WHEN** monorepo contains `apps/shells/website/`, `apps/admin/`, `apps/mfes/mfe-widget/`
+- **THEN** discovery SHALL only identify `apps/mfes/mfe-widget/` as micro-frontend
+- **AND** `apps/shells/website/` and `apps/admin/` SHALL be excluded
 
 #### Scenario: Empty apps directory
 
 - **WHEN** `apps/` directory contains no `mfe-*` subdirectories
 - **THEN** discovery SHALL return empty array
-- **AND** discovery SHALL emit warning "No micro-frontends found matching apps/mfe-\*"
+- **AND** discovery SHALL emit warning "No micro-frontends found matching apps/mfes/mfe-\*"
 
 ### Requirement: System SHALL extract metadata from package.json
 
@@ -133,22 +133,22 @@ The system SHALL read each discovered micro-frontend's package.json and extract 
 
 #### Scenario: Package.json metadata extracted
 
-- **WHEN** `apps/mfe-widget/package.json` contains `{ "name": "@mfe-runtine/mfe-widget", "version": "1.0.0", "description": "Counter widget" }`
+- **WHEN** `apps/mfes/mfe-widget/package.json` contains `{ "name": "@mfe-runtine/mfe-widget", "version": "1.0.0", "description": "Counter widget" }`
 - **THEN** discovery SHALL extract name as "mfe-widget" (strip @mfe-runtine/ prefix)
 - **AND** discovery SHALL extract version as "1.0.0"
 - **AND** discovery SHALL extract description as "Counter widget"
 
 #### Scenario: Missing package.json fails discovery
 
-- **WHEN** `apps/mfe-dashboard/` directory exists but has no package.json
+- **WHEN** `apps/mfes/mfe-dashboard/` directory exists but has no package.json
 - **THEN** discovery SHALL skip that directory
-- **AND** discovery SHALL emit warning "apps/mfe-dashboard/ missing package.json"
+- **AND** discovery SHALL emit warning "apps/mfes/mfe-dashboard/ missing package.json"
 
 #### Scenario: Invalid package.json fails discovery
 
-- **WHEN** `apps/mfe-chart/package.json` contains invalid JSON
+- **WHEN** `apps/mfes/mfe-chart/package.json` contains invalid JSON
 - **THEN** discovery SHALL skip that directory
-- **AND** discovery SHALL emit error "Failed to parse package.json in apps/mfe-chart/"
+- **AND** discovery SHALL emit error "Failed to parse package.json in apps/mfes/mfe-chart/"
 
 ### Requirement: System SHALL validate required package.json fields
 
@@ -158,13 +158,13 @@ The system SHALL ensure each micro-frontend's package.json contains required fie
 
 - **WHEN** package.json is missing `name` field
 - **THEN** discovery SHALL skip that directory
-- **AND** discovery SHALL emit error "package.json in apps/mfe-{dir}/ missing required 'name' field"
+- **AND** discovery SHALL emit error "package.json in apps/mfes/mfe-{dir}/ missing required 'name' field"
 
 #### Scenario: Required version field validated
 
 - **WHEN** package.json is missing `version` field
 - **THEN** discovery SHALL use default version "0.0.0"
-- **AND** discovery SHALL emit warning "package.json in apps/mfe-{dir}/ missing 'version', using 0.0.0"
+- **AND** discovery SHALL emit warning "package.json in apps/mfes/mfe-{dir}/ missing 'version', using 0.0.0"
 
 ### Requirement: System SHALL extract optional MFE-specific config
 
@@ -207,7 +207,7 @@ The system SHALL calculate development server ports for micro-frontends without 
 #### Scenario: Port conflict detected
 
 - **WHEN** two micro-frontends specify same port
-- **THEN** discovery SHALL emit error "Port conflict: apps/mfe-{a}/ and apps/mfe-{b}/ both use port {port}"
+- **THEN** discovery SHALL emit error "Port conflict: apps/mfes/mfe-{a}/ and apps/mfes/mfe-{b}/ both use port {port}"
 - **AND** discovery SHALL fail (exit with non-zero code)
 
 ### Requirement: System SHALL provide TypeScript API for discovery
@@ -231,7 +231,7 @@ const mfes = await discoverMicroFrontends();
 //     name: 'mfe-widget',
 //     version: '1.0.0',
 //     description: 'Counter widget',
-//     path: 'apps/mfe-widget',
+//     path: 'apps/mfes/mfe-widget',
 //     port: 5174,
 //     scope: 'mfeWidget'
 //   }
@@ -251,14 +251,14 @@ The system SHALL verify each micro-frontend has required build configuration.
 
 #### Scenario: Vite config present
 
-- **WHEN** `apps/mfe-widget/vite.config.ts` exists
+- **WHEN** `apps/mfes/mfe-widget/vite.config.ts` exists
 - **THEN** discovery SHALL mark micro-frontend as valid
 - **AND** no warning SHALL be emitted
 
 #### Scenario: Missing vite config warning
 
-- **WHEN** `apps/mfe-widget/vite.config.ts` does not exist
-- **THEN** discovery SHALL emit warning "apps/mfe-widget/ missing vite.config.ts"
+- **WHEN** `apps/mfes/mfe-widget/vite.config.ts` does not exist
+- **THEN** discovery SHALL emit warning "apps/mfes/mfe-widget/ missing vite.config.ts"
 - **AND** discovery SHALL still include micro-frontend (non-fatal)
 
 ### Requirement: System SHALL provide CLI tool for discovery
@@ -277,8 +277,8 @@ Example output:
 Found 2 micro-frontends:
 
 Name          Version  Port   Path
-mfe-dashboard 1.0.0    5174   apps/mfe-dashboard
-mfe-widget    1.2.3    5175   apps/mfe-widget
+mfe-dashboard 1.0.0    5174   apps/mfes/mfe-dashboard
+mfe-widget    1.2.3    5175   apps/mfes/mfe-widget
 ```
 
 #### Scenario: CLI with JSON output

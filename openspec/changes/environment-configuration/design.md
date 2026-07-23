@@ -203,7 +203,7 @@ const DEFAULT_CONFIG: Config = {
 
 ### Phase 3: Integrate in Shell
 
-1. Update `apps/website/src/main.tsx` to load config before render
+1. Update `apps/shells/website/src/main.tsx` to load config before render
 2. Initialize configService
 3. Add loading state during config load
 4. Test config loads correctly

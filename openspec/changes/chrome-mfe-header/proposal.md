@@ -4,7 +4,7 @@ The thin shell (from `refactor-to-thin-shell`) leaves the `header-slot` empty ex
 
 ## What Changes
 
-- Create a new MFE `apps/mfe-header/` implementing the `MFELifecycle` contract from `mfe-lifecycle-contract` change
+- Create a new MFE `apps/mfes/mfe-header/` implementing the `MFELifecycle` contract from `mfe-lifecycle-contract` change
 - Implement corporate-branded header UI: logo, primary navigation, user menu (avatar, name, logout), search stub, theme toggle stub
 - Header reads current user via `window.__MFE_AUTH__.getToken()` and decoded JWT claims
 - Header triggers cross-MFE navigation via `window.__MFE_NAVIGATION__.navigate(path)` (contract established in `navigation-bridge` change; header uses the existing `mfe:navigate` event bus as a fallback until the bridge lands)
@@ -12,7 +12,7 @@ The thin shell (from `refactor-to-thin-shell`) leaves the `header-slot` empty ex
 - Header persists across route changes (chrome MFE — mounted once at bootstrap, never unmounted while shell is alive)
 - Package publishes to CDN under `cdn.example.com/<env>/mfe-header@<version>/remoteEntry.js`
 - Shell manifest updated to include the header under `manifest.chrome.header`
-- **BREAKING**: The static fallback header in `apps/website/index.html` is replaced by the MFE-driven header once the MFE loads; static content remains as a pre-hydration placeholder
+- **BREAKING**: The static fallback header in `apps/shells/website/index.html` is replaced by the MFE-driven header once the MFE loads; static content remains as a pre-hydration placeholder
 
 ## Capabilities
 
@@ -24,7 +24,7 @@ The thin shell (from `refactor-to-thin-shell`) leaves the `header-slot` empty ex
 
 **Affected code:**
 
-- New package `apps/mfe-header/` with:
+- New package `apps/mfes/mfe-header/` with:
   - `src/index.tsx` — lifecycle wrapper (bootstrap/mount/unmount/update)
   - `src/Header.tsx` — root React component
   - `src/components/Logo.tsx`
@@ -36,18 +36,18 @@ The thin shell (from `refactor-to-thin-shell`) leaves the `header-slot` empty ex
   - `src/hooks/useActiveRoute.ts` — highlights active navigation item using `window.location.pathname`
   - `vite.config.ts` — Module Federation config exposing `./lifecycle` (and optionally `./Header` for tests)
   - `tests/*.test.tsx` — unit tests for hooks and components
-- `apps/website/public/remotes.config.json` — add `chrome.header` entry pointing at the new MFE
-- `apps/website/src/main.ts` — no code changes (loader already mounts chrome MFEs via manifest); manifest addition alone drives header mount
-- `packages/monorepo-tools/` — extend discovery to recognize header MFE (already discovers `apps/mfe-*`, so no change needed unless slot metadata added)
+- `apps/shells/website/public/remotes.config.json` — add `chrome.header` entry pointing at the new MFE
+- `apps/shells/website/src/main.ts` — no code changes (loader already mounts chrome MFEs via manifest); manifest addition alone drives header mount
+- `packages/monorepo-tools/` — extend discovery to recognize header MFE (already discovers `apps/mfes/mfe-*`, so no change needed unless slot metadata added)
 
 **Affected dependencies:**
 
-- `apps/mfe-header/package.json` — `react`, `react-dom` (peer/direct via catalog), `@mfe-runtine/dynamic-loader: workspace:*` (for types), `@mfe-runtine/events: workspace:*` (for navigation event fallback), `@mfe-runtine/auth: workspace:*` (for JWT decode utility)
+- `apps/mfes/mfe-header/package.json` — `react`, `react-dom` (peer/direct via catalog), `@mfe-runtine/dynamic-loader: workspace:*` (for types), `@mfe-runtine/events: workspace:*` (for navigation event fallback), `@mfe-runtine/auth: workspace:*` (for JWT decode utility)
 - No new npm dependencies
 
 **Affected tests:**
 
-- New unit tests in `apps/mfe-header/tests/` covering: lifecycle wrapper (mount/unmount/update), Header component (renders logo, nav, user menu), UserMenu (shows email, logout triggers `window.__MFE_AUTH__.logout()`), Navigation (highlights active route, dispatches navigation), hooks (respond to auth events, cleanup on unmount)
+- New unit tests in `apps/mfes/mfe-header/tests/` covering: lifecycle wrapper (mount/unmount/update), Header component (renders logo, nav, user menu), UserMenu (shows email, logout triggers `window.__MFE_AUTH__.logout()`), Navigation (highlights active route, dispatches navigation), hooks (respond to auth events, cleanup on unmount)
 - Integration test in shell: full bootstrap mounts `mfe-header` into `header-slot`, header remains mounted while feature MFEs swap in `main-slot`
 
 **Migration risk:**

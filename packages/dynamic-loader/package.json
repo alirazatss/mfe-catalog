@@ -21,7 +21,7 @@
   "scripts": {
     "build": "tsdown src/index.ts --dts --format esm --clean",
     "dev": "tsdown src/index.ts --dts --format esm --watch",
-    "test": "vitest",
+    "test": "vitest run",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
   },

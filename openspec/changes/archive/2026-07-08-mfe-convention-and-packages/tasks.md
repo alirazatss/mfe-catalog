@@ -2,8 +2,8 @@
 
 ## 1. Rename Remote Widget to Follow mfe-\* Convention
 
-- [x] 1.1 Rename `apps/remote-widget/` to `apps/mfe-widget/`
-- [x] 1.2 Update `apps/mfe-widget/package.json` name to `@mfe-runtine/mfe-widget`
+- [x] 1.1 Rename `apps/mfes/remote-widget/` to `apps/mfes/mfe-widget/`
+- [x] 1.2 Update `apps/mfes/mfe-widget/package.json` name to `@mfe-runtine/mfe-widget`
 - [x] 1.3 Update all import paths referencing remote-widget
 - [x] 1.4 Update root `package.json` scripts (dev:remote → dev:mfe-widget)
 - [x] 1.5 Test: `turbo build` should build mfe-widget successfully

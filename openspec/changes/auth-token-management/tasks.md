@@ -52,7 +52,7 @@
 
 ## 4. Shell Auth Provider Implementation
 
-- [ ] 4.1 Create `apps/website/src/providers/AuthProvider.tsx`
+- [ ] 4.1 Create `apps/shells/website/src/providers/AuthProvider.tsx`
 - [ ] 4.2 Define AuthContext interface with user, isAuthenticated, isLoading, login, logout
 - [ ] 4.3 Create AuthProvider component with React Context
 - [ ] 4.4 Implement `initializeAuth()` on mount calling tokenManager.refreshAccessToken()
@@ -62,7 +62,7 @@
 - [ ] 4.8 Implement `logout()` function calling POST /api/auth/logout
 - [ ] 4.9 Clear access token via tokenManager on logout
 - [ ] 4.10 Implement `getAccessToken()` wrapper around tokenManager
-- [ ] 4.11 Create `apps/website/src/hooks/useAuth.ts` hook for consuming context
+- [ ] 4.11 Create `apps/shells/website/src/hooks/useAuth.ts` hook for consuming context
 - [ ] 4.12 Export useAuth hook from hooks directory
 
 **Depends on**: Section 2 (token manager ready)  
@@ -73,7 +73,7 @@
 
 ## 5. Shell Bootstrap Integration
 
-- [ ] 5.1 Update `apps/website/src/main.tsx` to wrap app with AuthProvider
+- [ ] 5.1 Update `apps/shells/website/src/main.tsx` to wrap app with AuthProvider
 - [ ] 5.2 Initialize tokenManager before rendering app
 - [ ] 5.3 Add loading state while auth initializes
 - [ ] 5.4 Test session restoration on page reload
@@ -86,7 +86,7 @@
 
 ## 6. Login Page Implementation
 
-- [ ] 6.1 Update `apps/website/src/components/LoginPage.tsx` to use useAuth hook
+- [ ] 6.1 Update `apps/shells/website/src/components/LoginPage.tsx` to use useAuth hook
 - [ ] 6.2 Replace mock login with auth.login(email, password)
 - [ ] 6.3 Add form validation (email format, required fields)
 - [ ] 6.4 Display login errors from auth provider
@@ -102,12 +102,12 @@
 
 ## 7. Protected Route Implementation
 
-- [ ] 7.1 Create `apps/website/src/guards/ProtectedRoute.tsx` component
+- [ ] 7.1 Create `apps/shells/website/src/guards/ProtectedRoute.tsx` component
 - [ ] 7.2 Use useAuth hook to check isAuthenticated
 - [ ] 7.3 Show loading spinner while isLoading is true
 - [ ] 7.4 Redirect to /login with redirect param if not authenticated
 - [ ] 7.5 Render children if authenticated
-- [ ] 7.6 Update `apps/website/src/App.tsx` to wrap /widgets route with ProtectedRoute
+- [ ] 7.6 Update `apps/shells/website/src/App.tsx` to wrap /widgets route with ProtectedRoute
 - [ ] 7.7 Test unauthenticated access redirects to login
 - [ ] 7.8 Test authenticated access renders MFE
 
@@ -119,7 +119,7 @@
 
 ## 8. Auth Propagation to MFEs
 
-- [ ] 8.1 Update `apps/website/src/App.tsx` to pass auth prop to MFEs
+- [ ] 8.1 Update `apps/shells/website/src/App.tsx` to pass auth prop to MFEs
 - [ ] 8.2 Use useAuth() to get token and user in shell
 - [ ] 8.3 Pass auth={{ token, user }} to lazy-loaded MFE components
 - [ ] 8.4 Add TypeScript interface for auth prop structure
@@ -136,7 +136,7 @@
 - [ ] 9.1 Add event emission in AuthProvider on logout
 - [ ] 9.2 Add event emission in tokenManager on token refresh
 - [ ] 9.3 Add event emission on session expiry (refresh fails with 401)
-- [ ] 9.4 Update `apps/website/src/App.tsx` to listen for 'auth:session-expired' event
+- [ ] 9.4 Update `apps/shells/website/src/App.tsx` to listen for 'auth:session-expired' event
 - [ ] 9.5 Call auth.logout() when session expired event received
 - [ ] 9.6 Test event-driven logout across MFEs
 
@@ -148,9 +148,9 @@
 
 ## 10. MFE Auth Integration (mfe-widget Example)
 
-- [ ] 10.1 Update `apps/mfe-widget/src/App.tsx` interface to accept auth prop
+- [ ] 10.1 Update `apps/mfes/mfe-widget/src/App.tsx` interface to accept auth prop
 - [ ] 10.2 Handle auth prop as optional (undefined for unauthenticated)
-- [ ] 10.3 Create `apps/mfe-widget/src/api/client.ts` with Axios instance
+- [ ] 10.3 Create `apps/mfes/mfe-widget/src/api/client.ts` with Axios instance
 - [ ] 10.4 Add Axios request interceptor using tokenManager.getAccessToken()
 - [ ] 10.5 Add Axios response interceptor for 401 handling
 - [ ] 10.6 Implement token refresh on 401 in interceptor

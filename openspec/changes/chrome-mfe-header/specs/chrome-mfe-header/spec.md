@@ -2,7 +2,7 @@
 
 ### Requirement: Header MFE SHALL implement the standard MFE lifecycle contract
 
-`apps/mfe-header` SHALL expose a `./lifecycle` module implementing `MFELifecycle` and be mountable via the dynamic loader into the `header-slot`.
+`apps/mfes/mfe-header` SHALL expose a `./lifecycle` module implementing `MFELifecycle` and be mountable via the dynamic loader into the `header-slot`.
 
 #### Scenario: Loader successfully mounts the header
 

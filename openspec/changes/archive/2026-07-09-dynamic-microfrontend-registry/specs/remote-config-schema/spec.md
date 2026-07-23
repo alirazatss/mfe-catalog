@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the JSON configuration format for declaring micro-frontend remotes. The config is **auto-generated at build time** from discovered `apps/mfe-*` directories in the monorepo, ensuring consistency between filesystem structure and runtime configuration. The schema enables IDE autocomplete and validation tooling.
+Defines the JSON configuration format for declaring micro-frontend remotes. The config is **auto-generated at build time** from discovered `apps/mfes/mfe-*` directories in the monorepo, ensuring consistency between filesystem structure and runtime configuration. The schema enables IDE autocomplete and validation tooling.
 
 ## ADDED Requirements
 

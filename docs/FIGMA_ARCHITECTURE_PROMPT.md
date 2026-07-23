@@ -50,7 +50,7 @@ Export SVG and PNG 2x for presentations and board meetings.
 
 # Technical Version (for developers)
 
-Create micro-frontend architecture diagram 1920x1080. Blue #3B82F6 Shell, purple #8B5CF6 MFEs, green #10B981 packages, orange #F59E0B backend. TOP: Monorepo with apps/website, apps/mfe-widget and packages/auth, events, dynamic-loader. MIDDLE LEFT Shell: AuthProvider > App.tsx exposes window.**AUTH** > ProtectedRoute > Layout > MFE Loader. Arrow to MFE "Global auth" and TokenManager "login/logout". MIDDLE RIGHT MFE: App.tsx > setupAuthListeners > apiClient with request interceptor "Injects Bearer token" and response interceptor "401 wait 200ms retry". Listeners AUTH_LOGIN, AUTH_LOGOUT, AUTH_REFRESH. BOTTOM LEFT Packages: TokenManager box showing Singleton, Memory tokens, Auto-refresh at 80% (12min/15min), Methods login logout getAccessToken refreshToken. EventBus box showing Native EventTarget, Zero deps, Events auth:login, logout, refresh, navigation:request. BOTTOM CENTER Auth Flow vertical: Login > AuthProvider > POST /api/auth/login > Backend > returns accessToken user plus HttpOnly cookie > TokenManager stores in memory > window.**AUTH** global > EventBus.emit > MFEs update > Refresh scheduled at 80%. BOTTOM RIGHT API Flow: Call > Add token > Backend validates > If 401 wait 200ms get new token retry > Success. CENTER Event Hub spoke diagram: EventBus center with arrows to Shell emits, MFE Widget listens, MFE Other listens. Module Federation: Fetch remotes.config.json > Dynamic load > React.lazy import mfe-widget/App > Suspense render. Testing box: 117 tests, auth 22 100%, events 31 94%, shell 26, mfe-widget 30. Security callouts: Access memory XSS safe, Refresh HttpOnly cookie CSRF safe. Metrics: 8.39KB EventBus, 6.59KB TokenManager, Zero deps. Legend top-right: Blue solid arrow data flow, Red dashed events, Green dotted HTTP, Purple packages, Orange backend. Export SVG and PNG 2x.
+Create micro-frontend architecture diagram 1920x1080. Blue #3B82F6 Shell, purple #8B5CF6 MFEs, green #10B981 packages, orange #F59E0B backend. TOP: Monorepo with apps/shells/website, apps/mfes/mfe-widget and packages/auth, events, dynamic-loader. MIDDLE LEFT Shell: AuthProvider > App.tsx exposes window.**AUTH** > ProtectedRoute > Layout > MFE Loader. Arrow to MFE "Global auth" and TokenManager "login/logout". MIDDLE RIGHT MFE: App.tsx > setupAuthListeners > apiClient with request interceptor "Injects Bearer token" and response interceptor "401 wait 200ms retry". Listeners AUTH_LOGIN, AUTH_LOGOUT, AUTH_REFRESH. BOTTOM LEFT Packages: TokenManager box showing Singleton, Memory tokens, Auto-refresh at 80% (12min/15min), Methods login logout getAccessToken refreshToken. EventBus box showing Native EventTarget, Zero deps, Events auth:login, logout, refresh, navigation:request. BOTTOM CENTER Auth Flow vertical: Login > AuthProvider > POST /api/auth/login > Backend > returns accessToken user plus HttpOnly cookie > TokenManager stores in memory > window.**AUTH** global > EventBus.emit > MFEs update > Refresh scheduled at 80%. BOTTOM RIGHT API Flow: Call > Add token > Backend validates > If 401 wait 200ms get new token retry > Success. CENTER Event Hub spoke diagram: EventBus center with arrows to Shell emits, MFE Widget listens, MFE Other listens. Module Federation: Fetch remotes.config.json > Dynamic load > React.lazy import mfe-widget/App > Suspense render. Testing box: 117 tests, auth 22 100%, events 31 94%, shell 26, mfe-widget 30. Security callouts: Access memory XSS safe, Refresh HttpOnly cookie CSRF safe. Metrics: 8.39KB EventBus, 6.59KB TokenManager, Zero deps. Legend top-right: Blue solid arrow data flow, Red dashed events, Green dotted HTTP, Purple packages, Orange backend. Export SVG and PNG 2x.
 
 ---
 
@@ -91,7 +91,7 @@ Create a comprehensive architecture diagram showing the complete flow of a produ
 
 ### 2. **Shell Application (Center Left)**
 
-Draw a container representing `apps/website/` with:
+Draw a container representing `apps/shells/website/` with:
 
 **Components Inside:**
 
@@ -114,7 +114,7 @@ Draw a container representing `apps/website/` with:
 
 ### 3. **Micro-Frontend (MFE) - Right Side**
 
-Draw a container representing `apps/mfe-widget/` with:
+Draw a container representing `apps/mfes/mfe-widget/` with:
 
 **Components Inside:**
 

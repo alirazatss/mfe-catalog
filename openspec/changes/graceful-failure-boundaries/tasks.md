@@ -1,10 +1,10 @@
 ## 1. Error Bridge
 
-- [ ] 1.1 Create `apps/website/src/error-bridge.ts` with `ErrorBridge` class implementing `MFEErrorAPI`
+- [ ] 1.1 Create `apps/shells/website/src/error-bridge.ts` with `ErrorBridge` class implementing `MFEErrorAPI`
 - [ ] 1.2 Expose `report(error)` that invokes all `onError` subscribers with the payload
 - [ ] 1.3 Expose `onError(cb)` returning a cleanup function; use a `Set` for storage
 - [ ] 1.4 Create `setupErrorBridge()` that populates `window.__MFE_ERROR__`; idempotent
-- [ ] 1.5 Wire into `apps/website/src/main.ts` — call BEFORE `setupAuthBridge()` and any other setup
+- [ ] 1.5 Wire into `apps/shells/website/src/main.ts` — call BEFORE `setupAuthBridge()` and any other setup
 - [ ] 1.6 Add unit tests: bridge shape, subscriber invocation, cleanup, idempotent setup
 
 ## 2. Slot Fallback Renderer
@@ -27,9 +27,9 @@
 
 ## 4. MFE Runtime Error Boundaries
 
-- [ ] 4.1 Add `react-error-boundary` (via workspace catalog) to `apps/mfe-widget/package.json`
-- [ ] 4.2 Create `apps/mfe-widget/src/components/ErrorFallback.tsx` with a branded fallback UI
-- [ ] 4.3 Wrap `apps/mfe-widget/src/App.tsx` root in `<ErrorBoundary FallbackComponent={ErrorFallback} onError={...}>`
+- [ ] 4.1 Add `react-error-boundary` (via workspace catalog) to `apps/mfes/mfe-widget/package.json`
+- [ ] 4.2 Create `apps/mfes/mfe-widget/src/components/ErrorFallback.tsx` with a branded fallback UI
+- [ ] 4.3 Wrap `apps/mfes/mfe-widget/src/App.tsx` root in `<ErrorBoundary FallbackComponent={ErrorFallback} onError={...}>`
 - [ ] 4.4 In `onError`, call `window.__MFE_ERROR__?.report({ mfe: 'mfe-widget', type: 'runtime', error, info, timestamp: Date.now() })`
 - [ ] 4.5 On reset, reload the current MFE (or use `resetKeys` from `react-error-boundary`)
 - [ ] 4.6 Add unit tests: throw synthetic error, assert fallback rendered, assert reporter called
@@ -45,7 +45,7 @@
 
 ## 6. Manifest Cache
 
-- [ ] 6.1 Create `apps/website/src/manifest-cache.ts` with `readFromCache()` and `writeToCache(manifest)`
+- [ ] 6.1 Create `apps/shells/website/src/manifest-cache.ts` with `readFromCache()` and `writeToCache(manifest)`
 - [ ] 6.2 Store `{ manifest, timestamp, schemaVersion }` in `localStorage` under key `mfe-manifest-cache`
 - [ ] 6.3 Invalidate cache older than 24 h or with mismatched `schemaVersion`
 - [ ] 6.4 Update `fetchManifestWithRetry` in the shell to write cache on success, read on final failure
@@ -54,7 +54,7 @@
 
 ## 7. Critical Error Template
 
-- [ ] 7.1 Create `apps/website/src/critical-error.ts` with `renderCriticalError(message, error?)`
+- [ ] 7.1 Create `apps/shells/website/src/critical-error.ts` with `renderCriticalError(message, error?)`
 - [ ] 7.2 Embed static HTML template (headline, message, `Reload` button)
 - [ ] 7.3 Ensure the template contains no dynamic scripts and uses `textContent` for message
 - [ ] 7.4 In production, hide detailed error info; in dev, include a `<details>` block
@@ -63,7 +63,7 @@
 
 ## 8. CSS for Error Fallbacks
 
-- [ ] 8.1 Add scoped CSS classes in `apps/website/src/style.css`: `.mfe-error`, `.mfe-error-icon`, `.mfe-error-message`, `.mfe-error-button`, `.shell-critical-error`
+- [ ] 8.1 Add scoped CSS classes in `apps/shells/website/src/style.css`: `.mfe-error`, `.mfe-error-icon`, `.mfe-error-message`, `.mfe-error-button`, `.shell-critical-error`
 - [ ] 8.2 Ensure `role="alert"` regions have accessible focus + aria-live behavior
 - [ ] 8.3 Keep styles minimal — layout only; visual design lives in shells' own design tokens
 

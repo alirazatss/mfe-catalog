@@ -130,7 +130,7 @@ With the manifest generator complete, you can manually deploy to production:
    ```
 
 3. **Upload to CDN manually:**
-   - Upload `apps/mfe-widget/dist/` → `https://your-cdn.com/mfe-widget/0.0.0/`
+   - Upload `apps/mfes/mfe-widget/dist/` → `https://your-cdn.com/mfe-widget/0.0.0/`
    - Upload `manifest.production.json` → `https://your-cdn.com/manifest.json`
 
 4. **Deploy shell:**

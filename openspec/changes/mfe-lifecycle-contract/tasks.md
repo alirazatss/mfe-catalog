@@ -28,7 +28,7 @@
 
 ## 4. Sample MFE Wrapper
 
-- [ ] 4.1 Create `apps/mfe-widget/src/index.tsx` implementing the lifecycle
+- [ ] 4.1 Create `apps/mfes/mfe-widget/src/index.tsx` implementing the lifecycle
 - [ ] 4.2 In `mount`, create React root via `createRoot(props.container)`; render `<StrictMode><App {...props} /></StrictMode>`; store root reference at module scope
 - [ ] 4.3 In `unmount`, call `root.unmount()`, null the reference, clear any subscriptions
 - [ ] 4.4 In `update`, re-render into the same root with merged props
@@ -37,7 +37,7 @@
 
 ## 5. Sample MFE Vite Config
 
-- [ ] 5.1 Update `apps/mfe-widget/vite.config.ts` to add `'./lifecycle': './src/index.tsx'` under `exposes`
+- [ ] 5.1 Update `apps/mfes/mfe-widget/vite.config.ts` to add `'./lifecycle': './src/index.tsx'` under `exposes`
 - [ ] 5.2 Keep `'./App': './src/App.tsx'` exposed as a secondary export for tests
 - [ ] 5.3 Keep `'./CounterWidget'` exposed for consumers that use the framework-agnostic class
 - [ ] 5.4 Verify `pnpm build --filter @mfe-runtine/mfe-widget` produces `remoteEntry.js` including the new module

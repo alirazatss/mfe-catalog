@@ -10,8 +10,8 @@ MFEs currently expose React components via `exposes: { "./App": "./src/App.tsx" 
 
 **Current implementation observed:**
 
-- `apps/mfe-widget/vite.config.ts` exposes `./App` (React component) and `./CounterWidget` (framework-agnostic class)
-- Shell code (`apps/website/src/App.tsx`) imports the widget via `React.lazy` and wraps in `Suspense`
+- `apps/mfes/mfe-widget/vite.config.ts` exposes `./App` (React component) and `./CounterWidget` (framework-agnostic class)
+- Shell code (`apps/shells/website/src/App.tsx`) imports the widget via `React.lazy` and wraps in `Suspense`
 - Cleanup on route change is handled implicitly by React unmount
 - No shared prop shape — the widget accepts custom `basePath`, `router`, `isAuthenticated`, `user`
 
@@ -43,7 +43,7 @@ MFEs currently expose React components via `exposes: { "./App": "./src/App.tsx" 
 - Single `MFELifecycle` TypeScript interface exported from `@mfe-runtine/dynamic-loader`
 - Single `MFEProps` interface capturing the shared prop surface
 - Loader loads every MFE via the lifecycle contract, not raw React component import
-- Reference implementation in `apps/mfe-widget/src/index.tsx` demonstrating a React MFE
+- Reference implementation in `apps/mfes/mfe-widget/src/index.tsx` demonstrating a React MFE
 - Loader validates lifecycle exports at load time and produces clear diagnostics
 - Existing widget tests continue to pass (App component tested directly)
 - Chrome MFEs get a stable API for persistent mounting
@@ -200,8 +200,8 @@ When `loader.load()` first pulls a remote's lifecycle module, it validates that 
 
 **Phase 2 — Sample MFE:**
 
-1. Add `apps/mfe-widget/src/index.tsx` implementing the lifecycle
-2. Update `apps/mfe-widget/vite.config.ts` `exposes` map to include `./lifecycle` (keep `./App` for tests)
+1. Add `apps/mfes/mfe-widget/src/index.tsx` implementing the lifecycle
+2. Update `apps/mfes/mfe-widget/vite.config.ts` `exposes` map to include `./lifecycle` (keep `./App` for tests)
 3. Update MFE tests to cover the wrapper
 4. Update shell to load `./lifecycle` from the widget
 
