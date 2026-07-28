@@ -6,7 +6,7 @@ packages:
 catalogMode: prefer
 
 catalog:
-  "@module-federation/vite": ^1.16.12
+  "@module-federation/vite": ^1.19.1
   "@testing-library/jest-dom": ^6.6.4
   "@testing-library/react": ^16.3.2
   "@testing-library/user-event": ^14.5.2
