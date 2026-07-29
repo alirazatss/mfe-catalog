@@ -1,0 +1,47 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss";
+
+:root {
+  /* TSS Brand Colors */
+  --tss-primary: #312e51;
+  --tss-secondary-green: #99cc00;
+  --tss-light-blue: #043872;
+  --tss-white: #ffffff;
+  --tss-black: #000000;
+
+  /* Grays */
+  --tss-grey-2: #999999;
+  --tss-light-gray: #9694a5;
+  --tss-light-background: #fafafa;
+  --tss-border-gray: #ecf1f3;
+
+  /* Purples */
+  --tss-primary-light: #706cad;
+  --tss-purple-3: #706cad;
+  --tss-purple-4: #c6c4e291;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+    "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
