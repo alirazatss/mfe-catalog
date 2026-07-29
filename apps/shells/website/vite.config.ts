@@ -7,6 +7,15 @@ const getRemoteUrl = (envVar: string, fallback: string): string => {
 };
 
 export default defineConfig({
+  optimizeDeps: {
+    exclude: [
+      "@mfe-runtime/auth",
+      "@mfe-runtime/dynamic-loader",
+      "@mfe-runtime/events",
+      "@mfe-runtime/remote-config",
+      "@mfe-runtime/shell-runtime",
+    ],
+  },
   plugins: [
     federation({
       name: "host",

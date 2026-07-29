@@ -2,6 +2,16 @@ import { defineConfig } from "vite-plus";
 import { federation } from "@module-federation/vite";
 
 export default defineConfig({
+  optimizeDeps: {
+    exclude: [
+      "@mfe-runtime/auth",
+      "@mfe-runtime/dynamic-loader",
+      "@mfe-runtime/events",
+      "@mfe-runtime/remote-config",
+      "@mfe-runtime/shell-runtime",
+    ],
+    include: ["react", "react-dom", "react-dom/client"],
+  },
   plugins: [
     federation({
       name: "widget", // Module Federation scope name

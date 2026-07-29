@@ -26,6 +26,16 @@ export const FALLBACK_REMOTES: RemoteConfig = {
   schemaVersion: "2.0.0",
   chrome: {},
   features: {
+    "/": {
+      mfe: "mfe-landing-page",
+      entryUrl: "http://localhost:5175/remoteEntry.js",
+      scope: "landingPage",
+      version: "0.0.0",
+      basePath: "/",
+      requiresAuth: false,
+      requiredRoles: [],
+      enabled: true,
+    },
     "/widget": {
       mfe: "mfe-widget",
       entryUrl: "http://localhost:5174/remoteEntry.js",

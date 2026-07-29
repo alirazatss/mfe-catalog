@@ -4,6 +4,16 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 
 export default defineConfig({
+  optimizeDeps: {
+    exclude: [
+      "@mfe-runtime/auth",
+      "@mfe-runtime/dynamic-loader",
+      "@mfe-runtime/events",
+      "@mfe-runtime/remote-config",
+      "@mfe-runtime/shell-runtime",
+    ],
+    include: ["react", "react-dom", "react-dom/client"],
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
