@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { tokenManager } from "./TokenManager.js";
-import { MFE_EVENTS } from "@mfe-runtine/events";
+import { MFE_EVENTS } from "@mfe-runtime/events";
 
 describe("TokenManager", () => {
   // Mock timers
@@ -201,7 +201,7 @@ describe("TokenManager", () => {
       );
 
       const eventSpy = vi.fn();
-      const { eventBus } = await import("@mfe-runtine/events");
+      const { eventBus } = await import("@mfe-runtime/events");
       const cleanup = eventBus.on(MFE_EVENTS.AUTH_REFRESH, eventSpy);
 
       await tokenManager.refreshToken();
@@ -221,7 +221,7 @@ describe("TokenManager", () => {
       );
 
       const eventSpy = vi.fn();
-      const { eventBus } = await import("@mfe-runtine/events");
+      const { eventBus } = await import("@mfe-runtime/events");
       const cleanup = eventBus.on(MFE_EVENTS.AUTH_LOGOUT, eventSpy);
 
       tokenManager.setAccessToken("test-token", 3600);

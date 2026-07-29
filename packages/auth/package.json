@@ -1,5 +1,5 @@
 {
-  "name": "@mfe-runtine/auth",
+  "name": "@mfe-runtime/auth",
   "version": "0.0.0",
   "private": true,
   "files": [
@@ -23,7 +23,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@mfe-runtine/events": "workspace:*"
+    "@mfe-runtime/events": "workspace:*"
   },
   "devDependencies": {
     "typescript": "~6.0.2",

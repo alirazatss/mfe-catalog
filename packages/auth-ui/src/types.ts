@@ -2,7 +2,7 @@
  * Shared prop types used across auth-ui components.
  */
 
-import type { User, LoginCredentials } from "@mfe-runtine/auth";
+import type { User, LoginCredentials } from "@mfe-runtime/auth";
 
 export type { User, LoginCredentials };
 

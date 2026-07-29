@@ -1,5 +1,5 @@
-import type { DynamicLoader, ResolvedMFE } from "@mfe-runtine/dynamic-loader";
-import type { RemoteConfig } from "@mfe-runtine/remote-config";
+import type { DynamicLoader, ResolvedMFE } from "@mfe-runtime/dynamic-loader";
+import type { RemoteConfig } from "@mfe-runtime/remote-config";
 
 export interface ShellRuntimeNavigateOptions {
   replace?: boolean;

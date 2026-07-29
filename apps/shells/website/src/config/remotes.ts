@@ -12,7 +12,7 @@
  * if an external config service becomes temporarily unavailable.
  */
 
-import type { RemoteConfig } from "@mfe-runtine/remote-config";
+import type { RemoteConfig } from "@mfe-runtime/remote-config";
 
 /**
  * Fallback remote configuration.
@@ -22,7 +22,7 @@ import type { RemoteConfig } from "@mfe-runtine/remote-config";
  * becomes temporarily unavailable.
  */
 export const FALLBACK_REMOTES: RemoteConfig = {
-  $schema: "../node_modules/@mfe-runtine/remote-config/schema.json",
+  $schema: "../node_modules/@mfe-runtime/remote-config/schema.json",
   schemaVersion: "2.0.0",
   chrome: {},
   features: {

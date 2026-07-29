@@ -1,4 +1,4 @@
-import type { RemoteConfig } from "@mfe-runtine/remote-config";
+import type { RemoteConfig } from "@mfe-runtime/remote-config";
 
 export interface MFEProps {
   container: HTMLElement;

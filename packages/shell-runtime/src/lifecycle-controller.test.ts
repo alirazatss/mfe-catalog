@@ -5,7 +5,7 @@ import {
   type MFELifecycle,
   type MFEProps,
   type ResolvedMFE,
-} from "@mfe-runtine/dynamic-loader";
+} from "@mfe-runtime/dynamic-loader";
 import { createShellRuntime } from "./index.js";
 
 function makeResolved(name: string, slot = "main"): ResolvedMFE {

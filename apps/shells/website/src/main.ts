@@ -22,7 +22,7 @@
  */
 
 import "./style.css";
-import { createShellRuntime } from "@mfe-runtine/shell-runtime";
+import { createShellRuntime } from "@mfe-runtime/shell-runtime";
 import { renderCriticalError } from "./shell/critical-error.js";
 import { createWebsiteShellRuntimeConfig } from "./shell/runtime-config.js";
 

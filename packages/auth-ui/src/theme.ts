@@ -1,5 +1,5 @@
 /**
- * @mfe-runtine/auth-ui — Corporate branding tokens.
+ * @mfe-runtime/auth-ui — Corporate branding tokens.
  *
  * Framework-agnostic. Consumed by React components in this package AND by
  * pure-vanilla shells that want to style their static login route.

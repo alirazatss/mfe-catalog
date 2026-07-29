@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "concurrency": "12",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -26,7 +27,7 @@
       "dependsOn": ["build"]
     },
     "generate:config": {
-      "dependsOn": ["@mfe-runtine/monorepo-tools#build"],
+      "dependsOn": ["@mfe-runtime/monorepo-tools#build"],
       "outputs": ["apps/shells/website/public/remotes.config.json"]
     }
   }

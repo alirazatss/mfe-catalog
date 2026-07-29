@@ -2,7 +2,7 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
-    name: "@mfe-runtine/shell-runtime",
+    name: "@mfe-runtime/shell-runtime",
     environment: "happy-dom",
     globals: true,
     coverage: {

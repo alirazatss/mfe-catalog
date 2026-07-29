@@ -1,5 +1,5 @@
 /**
- * @mfe-runtine/monorepo-tools
+ * @mfe-runtime/monorepo-tools
  *
  * Utilities for discovering micro-frontends in the monorepo and generating
  * runtime configuration files.

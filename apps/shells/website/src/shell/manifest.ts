@@ -11,8 +11,8 @@
  * becomes a true bootstrap configuration.
  */
 
-import type { RemoteConfig } from "@mfe-runtine/remote-config";
-import { safeValidateRemoteConfig } from "@mfe-runtine/remote-config";
+import type { RemoteConfig } from "@mfe-runtime/remote-config";
+import { safeValidateRemoteConfig } from "@mfe-runtime/remote-config";
 import { FALLBACK_REMOTES } from "../config/remotes.js";
 
 const DEFAULT_URL = "/remotes.config.json";

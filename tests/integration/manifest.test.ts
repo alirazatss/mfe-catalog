@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vite-plus/test";
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { validateRemoteConfig } from "@mfe-runtine/remote-config";
+import { validateRemoteConfig } from "@mfe-runtime/remote-config";
 
 /**
  * Integration tests for manifest loading and validation.

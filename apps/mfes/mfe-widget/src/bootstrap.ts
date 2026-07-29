@@ -7,7 +7,7 @@
 
 import { StrictMode, createElement, type ComponentProps } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import type { MFEProps } from "@mfe-runtine/dynamic-loader";
+import type { MFEProps } from "@mfe-runtime/dynamic-loader";
 import App from "./App.js";
 
 export { CounterWidget } from "./components/CounterWidget.js";

@@ -1,7 +1,7 @@
 /**
  * Cross-MFE navigation utilities
  */
-import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
+import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtime/events";
 
 export interface NavigationOptions {
   state?: any;

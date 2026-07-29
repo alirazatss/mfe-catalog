@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { apiClient, setupAuthListeners } from "./apiClient.js";
 import { mockAuthGlobal, clearAuthGlobal } from "../test/mocks.js";
-import { MFE_EVENTS } from "@mfe-runtine/events";
+import { MFE_EVENTS } from "@mfe-runtime/events";
 
 describe("apiClient", () => {
   beforeEach(() => {
@@ -176,7 +176,7 @@ describe("apiClient", () => {
   describe("setupAuthListeners", () => {
     it("should register AUTH_LOGOUT event listener", async () => {
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-      const { eventBus } = await import("@mfe-runtine/events");
+      const { eventBus } = await import("@mfe-runtime/events");
 
       setupAuthListeners();
 
@@ -191,7 +191,7 @@ describe("apiClient", () => {
 
     it("should register AUTH_REFRESH event listener", async () => {
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-      const { eventBus } = await import("@mfe-runtine/events");
+      const { eventBus } = await import("@mfe-runtime/events");
 
       setupAuthListeners();
 

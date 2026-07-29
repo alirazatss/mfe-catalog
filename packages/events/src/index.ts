@@ -1,5 +1,5 @@
 /**
- * @mfe-runtine/events
+ * @mfe-runtime/events
  *
  * Native EventTarget-based event bus for cross-MFE communication
  * Zero dependencies, type-safe, memory-leak prevention

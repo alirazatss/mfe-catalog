@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect, type FormEvent } from "react";
-import { tokenManager } from "@mfe-runtine/auth";
-import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
+import { tokenManager } from "@mfe-runtime/auth";
+import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtime/events";
 import { theme as defaultTheme, themeToCssVars, type AuthTheme } from "./theme.js";
 import { userFromToken } from "./utils/jwt.js";
 import type {
@@ -45,7 +45,7 @@ type ErrorState = { kind: "invalid" | "locked" | "unknown"; message: string } | 
 /**
  * LoginPage — corporate-branded login form.
  *
- * Uses `TokenManager` from `@mfe-runtine/auth` for state; POSTs to `/api/auth/login`.
+ * Uses `TokenManager` from `@mfe-runtime/auth` for state; POSTs to `/api/auth/login`.
  * Does NOT persist credentials or tokens in localStorage.
  */
 export function LoginPage(props: LoginPageProps): JSX.Element {

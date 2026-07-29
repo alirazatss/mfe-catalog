@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vite-plus/test";
 import { DynamicLoader } from "../DynamicLoader.js";
-import type { RemoteConfig } from "@mfe-runtine/remote-config";
+import type { RemoteConfig } from "@mfe-runtime/remote-config";
 
 describe("DynamicLoader manifest resolution", () => {
   let loader: DynamicLoader;

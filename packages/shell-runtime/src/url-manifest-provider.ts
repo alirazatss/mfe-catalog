@@ -1,4 +1,4 @@
-import { safeValidateRemoteConfig, type RemoteConfig } from "@mfe-runtine/remote-config";
+import { safeValidateRemoteConfig, type RemoteConfig } from "@mfe-runtime/remote-config";
 import type { ManifestProvider } from "./contracts.js";
 
 export interface UrlManifestProviderOptions {

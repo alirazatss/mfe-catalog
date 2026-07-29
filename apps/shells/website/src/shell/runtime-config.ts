@@ -1,11 +1,11 @@
-import { tokenManager } from "@mfe-runtine/auth";
-import { MFE_EVENTS, onMFEEvent } from "@mfe-runtine/events";
+import { tokenManager } from "@mfe-runtime/auth";
+import { MFE_EVENTS, onMFEEvent } from "@mfe-runtime/events";
 import type {
   FailureRenderer,
   FailureScope,
   ShellRuntimeConfig,
   ShellRuntimeFailure,
-} from "@mfe-runtine/shell-runtime";
+} from "@mfe-runtime/shell-runtime";
 import { FALLBACK_REMOTES } from "../config/remotes.js";
 import { userFromToken } from "./auth-helpers.js";
 import { setupAuthBridge } from "./auth-bridge.js";

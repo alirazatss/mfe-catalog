@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { tokenManager } from "@mfe-runtine/auth";
-import { emitMFEEvent, onMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
+import { tokenManager } from "@mfe-runtime/auth";
+import { emitMFEEvent, onMFEEvent, MFE_EVENTS } from "@mfe-runtime/events";
 import type { LoginCredentials, User } from "./types.js";
 import { userFromToken } from "./utils/jwt.js";
 

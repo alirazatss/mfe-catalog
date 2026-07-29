@@ -4,7 +4,7 @@ import type {
   MFELifecycle,
   MFEProps,
   ResolvedMFE,
-} from "@mfe-runtine/dynamic-loader";
+} from "@mfe-runtime/dynamic-loader";
 import type { FailureScope, ShellRuntimeFailure, ShellRuntimeObserverEvent } from "./contracts.js";
 
 export interface RuntimeAuthSnapshot {

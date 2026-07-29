@@ -2,7 +2,7 @@
  * Cross-MFE navigation utility
  * Uses event bus for shell-level navigation
  */
-import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
+import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtime/events";
 
 export interface NavigationOptions {
   state?: any;

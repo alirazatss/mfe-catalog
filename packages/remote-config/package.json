@@ -1,5 +1,5 @@
 {
-  "name": "@mfe-runtine/remote-config",
+  "name": "@mfe-runtime/remote-config",
   "version": "0.1.0",
   "private": true,
   "type": "module",

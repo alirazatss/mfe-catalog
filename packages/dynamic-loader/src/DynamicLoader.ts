@@ -1,4 +1,4 @@
-import type { RemoteConfig, ChromeMFE, FeatureMFE, LegacyRemote } from "@mfe-runtine/remote-config";
+import type { RemoteConfig, ChromeMFE, FeatureMFE, LegacyRemote } from "@mfe-runtime/remote-config";
 import { LoaderEvents } from "./events.js";
 import { fetchConfig, type FetchConfigOptions } from "./config.js";
 import type { LoaderStatus, Container } from "./types.js";

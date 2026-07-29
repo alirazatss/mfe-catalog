@@ -2,7 +2,7 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
-    name: "@mfe-runtine/auth",
+    name: "@mfe-runtime/auth",
     environment: "happy-dom",
     globals: true,
     coverage: {

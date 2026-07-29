@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-vi.mock("@mfe-runtine/auth", () => ({
+vi.mock("@mfe-runtime/auth", () => ({
   tokenManager: {
     refreshToken: vi.fn().mockResolvedValue(undefined),
     isAuthenticated: vi.fn().mockReturnValue(false),
@@ -16,7 +16,7 @@ vi.mock("./manifest.js", () => ({
   fetchManifest: vi.fn(),
 }));
 
-import { tokenManager } from "@mfe-runtine/auth";
+import { tokenManager } from "@mfe-runtime/auth";
 import { createWebsiteFailureRenderer, createWebsiteShellRuntimeConfig } from "./runtime-config.js";
 import { fetchManifest } from "./manifest.js";
 

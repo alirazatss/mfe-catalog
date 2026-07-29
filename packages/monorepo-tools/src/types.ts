@@ -2,7 +2,7 @@
  * MicroFrontend metadata extracted from package.json and filesystem
  */
 export interface MicroFrontend {
-  /** Package name (e.g., "@mfe-runtine/mfe-widget") */
+  /** Package name (e.g., "@mfe-runtime/mfe-widget") */
   name: string;
   /** Short name extracted from directory (e.g., "mfe-widget") */
   shortName: string;

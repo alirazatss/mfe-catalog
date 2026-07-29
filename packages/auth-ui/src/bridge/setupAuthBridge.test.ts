@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { setupAuthBridge, teardownAuthBridge } from "./setupAuthBridge.js";
-import { tokenManager } from "@mfe-runtine/auth";
-import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
+import { tokenManager } from "@mfe-runtime/auth";
+import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtime/events";
 
 declare global {
   interface Window {

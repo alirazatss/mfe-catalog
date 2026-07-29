@@ -53,4 +53,5 @@ minimumReleaseAgeExclude:
   - tsdown@0.22.4
   - react-router@8.2.0
 allowBuilds:
+  "@tailwindcss/oxide": false
   esbuild: true

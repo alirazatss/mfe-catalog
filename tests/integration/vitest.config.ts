@@ -36,9 +36,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@mfe-runtine/dynamic-loader": path.resolve(__dirname, "../../packages/dynamic-loader/src"),
-      "@mfe-runtine/shell-runtime": path.resolve(__dirname, "../../packages/shell-runtime/src"),
-      "@mfe-runtine/remote-config": path.resolve(__dirname, "../../packages/remote-config/src"),
+      "@mfe-runtime/dynamic-loader": path.resolve(__dirname, "../../packages/dynamic-loader/src"),
+      "@mfe-runtime/shell-runtime": path.resolve(__dirname, "../../packages/shell-runtime/src"),
+      "@mfe-runtime/remote-config": path.resolve(__dirname, "../../packages/remote-config/src"),
     },
   },
 });

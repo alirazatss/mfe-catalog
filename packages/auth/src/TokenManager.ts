@@ -1,4 +1,4 @@
-import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
+import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtime/events";
 import type { RefreshResponse } from "./types";
 
 /**

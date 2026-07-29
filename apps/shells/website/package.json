@@ -15,11 +15,11 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@mfe-runtine/auth": "workspace:*",
-    "@mfe-runtine/dynamic-loader": "workspace:*",
-    "@mfe-runtine/events": "workspace:*",
-    "@mfe-runtine/remote-config": "workspace:*",
-    "@mfe-runtine/shell-runtime": "workspace:*",
+    "@mfe-runtime/auth": "workspace:*",
+    "@mfe-runtime/dynamic-loader": "workspace:*",
+    "@mfe-runtime/events": "workspace:*",
+    "@mfe-runtime/remote-config": "workspace:*",
+    "@mfe-runtime/shell-runtime": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

@@ -1,5 +1,5 @@
 {
-  "name": "@mfe-runtine/monorepo-tools",
+  "name": "@mfe-runtime/monorepo-tools",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "test:coverage": "vp test --coverage"
   },
   "dependencies": {
-    "@mfe-runtine/remote-config": "workspace:*",
+    "@mfe-runtime/remote-config": "workspace:*",
     "glob": "catalog:"
   },
   "devDependencies": {

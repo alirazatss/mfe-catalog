@@ -1,5 +1,5 @@
-import { DynamicLoader, type ResolvedMFE } from "@mfe-runtine/dynamic-loader";
-import { safeValidateRemoteConfig, type RemoteConfig } from "@mfe-runtine/remote-config";
+import { DynamicLoader, type ResolvedMFE } from "@mfe-runtime/dynamic-loader";
+import { safeValidateRemoteConfig, type RemoteConfig } from "@mfe-runtime/remote-config";
 import type {
   FailureScope,
   ShellRuntime,

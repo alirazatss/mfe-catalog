@@ -1,5 +1,5 @@
 import axios from "axios";
-import { onMFEEvent, MFE_EVENTS } from "@mfe-runtine/events";
+import { onMFEEvent, MFE_EVENTS } from "@mfe-runtime/events";
 
 /**
  * API Client for MFE Widget
