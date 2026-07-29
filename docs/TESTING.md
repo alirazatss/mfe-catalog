@@ -1,479 +1,527 @@
 # Testing Guide
 
-This document describes the testing infrastructure and practices for the micro-frontend monorepo.
+This document describes the comprehensive testing infrastructure for the MFE Runtime monorepo.
 
 ## Table of Contents
 
-- [Overview](#overview)
+- [Test Layers](#test-layers)
 - [Test Stack](#test-stack)
+- [Coverage Thresholds](#coverage-thresholds)
 - [Running Tests](#running-tests)
-- [Writing Tests](#writing-tests)
-- [Coverage Requirements](#coverage-requirements)
-- [Test Utilities](#test-utilities)
-- [Best Practices](#best-practices)
+- [CI/CD Integration](#cicd-integration)
+- [Troubleshooting](#troubleshooting)
 
-## Overview
+---
 
-The project uses **Vitest** with **React Testing Library** for unit and integration testing. Tests are co-located with source files using the `.test.ts` or `.test.tsx` suffix.
+## Test Layers
 
-### Test Distribution
+### Unit Tests
 
-- **Packages** (`packages/*`): Unit tests for shared libraries
-- **Shell** (`apps/shells/website`): Component and integration tests
-- **MFEs** (`apps/mfes/mfe-*`): Component, utility, and integration tests
-- **E2E**: Separate test suite (not covered in this document)
+**Scope:** Individual functions, modules, and components in isolation.
 
-## Test Stack
+**Environment:** Node.js with happy-dom for DOM simulation
 
-| Tool                        | Purpose                     | Version |
-| --------------------------- | --------------------------- | ------- |
-| Vitest                      | Test runner                 | 3.2.7   |
-| @testing-library/react      | Component testing           | 16.3.2  |
-| @testing-library/user-event | User interaction simulation | 14.6.1  |
-| @testing-library/jest-dom   | DOM matchers                | 6.6.4   |
-| happy-dom                   | Fast DOM implementation     | 15.11.7 |
-| @vitest/coverage-v8         | Code coverage               | 3.2.7   |
+**Primary Command:** `pnpm test` or `pnpm test:coverage`
 
-## Running Tests
+**File Location:** `packages/*/src/__tests__/*.test.ts` or `packages/*/src/**/*.test.ts`
 
-### Run all tests
+**Tools:**
+
+- Vitest (test runner)
+- happy-dom (DOM simulation)
+- @testing-library/react (component testing utilities)
+
+**Coverage:** 210+ tests across all packages
+
+**Example:**
 
 ```bash
+# Run all unit tests
 pnpm test
-```
 
-### Run tests in watch mode
+# Run with coverage
+pnpm test:coverage
 
-```bash
+# Run specific package
+cd packages/dynamic-loader && pnpm test
+
+# Watch mode
 pnpm test:watch
 ```
 
-### Run tests with coverage
+---
+
+### Runtime Integration Tests
+
+**Scope:** Cross-package interactions, HTTP requests, real Module Federation container loading.
+
+**Environment:** Node.js with real HTTP servers (no browser)
+
+**Primary Command:** `pnpm test:integration`
+
+**File Location:** `tests/integration/**/*.test.ts`
+
+**Tools:**
+
+- Vitest (Node environment)
+- Real HTTP servers via vp preview
+- Orchestration via `scripts/test-integration.ts`
+
+**Coverage:** 3 tests for manifest loading, lifecycle, chunk origin
+
+**Ports:**
+
+- Shell: 4173 (configurable via `INTEGRATION_SHELL_PORT`)
+- MFE: 4174 (configurable via `INTEGRATION_MFE_PORT`)
+
+**Features:**
+
+- Pre-flight port checks
+- Health check polling (30s timeout)
+- Clean shutdown (SIGINT/SIGTERM)
+- Diagnostics collection on failure
+
+**Example:**
 
 ```bash
+# Run integration tests
+pnpm test:integration
+
+# With custom ports
+INTEGRATION_SHELL_PORT=5173 INTEGRATION_MFE_PORT=5174 pnpm test:integration
+```
+
+---
+
+### End-to-End (E2E) Tests
+
+**Scope:** Full user journeys in a real browser, including navigation, authentication, error scenarios, and cross-origin loading.
+
+**Environment:** Chromium browser via Playwright
+
+**Primary Command:** `pnpm test:e2e`
+
+**File Location:** `tests/e2e/journeys/**/*.spec.ts`
+
+**Tools:**
+
+- Playwright (browser automation)
+- Chromium (headless browser)
+- Auth stub server (port 4275)
+
+**Coverage:** 28 tests across 4 journey files
+
+- `core.spec.ts` (5 tests): shell startup, MFE rendering, navigation, refresh
+- `auth.spec.ts` (4 tests): authenticated/unauthenticated flows
+- `remote-failures.spec.ts` (3 tests): 404 handling, error boundaries
+- `cross-origin.spec.ts` (2 tests): cross-origin chunk loading
+
+**Ports:**
+
+- Shell: 4273 (configurable via `E2E_SHELL_PORT`)
+- MFE: 4274 (configurable via `E2E_MFE_PORT`)
+- Auth Stub: 4275 (configurable via `E2E_AUTH_PORT`)
+
+**Features:**
+
+- Two test projects: mocked-auth + auth-stub
+- Cross-origin testing via host rules (shell.test, cdn.test)
+- Console error auto-fail
+- Screenshots/traces/videos on failure
+- 7-day artifact retention
+
+**Example:**
+
+```bash
+# Run all E2E tests
+pnpm test:e2e
+
+# Run with UI
+pnpm test:e2e:ui
+
+# Run specific file
+pnpm exec playwright test --config tests/e2e/playwright.config.ts core.spec.ts
+
+# List all tests
+pnpm exec playwright test --list --config tests/e2e/playwright.config.ts
+
+# Install browsers (one-time)
+pnpm exec playwright install chromium
+```
+
+---
+
+### Component Tests
+
+**Scope:** React components with user interactions (deferred - not yet implemented).
+
+**Environment:** Vitest browser mode
+
+**Primary Command:** `pnpm test:component` (not yet available)
+
+**File Location:** `packages/*/src/**/*.component.test.tsx` (planned)
+
+---
+
+## Test Stack
+
+| Tool                   | Version  | Purpose                                    |
+| ---------------------- | -------- | ------------------------------------------ |
+| Vitest                 | catalog: | Test runner for unit and integration tests |
+| Playwright             | catalog: | Browser automation for E2E tests           |
+| happy-dom              | catalog: | Lightweight DOM simulation for unit tests  |
+| @testing-library/react | catalog: | React component testing utilities          |
+| @vitest/coverage-v8    | catalog: | Code coverage via V8 provider              |
+| @vitest/ui             | catalog: | Interactive UI for debugging tests         |
+| tsx                    | catalog: | TypeScript execution for scripts           |
+
+**Note:** All versions are managed via pnpm catalog. Run `pnpm ls <package>` to see installed versions.
+
+---
+
+## Coverage Thresholds
+
+### Shared Packages
+
+**Threshold:** 80% statements, 75% branches, 80% functions, 80% lines
+
+**Applies to:**
+
+- `packages/auth`
+- `packages/auth-ui`
+- `packages/dynamic-loader`
+- `packages/events`
+- `packages/monorepo-tools`
+- `packages/remote-config`
+- `packages/shell-runtime`
+- `packages/utils`
+
+### Shells and MFEs
+
+**Threshold:** 70% statements, 65% branches, 70% functions, 70% lines
+
+**Applies to:**
+
+- `apps/shells/website`
+- `apps/mfes/mfe-widget`
+
+### Enforcement
+
+Coverage thresholds are **enforced in CI**. Any package failing to meet its thresholds will cause the build to fail.
+
+**Current Coverage:**
+
+- `packages/dynamic-loader`: 78.37% statements (target: 80%)
+- `packages/remote-config`: 100% (19 tests)
+- `packages/auth-ui`: 80%+
+
+**Commands:**
+
+```bash
+# Check coverage for all packages
 pnpm test:coverage
+
+# Check specific package
+cd packages/dynamic-loader && pnpm test:coverage
+
+# Merge coverage from integration tests
+pnpm test:merge-coverage
 ```
 
-### Run tests with UI
+---
+
+## Running Tests
+
+### Local Development
 
 ```bash
-pnpm test:ui
+# Run all unit tests
+pnpm test
+
+# Run with coverage
+pnpm test:coverage
+
+# Run integration tests
+pnpm test:integration
+
+# Run E2E tests
+pnpm test:e2e
+
+# Run full CI suite locally
+pnpm test:ci
+# Equivalent to: vp check → test:coverage → build → test:integration → test:e2e
+
+# Run everything (alias for test:ci)
+pnpm ready
 ```
 
-### Run tests for a specific package
+### Quality Gates
+
+Three assertion scripts run in CI to enforce standards:
 
 ```bash
-# Run tests for auth package
-cd packages/auth && pnpm test
+# Assert all packages have test scripts
+pnpm exec tsx scripts/assert-package-test-scripts.ts
 
-# Run tests for shell
-cd apps/shells/website && pnpm test:run
+# Assert no arbitrary sleeps in tests (determinism)
+pnpm exec tsx scripts/assert-no-arbitrary-sleeps.ts
 
-# Run tests for MFE
-cd apps/mfes/mfe-widget && pnpm test:run
+# Assert no production code excluded from coverage
+pnpm exec tsx scripts/assert-no-src-coverage-exclusions.ts
 ```
 
-## Writing Tests
+### Port Configuration
 
-### File Organization
+**Integration Tests:**
 
-Tests are co-located with the source code:
+- `INTEGRATION_SHELL_PORT` (default: 4173)
+- `INTEGRATION_MFE_PORT` (default: 4174)
+
+**E2E Tests:**
+
+- `E2E_SHELL_PORT` (default: 4273)
+- `E2E_MFE_PORT` (default: 4274)
+- `E2E_AUTH_PORT` (default: 4275)
+
+**Pre-flight Checks:**
+
+Both integration and E2E tests perform pre-flight port availability checks. If a port is in use, the test runner will exit with an actionable error message:
 
 ```
-src/
-├── components/
-│   ├── Layout.tsx
-│   └── Layout.test.tsx          # Component test
-├── utils/
-│   ├── navigation.ts
-│   └── navigation.test.ts       # Utility test
-└── test/
-    ├── setup.ts                 # Test setup
-    ├── utils.tsx                # Test utilities
-    └── mocks.ts                 # Mock data
+❌ Port 4173 is already in use.
+   Action: Kill the process using port 4173 or configure a different port.
+   Find process: lsof -ti:4173
+   Kill process: kill $(lsof -ti:4173)
 ```
 
-### Basic Component Test
+---
 
-```tsx
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { MyComponent } from "./MyComponent.js";
+## CI/CD Integration
 
-describe("MyComponent", () => {
-  it("should render correctly", () => {
-    render(<MyComponent title="Hello" />);
+### GitHub Actions Workflow
 
-    expect(screen.getByText("Hello")).toBeInTheDocument();
-  });
-});
-```
+**File:** `.github/workflows/test.yml`
 
-### Testing with Router
+**Trigger:** Pull requests and pushes to `main`/`develop`
 
-**Shell (BrowserRouter)**:
+**Jobs:**
 
-```tsx
-import { renderWithRouter } from "../test/utils.js";
+1. **install:** Install dependencies, cache pnpm store and node_modules
+2. **lint:** Run linter (parallel with type-check and unit-tests)
+3. **type-check:** Run TypeScript type checking
+4. **unit-tests:** Run unit tests with coverage + quality gate assertions
+5. **build:** Build all packages and cache artifacts
+6. **integration-tests:** Run integration tests, upload diagnostics on failure
+7. **e2e-tests:** Install Playwright browsers, run E2E tests, upload artifacts on failure
+8. **gate:** CI gate that depends on all jobs (required for branch protection)
 
-it("should navigate correctly", () => {
-  renderWithRouter(<MyComponent />);
-  // ... assertions
-});
-```
+**Caching Strategy:**
 
-**MFE (MemoryRouter)**:
+- ✅ pnpm store (keyed by lockfile hash)
+- ✅ node_modules (keyed by lockfile hash)
+- ✅ Build artifacts (keyed by git SHA)
+- ❌ Turbo outputs (never cached)
+- ❌ Coverage reports (never cached)
+- ❌ Test results (never cached)
 
-```tsx
-import { renderWithRouter } from "../test/utils.js";
+**Artifacts:**
 
-it("should render with initial route", () => {
-  renderWithRouter(<MyComponent />, {
-    initialEntries: ["/dashboard"],
-  });
-  // ... assertions
-});
-```
+- Coverage reports (7 days)
+- Integration test results (7 days, on failure)
+- E2E test results (7 days, on failure)
+- Playwright HTML report (7 days, always)
 
-### Testing with Auth
+**Required Check for Branch Protection:**
 
-```tsx
-import { renderWithAuth } from "../test/utils.js";
-import { mockUser } from "../test/mocks.js";
+Set the **gate** job as a required check in your repository settings to enforce that all tests must pass before merging.
 
-it("should show user info when authenticated", () => {
-  // Renders with AuthProvider + Router
-  renderWithAuth(<MyComponent />);
-  // ... assertions
-});
-```
-
-### Mocking window.**AUTH**
-
-```tsx
-import { mockAuthGlobal, clearAuthGlobal } from "../test/mocks.js";
-
-beforeEach(() => {
-  mockAuthGlobal({
-    isAuthenticated: true,
-    user: mockUser,
-    getAccessToken: () => "mock-token",
-  });
-});
-
-afterEach(() => {
-  clearAuthGlobal();
-});
-```
-
-### Testing Async Code
-
-```tsx
-import { waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-
-it("should handle async operations", async () => {
-  const user = userEvent.setup();
-  render(<MyComponent />);
-
-  await user.click(screen.getByText("Submit"));
-
-  await waitFor(() => {
-    expect(screen.getByText("Success")).toBeInTheDocument();
-  });
-});
-```
-
-### Testing Event Bus
-
-```tsx
-import { eventBus, MFE_EVENTS } from "@mfe-runtine/events";
-
-it("should emit event on action", () => {
-  const handler = vi.fn();
-  const cleanup = eventBus.on(MFE_EVENTS.NAVIGATE, handler);
-
-  // Trigger action that emits event
-  myFunction();
-
-  expect(handler).toHaveBeenCalledWith({
-    path: "/dashboard",
-  });
-
-  cleanup();
-});
-```
-
-## Coverage Requirements
-
-### Packages
-
-Packages must maintain **80% coverage**:
-
-```json
-{
-  "coverage": {
-    "thresholds": {
-      "statements": 80,
-      "branches": 75,
-      "functions": 80,
-      "lines": 80
-    }
-  }
-}
-```
-
-### Apps (Shell & MFEs)
-
-Apps must maintain **70% coverage**:
-
-```json
-{
-  "coverage": {
-    "thresholds": {
-      "statements": 70,
-      "branches": 65,
-      "functions": 70,
-      "lines": 70
-    }
-  }
-}
-```
-
-### Excluded Files
-
-The following files are excluded from coverage:
-
-- `dist/**` - Build output
-- `**/*.config.ts` - Configuration files
-- `**/*.test.ts` - Test files themselves
-- `**/test/**` - Test utilities
-- `src/main.tsx` - Entry points
-- `src/vite-env.d.ts` - Type definitions
-
-## Test Utilities
-
-### Shell Test Utilities (`apps/shells/website/src/test/`)
-
-#### `renderWithRouter()`
-
-Renders component with BrowserRouter:
-
-```tsx
-renderWithRouter(<Component />);
-```
-
-#### `renderWithAuth()`
-
-Renders component with AuthProvider + Router:
-
-```tsx
-renderWithAuth(<Component />);
-```
-
-#### `mockUser`
-
-Mock user object for testing:
-
-```tsx
-{
-  id: 'test-user-123',
-  email: 'test@example.com',
-  name: 'Test User',
-}
-```
-
-### MFE Test Utilities (`apps/mfes/mfe-widget/src/test/`)
-
-#### `renderWithRouter()`
-
-Renders component with MemoryRouter:
-
-```tsx
-renderWithRouter(<Component />, {
-  initialEntries: ["/dashboard"],
-});
-```
-
-#### `mockAuthGlobal()`
-
-Mocks window.**AUTH** global:
-
-```tsx
-mockAuthGlobal({
-  isAuthenticated: true,
-  user: mockUser,
-  getAccessToken: () => "token",
-});
-```
-
-#### `clearAuthGlobal()`
-
-Clears window.**AUTH**:
-
-```tsx
-clearAuthGlobal();
-```
-
-## Best Practices
-
-### 1. Test Behavior, Not Implementation
-
-❌ **Bad**: Testing internal state
-
-```tsx
-expect(component.state.count).toBe(5);
-```
-
-✅ **Good**: Testing user-visible behavior
-
-```tsx
-expect(screen.getByText("Count: 5")).toBeInTheDocument();
-```
-
-### 2. Use Testing Library Queries
-
-**Query Priority** (from most to least preferred):
-
-1. `getByRole` - Accessible to all users
-2. `getByLabelText` - Form elements
-3. `getByPlaceholderText` - Inputs
-4. `getByText` - Non-interactive elements
-5. `getByTestId` - Last resort
-
-### 3. Clean Up After Tests
-
-```tsx
-import { afterEach, vi } from "vitest";
-
-afterEach(() => {
-  vi.clearAllMocks();
-  vi.restoreAllMocks();
-});
-```
-
-### 4. Mock External Dependencies
-
-```tsx
-import { vi } from "vitest";
-import * as apiClient from "./apiClient.js";
-
-const mockFetch = vi.fn();
-vi.spyOn(apiClient, "fetchData").mockImplementation(mockFetch);
-```
-
-### 5. Use Fake Timers for setTimeout/setInterval
-
-```tsx
-import { vi, beforeEach, afterEach } from "vitest";
-
-beforeEach(() => {
-  vi.useFakeTimers();
-});
-
-afterEach(() => {
-  vi.useRealTimers();
-});
-
-it("should execute after delay", () => {
-  const callback = vi.fn();
-  setTimeout(callback, 1000);
-
-  vi.advanceTimersByTime(1000);
-
-  expect(callback).toHaveBeenCalled();
-});
-```
-
-### 6. Test Accessibility
-
-```tsx
-import { screen } from "@testing-library/react";
-
-it("should be accessible", () => {
-  render(<Button>Click me</Button>);
-
-  const button = screen.getByRole("button", { name: "Click me" });
-  expect(button).toBeInTheDocument();
-});
-```
-
-### 7. Keep Tests Focused
-
-Each test should verify **one thing**:
-
-```tsx
-// ❌ Bad: Testing multiple things
-it("should handle everything", () => {
-  // ... 50 lines of tests
-});
-
-// ✅ Good: Focused tests
-it("should render title", () => {
-  /* ... */
-});
-it("should handle click", () => {
-  /* ... */
-});
-it("should validate input", () => {
-  /* ... */
-});
-```
+---
 
 ## Troubleshooting
 
-### "Invalid Chai property: toBeInTheDocument"
+### Port Already in Use
 
-Make sure you have imported jest-dom in your setup file:
+**Problem:** Integration or E2E tests fail with "port already in use"
 
-```ts
-// src/test/setup.ts
-import "@testing-library/jest-dom/vitest";
+**Solution:**
+
+```bash
+# Find process using the port
+lsof -ti:4173
+
+# Kill the process
+kill $(lsof -ti:4173)
+
+# Or use custom ports
+INTEGRATION_SHELL_PORT=5173 pnpm test:integration
 ```
 
-### "Cannot find module" errors
+### Coverage Below Threshold
 
-Ensure you're using `.js` extensions for imports in test files:
+**Problem:** `pnpm test:coverage` fails with coverage below threshold
 
-```tsx
-// ✅ Correct
-import { MyComponent } from "./MyComponent.js";
+**Solution:**
 
-// ❌ Wrong
-import { MyComponent } from "./MyComponent";
-```
+1. Check which package is failing: Look for the error message showing the package name
+2. Review the coverage report: `open packages/<package>/coverage/index.html`
+3. Add tests for uncovered code paths
+4. See `packages/dynamic-loader/COVERAGE-AUDIT.md` for an example audit
 
-### Infinite loop with React Router Navigate
+### E2E Tests Failing
 
-This is a known issue when testing redirects. Skip the test or mock the Navigate component:
+**Problem:** E2E tests fail in CI but pass locally
 
-```tsx
-it.skip("should redirect when not authenticated", () => {
-  // TODO: Fix infinite loop with Navigate
-});
-```
+**Solution:**
 
-### "Maximum call stack size exceeded"
+1. Check uploaded artifacts in the GitHub Actions run
+2. Review screenshots/traces/videos
+3. Check Playwright report: Download and open `playwright-report/index.html`
+4. Look for console errors in the captured logs
+5. Run tests in headed mode locally: `pnpm exec playwright test --headed`
 
-Usually caused by infinite re-renders. Check:
+### Integration Tests Timeout
 
-1. Are you mocking hooks correctly?
-2. Is useEffect missing dependencies?
-3. Is there a redirect loop?
+**Problem:** Integration tests timeout during health checks
+
+**Solution:**
+
+1. Verify build artifacts exist: `ls apps/shells/website/dist apps/mfes/mfe-widget/dist`
+2. Run build: `pnpm build`
+3. Check server logs in the orchestrator output
+4. Increase timeout if necessary (edit `scripts/test-integration.ts`)
+
+### Flaky Tests
+
+**Problem:** Tests pass/fail intermittently
+
+**Solution:**
+
+1. Check for arbitrary sleeps: `pnpm exec tsx scripts/assert-no-arbitrary-sleeps.ts`
+2. Use health check polling instead of fixed delays
+3. Wait for network idle in E2E tests: `await page.waitForLoadState("networkidle")`
+4. Avoid race conditions in async operations
+
+---
+
+## Best Practices
+
+### Writing Unit Tests
+
+✅ **DO:**
+
+- Use descriptive test names
+- Test one thing per test
+- Use happy-dom for DOM operations
+- Mock external dependencies
+- Aim for 80%+ coverage
+
+❌ **DON'T:**
+
+- Use arbitrary sleeps (`setTimeout` without bound)
+- Test implementation details
+- Share state between tests
+- Exclude production code from coverage
+
+### Writing Integration Tests
+
+✅ **DO:**
+
+- Test real HTTP interactions
+- Verify cross-package integration
+- Use health check polling
+- Collect diagnostics on failure
+
+❌ **DON'T:**
+
+- Mock Module Federation containers
+- Use browser-specific APIs (use Node environment)
+- Hard-code ports (use env vars)
+
+### Writing E2E Tests
+
+✅ **DO:**
+
+- Test complete user journeys
+- Wait for network idle
+- Use Playwright fixtures
+- Capture artifacts on failure
+- Test error scenarios
+
+❌ **DON'T:**
+
+- Test internal implementation
+- Use arbitrary waits
+- Ignore console errors
+- Skip cross-origin testing
+
+---
+
+## ADRs (Architectural Decision Records)
+
+### ADR: Three-Layer Test Strategy
+
+**Decision:** Implement unit, integration, and E2E test layers
+
+**Rationale:**
+
+- Unit tests: Fast feedback, high coverage, isolated
+- Integration tests: Real HTTP, cross-package validation
+- E2E tests: Complete user journeys, real browser
+
+**Alternatives Considered:**
+
+- Single-layer (E2E only): Too slow, hard to debug
+- Two-layer (unit + E2E): Missing cross-package validation
+
+### ADR: Port Isolation
+
+**Decision:** Use different port ranges for integration (4173/4174) and E2E (4273/4274/4275)
+
+**Rationale:**
+
+- Prevents conflicts when running tests back-to-back
+- Allows parallel execution in the future
+- Clear separation of test environments
+
+### ADR: No Turbo Output Caching in CI
+
+**Decision:** Never cache Turbo outputs, coverage, or test results
+
+**Rationale:**
+
+- Tests must run fresh on every CI run
+- Coverage must reflect current code
+- Caching could hide regressions
+
+### ADR: Console Errors Fail E2E Tests
+
+**Decision:** Any `console.error` or uncaught exception fails the E2E test
+
+**Rationale:**
+
+- Enforces zero-error policy
+- Catches issues early
+- Prevents error suppression
+
+---
+
+## Contributing
+
+When adding new tests:
+
+1. **Choose the right layer:** Unit for isolated logic, integration for cross-package, E2E for user journeys
+2. **Follow naming conventions:** `*.test.ts` for unit, `*.spec.ts` for E2E
+3. **Update this guide:** Document new test categories or commands
+4. **Maintain coverage:** Keep thresholds at or above current levels
+5. **Run quality gates:** Ensure all assertion scripts pass
+
+---
 
 ## Resources
 
-- [Vitest Documentation](https://vitest.dev/)
-- [React Testing Library](https://testing-library.com/react)
-- [Testing Library Queries](https://testing-library.com/docs/queries/about)
-- [Jest DOM Matchers](https://github.com/testing-library/jest-dom)
-- [User Event](https://testing-library.com/docs/user-event/intro)
-
-## Questions?
-
-For questions or issues with testing, please:
-
-1. Check this documentation
-2. Review existing test files for examples
-3. Ask in the team chat
-4. Create a GitHub issue
+- [Vitest Documentation](https://vitest.dev)
+- [Playwright Documentation](https://playwright.dev)
+- [Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [Integration Tests README](../tests/integration/README.md)
+- [E2E Tests README](../tests/e2e/README.md)
+- [Coverage Audit Example](../packages/dynamic-loader/COVERAGE-AUDIT.md)

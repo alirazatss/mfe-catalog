@@ -89,7 +89,7 @@ Options:
 function getGitHash(): string {
   try {
     return execSync("git rev-parse --short=7 HEAD", { encoding: "utf-8" }).trim();
-  } catch (error) {
+  } catch (_error) {
     console.warn("⚠️  Could not retrieve git hash, using 'unknown'");
     return "unknown";
   }
@@ -101,7 +101,7 @@ function getGitHash(): string {
 function getGitTimestamp(): string {
   try {
     return execSync("git log -1 --format=%cI", { encoding: "utf-8" }).trim();
-  } catch (error) {
+  } catch (_error) {
     return new Date().toISOString();
   }
 }

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2.0.0",
+  "chrome": {
+    "header": {
+      "mfe": "test-header",
+      "entryUrl": "http://localhost:4174/remoteEntry.js",
+      "scope": "testHeader"
+    }
+  },
+  "features": {
+    "/widget": {
+      "mfe": "test-widget",
+      "entryUrl": "http://localhost:4174/remoteEntry.js",
+      "requiresAuth": false
+    }
+  }
+}

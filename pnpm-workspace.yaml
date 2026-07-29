@@ -31,6 +31,7 @@ catalog:
   vite-plus: 0.2.4
   vitest: ^4.1.10
   react-router-dom: ^7.18.1
+  "@playwright/test": ^1.62.0
 overrides:
   vite: "catalog:"
 peerDependencyRules:
@@ -52,4 +53,4 @@ minimumReleaseAgeExclude:
   - tsdown@0.22.4
   - react-router@8.2.0
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true

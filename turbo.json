@@ -13,6 +13,18 @@
       "dependsOn": ["build"],
       "outputs": ["coverage/**"]
     },
+    "test:coverage": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"]
+    },
+    "test:integration": {
+      "cache": false,
+      "dependsOn": ["build"]
+    },
+    "test:e2e": {
+      "cache": false,
+      "dependsOn": ["build"]
+    },
     "generate:config": {
       "dependsOn": ["@mfe-runtine/monorepo-tools#build"],
       "outputs": ["apps/shells/website/public/remotes.config.json"]

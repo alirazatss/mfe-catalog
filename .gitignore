@@ -17,6 +17,18 @@ dist-ssr
 
 # Test coverage
 coverage
+coverage-merged
+*.lcov
+
+# Test results and artifacts
+test-results
+tests/integration/test-results
+tests/e2e/test-results
+playwright-report
+.playwright
+
+# Vitest
+.vitest
 
 # Auto-generated config files
 manifest.production.json

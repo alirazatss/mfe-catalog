@@ -27,6 +27,8 @@
     "build": "vp pack",
     "dev": "vp pack --watch",
     "check": "vp check",
+    "test": "vp test",
+    "test:coverage": "vp test --coverage",
     "prepublishOnly": "vp run build"
   },
   "devDependencies": {

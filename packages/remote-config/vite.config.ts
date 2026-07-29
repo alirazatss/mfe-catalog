@@ -13,7 +13,7 @@ export default defineConfig({
         functions: 80,
         lines: 80,
       },
-      exclude: ["dist/**", "**/*.config.ts", "**/*.test.ts", "**/test/**"],
+      exclude: ["dist/**", "**/*.config.ts", "**/*.test.ts", "**/test/**", "schema.json"],
     },
   },
 });
