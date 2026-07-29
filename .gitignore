@@ -34,6 +34,9 @@ playwright-report
 manifest.production.json
 manifest.staging.json
 
+# Module Federation generated diagnostics
+**/.mf/diagnostics/
+
 # Editor directories and files
 .vscode/*
 !.vscode/settings.json
