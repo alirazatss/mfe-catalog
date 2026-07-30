@@ -440,16 +440,24 @@ Set-Cookie: refreshToken=xyz;
 
 Result: User logs into `customer.example.com`, opens `admin.example.com`, SSO works automatically.
 
-### 7. MFE Deployment
+### 7. MFE Deployment (ADR-0009)
 
-**Turborepo detects changed MFEs**, deploys only those to CDN.
+**Git tag-based releases to Azure Blob Storage with OIDC authentication.**
 
-```yaml
-- run: turbo run build --filter='[HEAD^1]...[HEAD]'
-- run: for mfe in mfes/mfe-*/dist; do
-    aws s3 sync $mfe s3://cdn.example.com/$ENV/${mfe#mfes/}/
-    done
-```
+**Dev deploys** (push to `main`):
+- MFEs → `mfes-dev/<mfe-name>/dev/` (floating pointer, auto-loads latest)
+- Shell → `dev-shell/` container (raw blob URL)
+
+**Prod deploys** (git tag `<artifact>-v<semver>`):
+- MFEs → `mfes-prod/<mfe-name>/v<version>/` (versioned, immutable)
+- Shell → `$web/v<version>/` (versioned) + `$web/` root (static website)
+- Opens PR to update `remotes.config.prod.json` (not auto-merged)
+
+**Config-only redeploys** (merge to `main` updating `remotes.config.prod.json`):
+- Rebuilds shell with new config, deploys to `$web/` root only
+- Use case: Point shell to newly published MFE version without cutting new shell version
+
+See [ADR-0009](./docs/adr/0009-azure-blob-deployment-pipeline.md) for full deployment architecture, OIDC setup, RBAC scoping, and CDN migration path.
 
 ### 8. Team Structure
 
