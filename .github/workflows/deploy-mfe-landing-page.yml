@@ -1,0 +1,299 @@
+# MFE Landing Page Deployment Workflow
+# Implements: MDP-Requirement-1 through MDP-Requirement-7
+# See: openspec/changes/azure-blob-deployment-pipeline/specs/mfe-deployment-pipeline/spec.md
+
+name: Deploy MFE Landing Page
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Trigger on changes to the MFE source
+      - 'apps/mfes/mfe-landing-page/**'
+      # Trigger on changes to packages this MFE depends on
+      - 'packages/dynamic-loader/**'
+      - 'packages/events/**'
+      # Trigger on changes to this workflow itself
+      - '.github/workflows/deploy-mfe-landing-page.yml'
+    tags:
+      # Trigger on version tags matching mfe-landing-page-v*
+      - 'mfe-landing-page-v*'
+
+# Implements OIDC-Requirement-1: OIDC authentication requires id-token permission
+permissions:
+  id-token: write      # Required for Azure OIDC authentication
+  contents: read       # Required to checkout code
+  pull-requests: write # Required to open PR for config updates
+
+# Concurrency: serialize dev deploys; allow prod to run independently
+concurrency:
+  group: deploy-mfe-landing-page-${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'dev' || 'prod' }}
+  cancel-in-progress: false
+
+jobs:
+  # Implements MDP-Requirement-3: Validate tag version matches package.json
+  validate-version:
+    name: Validate Version
+    if: startsWith(github.ref, 'refs/tags/mfe-landing-page-v')
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: extract
+        run: |
+          # Strip 'mfe-landing-page-v' prefix from tag name
+          TAG_VERSION="${GITHUB_REF_NAME#mfe-landing-page-v}"
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version from tag: $TAG_VERSION"
+
+      - name: Read package.json version
+        id: package
+        run: |
+          PKG_VERSION=$(jq -r '.version' apps/mfes/mfe-landing-page/package.json)
+          echo "package_version=$PKG_VERSION" >> $GITHUB_OUTPUT
+          echo "Package.json version: $PKG_VERSION"
+
+      - name: Compare versions
+        run: |
+          TAG_VERSION="${{ steps.extract.outputs.version }}"
+          PKG_VERSION="${{ steps.package.outputs.package_version }}"
+          
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Version mismatch! Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            echo "::error::Please update apps/mfes/mfe-landing-page/package.json to version $TAG_VERSION before tagging"
+            exit 1
+          fi
+          
+          echo "✓ Version validation passed: $TAG_VERSION"
+
+  # Implements MDP-Requirement-1: Deploy to dev on push to main
+  deploy-dev:
+    name: Deploy to Dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build MFE
+        run: pnpm --filter @mfe-runtime/mfe-landing-page build
+        env:
+          NODE_ENV: production
+
+      # Implements OIDC-Requirement-1: Authenticate via OIDC (no client-secret)
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_DEV }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Implements MDP-Requirement-5: Dev overwrites floating pointer
+      # Implements ABL-Requirement-2: Dev path structure (mfes-dev/<mfe-name>/dev/)
+      - name: Upload to Azure Blob Storage (Dev)
+        run: |
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination mfes-dev \
+            --destination-path mfe-landing-page/dev \
+            --source apps/mfes/mfe-landing-page/dist \
+            --overwrite true \
+            --content-cache-control "no-cache, must-revalidate" \
+            --auth-mode login
+
+      - name: Dev deployment summary
+        run: |
+          echo "### ✓ Dev Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**MFE**: mfe-landing-page" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Entry URL**: https://tssmfestorage.blob.core.windows.net/mfes-dev/mfe-landing-page/dev/remoteEntry.js" >> $GITHUB_STEP_SUMMARY
+          echo "**Cache-Control**: no-cache, must-revalidate" >> $GITHUB_STEP_SUMMARY
+
+  # Implements MDP-Requirement-2: Deploy to prod on tag matching mfe-landing-page-v*
+  deploy-prod:
+    name: Deploy to Prod
+    if: startsWith(github.ref, 'refs/tags/mfe-landing-page-v')
+    needs: validate-version
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build MFE
+        run: pnpm --filter @mfe-runtime/mfe-landing-page build
+        env:
+          NODE_ENV: production
+
+      # Implements OIDC-Requirement-1: Authenticate via OIDC (no client-secret)
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_PROD }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Implements MDP-Requirement-4: Refuse to overwrite versioned path
+      - name: Check if version already exists
+        id: version_check
+        run: |
+          VERSION="${{ needs.validate-version.outputs.version }}"
+          CONTAINER="mfes-prod"
+          PREFIX="mfe-landing-page/v${VERSION}/"
+          
+          echo "Checking if version v${VERSION} already exists in prod..."
+          
+          # Check if any blobs exist at this version path
+          EXISTING=$(az storage blob list \
+            --account-name tssmfestorage \
+            --container-name "$CONTAINER" \
+            --prefix "$PREFIX" \
+            --auth-mode login \
+            --query "length([?name])" \
+            --output tsv)
+          
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "::error::Version v${VERSION} already exists in production!"
+            echo "::error::Found $EXISTING blob(s) at path $PREFIX"
+            echo "::error::Refusing to overwrite existing versioned artifacts"
+            echo "::error::If you need to republish, use a new version number"
+            exit 1
+          fi
+          
+          echo "✓ Version v${VERSION} does not exist in prod, proceeding with upload"
+
+      # Implements MDP-Requirement-6: Immutable cache header for versioned artifacts
+      # Implements ABL-Requirement-2: Prod path structure (mfes-prod/<mfe-name>/v<version>/)
+      - name: Upload to Azure Blob Storage (Prod)
+        run: |
+          VERSION="${{ needs.validate-version.outputs.version }}"
+          
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination mfes-prod \
+            --destination-path "mfe-landing-page/v${VERSION}" \
+            --source apps/mfes/mfe-landing-page/dist \
+            --overwrite false \
+            --content-cache-control "public, max-age=31536000, immutable" \
+            --auth-mode login
+
+      - name: Prod deployment summary
+        run: |
+          VERSION="${{ needs.validate-version.outputs.version }}"
+          echo "### ✓ Prod Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**MFE**: mfe-landing-page" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "**Entry URL**: https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-landing-page/v${VERSION}/remoteEntry.js" >> $GITHUB_STEP_SUMMARY
+          echo "**Cache-Control**: public, max-age=31536000, immutable" >> $GITHUB_STEP_SUMMARY
+
+      # Implements MDP-Requirement-7: Open PR to update remotes.config.prod.json
+      # Implements ERC-Requirement-3: PR diff scope is minimal
+      # Implements ERC-Requirement-4: PR is not auto-merged
+      - name: Update remotes.config.prod.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ needs.validate-version.outputs.version }}"
+          BRANCH="bots/pin-mfe-landing-page-v${VERSION}"
+          CONFIG_FILE="apps/shells/website/public/remotes.config.prod.json"
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Fetch and checkout main
+          git fetch origin main
+          git checkout main
+          
+          # Create new branch
+          git checkout -b "$BRANCH"
+          
+          # Update the config file using jq
+          jq --arg version "$VERSION" \
+             --arg url "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-landing-page/v${VERSION}/remoteEntry.js" \
+             '.features["/"].entryUrl = $url | .features["/"].version = $version' \
+             "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+          mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+          
+          # Commit and push
+          git add "$CONFIG_FILE"
+          git commit -m "chore(deploy): pin mfe-landing-page to v${VERSION}
+
+Automated update from prod deployment workflow.
+
+Tag: mfe-landing-page-v${VERSION}
+Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          git push origin "$BRANCH"
+          
+          # Create pull request (without auto-merge)
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore(deploy): pin mfe-landing-page to v${VERSION}" \
+            --body "## MFE Landing Page Production Deployment
+
+**Version**: v${VERSION}
+**Tag**: [\`mfe-landing-page-v${VERSION}\`](${{ github.server_url }}/${{ github.repository }}/releases/tag/mfe-landing-page-v${VERSION}})
+**Workflow**: [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+### Changes
+- Updates \`mfe-landing-page\` entry URL to versioned prod path
+- Sets version to \`${VERSION}\`
+
+### Entry URL
+\`\`\`
+https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-landing-page/v${VERSION}/remoteEntry.js
+\`\`\`
+
+### Verification
+After merging, the prod shell will load \`mfe-landing-page\` from the newly published version.
+
+---
+🤖 Automated PR from MFE deployment workflow"
+
+      - name: PR creation summary
+        run: |
+          VERSION="${{ needs.validate-version.outputs.version }}"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📝 Configuration PR Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "A pull request has been opened to update the prod shell configuration." >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: bots/pin-mfe-landing-page-v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "**File**: apps/shells/website/public/remotes.config.prod.json" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ **This PR is not auto-merged.** A human reviewer must approve and merge it." >> $GITHUB_STEP_SUMMARY
