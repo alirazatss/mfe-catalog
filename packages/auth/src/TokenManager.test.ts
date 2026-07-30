@@ -238,7 +238,7 @@ describe("TokenManager", () => {
     });
 
     it("should deduplicate simultaneous refresh calls", async () => {
-      let resolveRefresh: (value: Response) => void;
+      let resolveRefresh!: (value: Response) => void;
       const refreshPromise = new Promise<Response>((resolve) => {
         resolveRefresh = resolve;
       });

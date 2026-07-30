@@ -459,6 +459,9 @@ importers:
       '@mfe-runtime/events':
         specifier: workspace:*
         version: link:../../../packages/events
+      '@mfe-runtime/monorepo-tools':
+        specifier: workspace:*
+        version: link:../../../packages/monorepo-tools
       '@mfe-runtime/remote-config':
         specifier: workspace:*
         version: link:../../../packages/remote-config

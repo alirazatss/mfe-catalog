@@ -25,7 +25,7 @@ export function LogoutPage({
   theme,
   title = "Sign out?",
   message = "You'll need to sign in again to access your account.",
-}: LogoutPageProps): JSX.Element {
+}: LogoutPageProps) {
   const mergedTheme = useMemo<AuthTheme>(
     () => ({
       ...defaultTheme,

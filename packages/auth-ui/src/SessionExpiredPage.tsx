@@ -21,7 +21,7 @@ export function SessionExpiredPage({
   title = "Session expired",
   message = "For your security, we've signed you out. Please sign in again to continue.",
   theme,
-}: SessionExpiredPageProps): JSX.Element {
+}: SessionExpiredPageProps) {
   const mergedTheme = useMemo<AuthTheme>(
     () => ({
       ...defaultTheme,

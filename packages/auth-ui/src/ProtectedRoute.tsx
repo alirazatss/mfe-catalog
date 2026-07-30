@@ -24,7 +24,7 @@ export function ProtectedRoute({
   redirectTo = "/login",
   requiredRoles,
   deniedFallback,
-}: ProtectedRouteProps): JSX.Element {
+}: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 

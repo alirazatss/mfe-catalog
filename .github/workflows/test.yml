@@ -108,8 +108,11 @@ jobs:
             apps/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: Build packages
+        run: pnpm build
+
       - name: Run type check
-        run: pnpm exec vp typecheck
+        run: pnpm -r exec tsc --noEmit
 
   unit-tests:
     name: Unit Tests with Coverage
