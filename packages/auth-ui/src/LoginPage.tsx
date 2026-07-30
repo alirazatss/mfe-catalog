@@ -48,7 +48,7 @@ type ErrorState = { kind: "invalid" | "locked" | "unknown"; message: string } | 
  * Uses `TokenManager` from `@mfe-runtime/auth` for state; POSTs to `/api/auth/login`.
  * Does NOT persist credentials or tokens in localStorage.
  */
-export function LoginPage(props: LoginPageProps): JSX.Element {
+export function LoginPage(props: LoginPageProps) {
   const {
     logo,
     primaryColor,

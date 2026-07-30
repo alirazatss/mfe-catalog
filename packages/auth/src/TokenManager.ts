@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { emitMFEEvent, MFE_EVENTS } from "@mfe-runtime/events";
 import type { RefreshResponse } from "./types";
 

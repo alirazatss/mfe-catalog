@@ -18,6 +18,7 @@
     "@mfe-runtime/auth": "workspace:*",
     "@mfe-runtime/dynamic-loader": "workspace:*",
     "@mfe-runtime/events": "workspace:*",
+    "@mfe-runtime/monorepo-tools": "workspace:*",
     "@mfe-runtime/remote-config": "workspace:*",
     "@mfe-runtime/shell-runtime": "workspace:*",
     "react": "catalog:",

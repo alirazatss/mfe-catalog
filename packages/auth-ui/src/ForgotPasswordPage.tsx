@@ -26,7 +26,7 @@ export function ForgotPasswordPage({
   theme,
   title = "Reset your password",
   loginUrl = "/login",
-}: ForgotPasswordPageProps): JSX.Element {
+}: ForgotPasswordPageProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");

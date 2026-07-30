@@ -106,13 +106,13 @@ describe("helpers", () => {
       expect(typeof cleanup).toBe("function");
 
       emitMFEEvent(MFE_EVENTS.AUTH_LOGIN, {
-        userId: "123",
-        email: "test@example.com",
+        user: { id: "123", email: "test@example.com" },
+        timestamp: Date.now(),
       });
 
       expect(handler).toHaveBeenCalledWith({
-        userId: "123",
-        email: "test@example.com",
+        user: { id: "123", email: "test@example.com" },
+        timestamp: expect.any(Number),
       });
 
       cleanup();

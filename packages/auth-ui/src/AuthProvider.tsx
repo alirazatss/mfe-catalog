@@ -33,7 +33,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  * via `setupAuthBridge` instead. Use this provider only if some part of the
  * shell still renders React and wants a `useAuth()` hook.
  */
-export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
     tokenManager.isAuthenticated(),
   );
