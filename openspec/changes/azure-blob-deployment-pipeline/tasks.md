@@ -6,22 +6,22 @@
 
 **Depends on:** none
 
-- [ ] 1.1 Provision the single Azure Blob Storage account `tssmfestorage` in the target subscription. Enable Azure Blob static-website hosting (creates the `$web` container automatically). Create additional containers: `mfes-dev`, `mfes-prod`, `dev-shell`. Configure CORS at the account level to allow `GET`/`OPTIONS` from `*` with `Access-Control-Max-Age: 3600` (applies to all containers).
+- [x] 1.1 Provision the single Azure Blob Storage account `tssmfestorage` in the target subscription. Enable Azure Blob static-website hosting (creates the `$web` container automatically). Create additional containers: `mfes-dev`, `mfes-prod`, `dev-shell`. Configure CORS at the account level to allow `GET`/`OPTIONS` from `*` with `Access-Control-Max-Age: 3600` (applies to all containers).
   - Requirements: ABL-Requirement-1 (single account, container-based separation), ABL-Requirement-2 (MFE path structure), ABL-Requirement-3 (`$web` prod + `dev-shell` dev), ABL-Requirement-4 (CORS)
   - Owner: architect, team-lead
   - Verification: `az storage account show --name tssmfestorage` returns the account with static-website enabled; `az storage container list --account-name tssmfestorage` shows exactly `mfes-dev`, `mfes-prod`, `dev-shell`, `$web`; `az storage cors show --services b --account-name tssmfestorage` returns the expected rule.
 
-- [ ] 1.2 Create Azure AD applications `gha-mfe-dev` and `gha-mfe-prod`. Assign `Storage Blob Data Contributor` **scoped at the container level** (not account level): `gha-mfe-dev` on containers `mfes-dev` and `dev-shell`; `gha-mfe-prod` on containers `mfes-prod` and `$web`. Verify neither identity holds any account-level scope or role on the other environment's containers.
+- [x] 1.2 Create Azure AD applications `gha-mfe-dev` and `gha-mfe-prod`. Assign `Storage Blob Data Contributor` **scoped at the container level** (not account level): `gha-mfe-dev` on containers `mfes-dev` and `dev-shell`; `gha-mfe-prod` on containers `mfes-prod` and `$web`. Verify neither identity holds any account-level scope or role on the other environment's containers.
   - Requirements: OIDC-Requirement-2 (one identity per env, container-scoped RBAC)
   - Owner: architect, team-lead
   - Verification: `az role assignment list --assignee <client-id> --all` for each identity returns exactly two assignments; each `scope` string ends in `/blobServices/default/containers/<container-name>` (not the account resource ID); `gha-mfe-dev` shows no assignment referencing `mfes-prod`, `$web`; `gha-mfe-prod` shows none referencing `mfes-dev`, `dev-shell`.
 
-- [ ] 1.3 Add federated credentials to each Azure AD app. `gha-mfe-dev` trusts subjects `repo:<owner>/<repo>:ref:refs/heads/main`. `gha-mfe-prod` trusts subject `repo:<owner>/<repo>:ref:refs/tags/*-v*` and only that.
+- [x] 1.3 Add federated credentials to each Azure AD app. `gha-mfe-dev` trusts subjects `repo:<owner>/<repo>:ref:refs/heads/main`. `gha-mfe-prod` trusts subject `repo:<owner>/<repo>:ref:refs/tags/*-v*` and only that.
   - Requirements: OIDC-Requirement-3 (prod tag-only trust), OIDC-Requirement-4 (dev main-only trust)
   - Owner: architect, team-lead
   - Verification: `az ad app federated-credential list --id <app-id>` returns the exact subject conditions; attempting `azure/login` from a feature branch with the prod client-id in a throwaway test workflow fails at token exchange.
 
-- [ ] 1.4 Author the provisioning runbook at `docs/runbooks/azure-blob-provisioning.md` documenting every CLI command from tasks 1.1–1.3 with expected outputs and rollback steps. Include an explicit RBAC-scope-verification section (task 1.2 checks that scope IDs are container-level, not account-level) and an activity-log alert setup for `Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete` events on `mfes-prod` and `$web`. Capture resulting `client-id`, `tenant-id`, `subscription-id` per environment as values to add to GitHub repository variables (never secrets).
+- [x] 1.4 Author the provisioning runbook at `docs/runbooks/azure-blob-provisioning.md` documenting every CLI command from tasks 1.1–1.3 with expected outputs and rollback steps. Include an explicit RBAC-scope-verification section (task 1.2 checks that scope IDs are container-level, not account-level) and an activity-log alert setup for `Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete` events on `mfes-prod` and `$web`. Capture resulting `client-id`, `tenant-id`, `subscription-id` per environment as values to add to GitHub repository variables (never secrets).
   - Requirements: OIDC-Requirement-1 (no secrets stored)
   - Owner: team-lead, architect
   - Verification: Runbook re-executed against a scratch subscription reproduces the same layout; final section lists the three variables per env and confirms zero secret names are required; delete-alert rule is present.
