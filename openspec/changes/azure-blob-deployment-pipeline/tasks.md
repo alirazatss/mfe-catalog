@@ -36,17 +36,17 @@
 
 **Depends on:** none
 
-- [ ] 2.1 Create `apps/shells/website/public/remotes.config.dev.json` with entries for `mfe-widget` and `mfe-landing-page` whose `entryUrl` values point to `https://tssmfestorage.blob.core.windows.net/mfes-dev/<mfe-name>/dev/remoteEntry.js`. File MUST validate against the existing `remote-config-schema`.
+- [x] 2.1 Create `apps/shells/website/public/remotes.config.dev.json` with entries for `mfe-widget` and `mfe-landing-page` whose `entryUrl` values point to `https://tssmfestorage.blob.core.windows.net/mfes-dev/<mfe-name>/dev/remoteEntry.js`. File MUST validate against the existing `remote-config-schema`.
   - Requirements: ERC-Requirement-1 (both files exist, schema-valid), ERC-Requirement-2 (dev uses floating URLs)
   - Owner: frontend-developer
   - Verification: Existing config-validation test suite (`openspec/specs/config-validation`) passes against the new file.
 
-- [ ] 2.2 Create `apps/shells/website/public/remotes.config.prod.json` with entries for `mfe-widget` and `mfe-landing-page` initialized to placeholder version `v0.0.0` URLs (`https://tssmfestorage.blob.core.windows.net/mfes-prod/<mfe-name>/v0.0.0/remoteEntry.js`) and matching `version` fields. File MUST validate against `remote-config-schema`. Placeholder is superseded by the first real prod tag deploy.
+- [x] 2.2 Create `apps/shells/website/public/remotes.config.prod.json` with entries for `mfe-widget` and `mfe-landing-page` initialized to placeholder version `v0.0.0` URLs (`https://tssmfestorage.blob.core.windows.net/mfes-prod/<mfe-name>/v0.0.0/remoteEntry.js`) and matching `version` fields. File MUST validate against `remote-config-schema`. Placeholder is superseded by the first real prod tag deploy.
   - Requirements: ERC-Requirement-1 (both files exist), ERC-Requirement-2 (prod pins concrete semver, no wildcards/latest)
   - Owner: frontend-developer
   - Verification: Config-validation tests pass; grep confirms no `/dev/`, `/latest/`, `^`, `~`, or `*` appears in any `entryUrl`.
 
-- [ ] 2.3 Modify the shell build to select `remotes.config.<env>.json` at build time based on an env var (e.g. `DEPLOY_ENV=dev|prod`), copying it to `remotes.config.json` in the build output. The other environment's config MUST NOT appear in the artifact.
+- [x] 2.3 Modify the shell build to select `remotes.config.<env>.json` at build time based on an env var (e.g. `DEPLOY_ENV=dev|prod`), copying it to `remotes.config.json` in the build output. The other environment's config MUST NOT appear in the artifact.
   - Requirements: SDP-Requirement-5 (env-correct config bundled)
   - Owner: frontend-developer
   - Verification: `DEPLOY_ENV=prod vp build` produces a `dist/` where `remotes.config.json` equals `remotes.config.prod.json` byte-for-byte and no `remotes.config.dev.json` file exists; symmetric for dev.

@@ -1,0 +1,27 @@
+{
+  "$schema": "../node_modules/@mfe-runtime/remote-config/schema.json",
+  "schemaVersion": "2.0.0",
+  "chrome": {},
+  "features": {
+    "/": {
+      "mfe": "mfe-landing-page",
+      "entryUrl": "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-landing-page/v0.0.0/remoteEntry.js",
+      "scope": "landingPage",
+      "version": "0.0.0",
+      "basePath": "/",
+      "requiresAuth": false,
+      "requiredRoles": [],
+      "enabled": true
+    },
+    "/widget": {
+      "mfe": "mfe-widget",
+      "entryUrl": "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-widget/v0.0.0/remoteEntry.js",
+      "scope": "widget",
+      "version": "0.0.0",
+      "basePath": "/widget",
+      "requiresAuth": false,
+      "requiredRoles": [],
+      "enabled": true
+    }
+  }
+}
