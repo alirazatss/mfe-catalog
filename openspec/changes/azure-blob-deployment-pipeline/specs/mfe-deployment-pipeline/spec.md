@@ -1,5 +1,24 @@
 ## ADDED Requirements
 
+### Requirement: MFE deployment SHALL use a unified workflow that scales to any number of MFEs
+
+The system SHALL use a single GitHub Actions workflow file (`.github/workflows/deploy-mfes.yml`) that dynamically detects which MFEs changed or are being tagged, rather than requiring separate workflow files per MFE. Adding a new MFE SHALL NOT require creating or modifying workflow files.
+
+#### Scenario: New MFE deploys without workflow changes
+
+- **GIVEN** a new MFE `mfe-dashboard` is added to `apps/mfes/mfe-dashboard/` with a valid `package.json`
+- **WHEN** the tag `mfe-dashboard-v1.0.0` is pushed
+- **THEN** the unified workflow automatically extracts `mfe-dashboard` from the tag
+- **AND** deploys to `mfes-prod/mfe-dashboard/v1.0.0/` without any workflow file modifications
+
+#### Scenario: Multiple MFEs deploy in parallel when shared package changes
+
+- **GIVEN** MFEs `mfe-widget` and `mfe-landing-page` both depend on `@mfe-runtime/dynamic-loader`
+- **WHEN** a commit to `main` modifies `packages/dynamic-loader/**`
+- **THEN** the unified workflow detects the shared package change
+- **AND** builds a matrix containing both `mfe-widget` and `mfe-landing-page`
+- **AND** deploys both MFEs to dev in parallel using GitHub Actions matrix strategy
+
 ### Requirement: MFE deploy workflow SHALL trigger on push to `main` for dev environment
 
 The system SHALL run the MFE deploy workflow with `dev` as target environment whenever a push to the `main` branch modifies files under the MFE's source directory (`apps/mfes/<mfe-name>/**`), packages the MFE consumes, or the workflow file itself.
@@ -8,36 +27,38 @@ The system SHALL run the MFE deploy workflow with `dev` as target environment wh
 
 - **GIVEN** the MFE `mfe-widget` exists with a valid `package.json`
 - **WHEN** a commit is pushed to `main` that modifies a file under `apps/mfes/mfe-widget/src/`
-- **THEN** the `deploy-mfe-widget` workflow runs with environment=`dev`
+- **THEN** the unified MFE deploy workflow detects `mfe-widget` as changed and runs its `deploy-dev` job with `matrix.mfe=mfe-widget`
 - **AND** the workflow uploads the build output to container `mfes-dev` on `tssmfestorage` at path `mfe-widget/dev/`
 
 #### Scenario: Push to main not touching MFE is ignored
 
 - **GIVEN** the MFE `mfe-widget` exists
 - **WHEN** a commit is pushed to `main` that modifies only `apps/mfes/mfe-landing-page/**` files
-- **THEN** the `deploy-mfe-widget` workflow does not run
+- **THEN** the unified MFE deploy workflow detects only `mfe-landing-page` as changed and does not deploy `mfe-widget`
 
 ### Requirement: MFE prod deploy SHALL trigger only on git tags matching `<mfe-name>-v<semver>`
 
-The system SHALL run the MFE deploy workflow with `prod` as target environment only when a git tag is pushed whose name matches the pattern `<mfe-name>-v<semver>` (e.g., `mfe-widget-v1.2.0`). Any other tag pattern SHALL NOT trigger a prod deploy for that MFE.
+The system SHALL run the MFE deploy workflow with `prod` as target environment only when a git tag is pushed whose name matches the pattern `<mfe-name>-v<semver>` (e.g., `mfe-widget-v1.2.0`). The workflow SHALL dynamically extract the MFE name from the tag pattern. Any other tag pattern SHALL NOT trigger a prod deploy for that MFE.
 
 #### Scenario: Matching tag triggers prod deploy
 
 - **GIVEN** the tag `mfe-widget-v1.2.0` is pushed pointing at a commit on `main`
 - **WHEN** GitHub processes the tag push event
-- **THEN** the `deploy-mfe-widget` workflow runs with environment=`prod` and version=`1.2.0`
+- **THEN** the unified MFE deploy workflow extracts `mfe-widget` as the MFE name and `1.2.0` as the version
+- **AND** the workflow runs its `deploy-prod` job targeting `mfe-widget` with version=`1.2.0`
 
 #### Scenario: Non-matching tag does not trigger prod deploy
 
 - **GIVEN** a tag `v1.2.0` (without MFE-name prefix) is pushed
 - **WHEN** GitHub processes the tag push event
-- **THEN** no MFE deploy workflow runs with environment=`prod`
+- **THEN** the MFE deploy workflow does not trigger (tag pattern `mfe-*-v*` does not match)
 
 #### Scenario: Tag for a different MFE does not cross-trigger
 
 - **GIVEN** the tag `mfe-landing-page-v0.3.0` is pushed
 - **WHEN** GitHub processes the tag push event
-- **THEN** the `deploy-mfe-widget` workflow does not run
+- **THEN** the unified MFE deploy workflow extracts `mfe-landing-page` and deploys only that MFE
+- **AND** `mfe-widget` is not deployed
 
 ### Requirement: Prod deploy workflow SHALL validate tag version matches `package.json` version
 
@@ -99,7 +120,7 @@ The system SHALL set `Cache-Control: public, max-age=31536000, immutable` on eve
 
 ### Requirement: Successful prod MFE deploy SHALL open a pull request updating `remotes.config.prod.json`
 
-After the artifact upload step succeeds, the system SHALL open a pull request against the default branch of the repository that updates `apps/shells/website/public/remotes.config.prod.json` to point the affected MFE's `entryUrl` at the newly published versioned path. The pull request SHALL NOT be auto-merged.
+After the artifact upload step succeeds, the system SHALL open a pull request against the default branch of the repository that updates `apps/shells/website/public/remotes.config.prod.json` to point the affected MFE's `entryUrl` at the newly published versioned path. The workflow SHALL automatically discover the route path for the MFE from the existing config file. The pull request SHALL NOT be auto-merged.
 
 #### Scenario: PR is opened after successful upload
 
@@ -108,6 +129,13 @@ After the artifact upload step succeeds, the system SHALL open a pull request ag
 - **THEN** a pull request is opened whose diff modifies only `apps/shells/website/public/remotes.config.prod.json`
 - **AND** the modified `entryUrl` for `mfe-widget` equals `https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-widget/v1.2.0/remoteEntry.js`
 - **AND** the pull request is not auto-merged
+
+#### Scenario: Workflow discovers route automatically
+
+- **GIVEN** `remotes.config.prod.json` has an entry at route `/widget` with `entryUrl` containing `mfe-widget`
+- **WHEN** the prod deploy workflow for `mfe-widget-v1.2.0` creates a PR
+- **THEN** the workflow automatically discovers `/widget` as the route
+- **AND** updates `.features["/widget"].entryUrl` and `.features["/widget"].version` in the config
 
 #### Scenario: PR is not opened when upload fails
 

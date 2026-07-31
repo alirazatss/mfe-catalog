@@ -51,49 +51,43 @@
   - Owner: frontend-developer
   - Verification: `DEPLOY_ENV=prod vp build` produces a `dist/` where `remotes.config.json` equals `remotes.config.prod.json` byte-for-byte and no `remotes.config.dev.json` file exists; symmetric for dev.
 
-## 3. MFE deploy workflow (widget as reference implementation)
+## 3. Unified MFE deploy workflow
 
 **Owns files:**
 
-- `.github/workflows/deploy-mfe-widget.yml`
-- `.github/workflows/deploy-mfe-landing-page.yml`
+- `.github/workflows/deploy-mfes.yml`
 
-**Depends on:** task group 1 (Azure provisioning must be merged so `AZURE_CLIENT_ID_*`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` repo variables exist and the storage account/containers are reachable). Note: this group's workflows will at runtime open PRs that modify `remotes.config.prod.json` (owned by task group 2), which is a runtime behavior; authoring of this file remains task group 2's concern.
+**Depends on:** task group 1 (Azure provisioning must be merged so `AZURE_CLIENT_ID_*`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` repo variables exist and the storage account/containers are reachable). Note: this workflow will at runtime open PRs that modify `remotes.config.prod.json` (owned by task group 2), which is a runtime behavior; authoring of this file remains task group 2's concern.
 
-- [ ] 3.1 Author `.github/workflows/deploy-mfe-widget.yml` with two triggers: (a) `push` to `main` with path filter on `apps/mfes/mfe-widget/**`, packages the MFE depends on, and the workflow file itself; (b) `push` on tags matching `mfe-widget-v*`. Grant `permissions: id-token: write, contents: read, pull-requests: write`. Set concurrency group per environment so simultaneous pushes to `main` serialize but a prod tag can run independently.
-  - Requirements: MDP-Requirement-1 (dev on push), MDP-Requirement-2 (prod on tag pattern), OIDC-Requirement-1 (id-token permission)
+- [x] 3.1 Author `.github/workflows/deploy-mfes.yml` with two trigger types: (a) `push` to `main` with path filter on `apps/mfes/**` and shared packages (`packages/dynamic-loader/**`, `packages/events/**`); (b) `push` on tags matching `mfe-*-v*` (wildcard pattern). Grant `permissions: id-token: write, contents: read, pull-requests: write`. Add `detect-changed-mfes` job that uses `git diff HEAD^ HEAD` to detect which MFEs changed, building a matrix for parallel deployment.
+  - Requirements: MDP-Requirement-1 (dev on push), MDP-Requirement-2 (prod on tag pattern), MDP-Requirement-8 (unified workflow scalability), OIDC-Requirement-1 (id-token permission)
   - Owner: backend-developer, team-lead
-  - Verification: Workflow file lints via `actionlint`; opening a PR that touches only `apps/mfes/mfe-landing-page/**` does not queue this workflow.
+  - Verification: Workflow file lints via `actionlint`; push modifying only `apps/mfes/mfe-widget/**` queues only `mfe-widget` for deploy; push modifying `packages/dynamic-loader/**` queues all MFEs for deploy.
 
-- [ ] 3.2 Add a `validate-version` job that runs on tag events only, extracts semver from `github.ref_name` (stripping `mfe-widget-v`), reads `apps/mfes/mfe-widget/package.json`, and fails if they differ. Job MUST fail before any Azure step runs.
-  - Requirements: MDP-Requirement-3 (version parity)
+- [x] 3.2 Add a `detect-tagged-mfe` job that runs on tag events matching `mfe-*-v*`, extracts MFE name and semver dynamically from `github.ref_name` using pattern matching (e.g., `mfe-landing-page-v1.2.0` → `mfe_name=mfe-landing-page`, `version=1.2.0`). Add `validate-version` job that reads `apps/mfes/${{ needs.detect-tagged-mfe.outputs.mfe_name }}/package.json` and fails if version differs. Job MUST fail before any Azure step runs.
+  - Requirements: MDP-Requirement-3 (version parity), MDP-Requirement-8 (dynamic MFE extraction)
   - Owner: backend-developer
-  - Verification: Dry-run test — push a tag `mfe-widget-v9.9.9` while `package.json` says `0.1.0`; workflow fails at `validate-version` and never authenticates to Azure.
+  - Verification: Tag `mfe-widget-v9.9.9` while `package.json` says `0.1.0`; workflow fails at `validate-version` and never authenticates to Azure. Tag `mfe-new-mfe-v1.0.0` for a newly added MFE extracts `mfe-new-mfe` correctly without workflow changes.
 
-- [ ] 3.3 Add `deploy-dev` and `deploy-prod` jobs. Both authenticate via `azure/login@v2` using OIDC (no `client-secret`), with client-id/tenant-id/subscription-id from repo variables `AZURE_CLIENT_ID_DEV`/`_PROD`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`. Dev job runs on push-to-main; prod job runs on tag and depends on `validate-version`. Both jobs target the single account `tssmfestorage`; environment separation is by container.
-  - Requirements: OIDC-Requirement-1 (OIDC only, no secrets)
+- [x] 3.3 Add `deploy-dev` and `deploy-prod` jobs. Both authenticate via `azure/login@v2` using OIDC (no `client-secret`), with client-id/tenant-id/subscription-id from repo variables. `deploy-dev` uses matrix strategy from `detect-changed-mfes` output with `fail-fast: false` to deploy multiple MFEs in parallel. `deploy-prod` runs for single tagged MFE and depends on `validate-version`. Both target account `tssmfestorage`; environment separation is by container.
+  - Requirements: OIDC-Requirement-1 (OIDC only, no secrets), MDP-Requirement-8 (parallel deployment)
   - Owner: backend-developer
-  - Verification: `grep -r client-secret .github/workflows/` returns nothing; secrets audit shows no `AZURE_*_KEY` or `_SECRET` names.
+  - Verification: `grep -r client-secret .github/workflows/` returns nothing; push modifying two MFEs shows both deploying in parallel in workflow run logs.
 
-- [ ] 3.4 In `deploy-dev`: build the MFE, then upload `apps/mfes/mfe-widget/dist/` to `tssmfestorage` container `mfes-dev` at prefix `mfe-widget/dev/` using `az storage blob upload-batch --overwrite` with `--content-cache-control "no-cache, must-revalidate"`.
+- [x] 3.4 In `deploy-dev`: build the MFE using `matrix.mfe` variable, then upload `apps/mfes/${{ matrix.mfe }}/dist/` to `tssmfestorage` container `mfes-dev` at prefix `${{ matrix.mfe }}/dev/` using `az storage blob upload-batch --overwrite` with `--content-cache-control "no-cache, must-revalidate"`.
   - Requirements: MDP-Requirement-5 (dev overwrites floating pointer), ABL-Requirement-2 (dev path structure)
   - Owner: backend-developer
   - Verification: After a successful run, `az storage blob show --container-name mfes-dev --name mfe-widget/dev/remoteEntry.js` returns `Cache-Control: no-cache, must-revalidate`; second dev run replaces prior contents.
 
-- [ ] 3.5 In `deploy-prod`: build the MFE, then upload `dist/` to `tssmfestorage` container `mfes-prod` at prefix `mfe-widget/v<version>/` using conditional headers that fail if any blob at the prefix already exists (`az storage blob upload-batch --overwrite false` combined with a preflight `az storage blob exists` check on the prefix; if any hit, exit non-zero with a message naming the existing version). Set `--content-cache-control "public, max-age=31536000, immutable"` on the upload.
+- [x] 3.5 In `deploy-prod`: build the MFE using `needs.detect-tagged-mfe.outputs.mfe_name`, then upload `dist/` to `tssmfestorage` container `mfes-prod` at prefix `${{ needs.detect-tagged-mfe.outputs.mfe_name }}/v${{ needs.detect-tagged-mfe.outputs.version }}/` using conditional headers that fail if any blob at the prefix already exists (`az storage blob upload-batch --overwrite false` combined with preflight check). Set `--content-cache-control "public, max-age=31536000, immutable"` on the upload.
   - Requirements: MDP-Requirement-4 (refuse to overwrite versioned path), MDP-Requirement-6 (immutable cache header), ABL-Requirement-2 (prod path structure)
   - Owner: backend-developer
-  - Verification: First tag `mfe-widget-v0.1.0` succeeds; re-pushing the same tag on a rebuilt SHA fails at upload with a message like "version 0.1.0 already exists in prod"; downloading the blob shows the immutable cache header.
+  - Verification: First tag `mfe-widget-v0.1.0` succeeds; re-pushing the same tag fails at upload with a message like "version 0.1.0 already exists in prod"; downloading the blob shows the immutable cache header.
 
-- [ ] 3.6 In `deploy-prod`, after upload succeeds, add an `open-config-pr` step that (a) checks out `main`, (b) creates branch `bots/pin-mfe-widget-v<version>`, (c) modifies only the `mfe-widget` entry's `entryUrl` and `version` fields in `apps/shells/website/public/remotes.config.prod.json`, (d) commits and pushes, (e) opens a PR against `main` with title `chore(deploy): pin mfe-widget to v<version>` and body linking the tag and workflow run. Auto-merge MUST NOT be enabled.
-  - Requirements: MDP-Requirement-7 (PR opened after successful upload, not on failure), ERC-Requirement-3 (PR diff scope minimal), ERC-Requirement-4 (no auto-merge)
+- [x] 3.6 In `deploy-prod`, after upload succeeds, add an `open-config-pr` step that (a) checks out `main`, (b) creates branch `bots/pin-${{ needs.detect-tagged-mfe.outputs.mfe_name }}-v${{ needs.detect-tagged-mfe.outputs.version }}`, (c) discovers the route path for the MFE by searching `remotes.config.prod.json` for an entry whose `entryUrl` contains the MFE name, (d) modifies only that entry's `entryUrl` and `version` fields, (e) commits and pushes, (f) opens a PR against `main` with title `chore(deploy): pin <mfe-name> to v<version>` and body linking the tag and workflow run. Auto-merge MUST NOT be enabled.
+  - Requirements: MDP-Requirement-7 (PR opened after successful upload, not on failure), MDP-Requirement-9 (automatic route discovery), ERC-Requirement-3 (PR diff scope minimal), ERC-Requirement-4 (no auto-merge)
   - Owner: backend-developer
-  - Verification: Successful prod tag results in a PR whose diff `git diff main` touches only the specified two fields in that one file; forcing an upload failure in a dry-run confirms no PR is opened; PR settings show auto-merge disabled.
-
-- [ ] 3.7 Duplicate the workflow as `.github/workflows/deploy-mfe-landing-page.yml`, substituting `mfe-widget` → `mfe-landing-page` in path filters, tag pattern, package.json path, and blob prefixes. Verify the two workflows are byte-diff-identical except for those substitutions.
-  - Requirements: MDP-Requirement-1, MDP-Requirement-2, MDP-Requirement-3, MDP-Requirement-4, MDP-Requirement-5, MDP-Requirement-6, MDP-Requirement-7 (all mirrored for the second MFE)
-  - Owner: backend-developer
-  - Verification: `diff .github/workflows/deploy-mfe-widget.yml .github/workflows/deploy-mfe-landing-page.yml` shows only the substituted tokens; both files lint via `actionlint`.
+  - Verification: Successful prod tag results in a PR whose diff touches only the discovered route's two fields; forcing an upload failure confirms no PR is opened; PR settings show auto-merge disabled; new MFE tag automatically discovers its route without hardcoded mapping.
 
 ## 4. Shell deploy workflow
 
@@ -179,13 +173,15 @@
 
 | Requirement                                    | Task(s)            |
 | ---------------------------------------------- | ------------------ |
-| MDP-Requirement-1 (dev on push)                | 3.1, 3.7, 6.1      |
-| MDP-Requirement-2 (prod on tag)                | 3.1, 3.7, 6.1, 6.2 |
-| MDP-Requirement-3 (version parity)             | 3.2, 3.7, 6.2      |
-| MDP-Requirement-4 (no overwrite)               | 3.5, 3.7, 6.2, 6.3 |
-| MDP-Requirement-5 (dev floating)               | 3.4, 3.7           |
-| MDP-Requirement-6 (immutable cache)            | 3.5, 3.7, 6.2      |
-| MDP-Requirement-7 (PR after success)           | 3.6, 3.7, 6.2, 6.3 |
+| MDP-Requirement-1 (dev on push)                | 3.1, 6.1           |
+| MDP-Requirement-2 (prod on tag)                | 3.1, 3.2, 6.1, 6.2 |
+| MDP-Requirement-3 (version parity)             | 3.2, 6.2           |
+| MDP-Requirement-4 (no overwrite)               | 3.5, 6.2, 6.3      |
+| MDP-Requirement-5 (dev floating)               | 3.4                |
+| MDP-Requirement-6 (immutable cache)            | 3.5, 6.2           |
+| MDP-Requirement-7 (PR after success)           | 3.6, 6.2, 6.3      |
+| MDP-Requirement-8 (unified workflow)           | 3.1, 3.2, 3.3      |
+| MDP-Requirement-9 (route discovery)            | 3.6                |
 | SDP-Requirement-1 (versioned + root)           | 4.1, 4.3           |
 | SDP-Requirement-2 (shell version parity)       | 4.2                |
 | SDP-Requirement-3 (config-only redeploy)       | 4.1, 4.4, 6.1, 6.2 |
@@ -202,8 +198,8 @@
 | OIDC-Requirement-4 (dev main trust)            | 1.3, 6.1           |
 | ERC-Requirement-1 (both configs, schema-valid) | 2.1, 2.2           |
 | ERC-Requirement-2 (dev floating / prod pinned) | 2.1, 2.2           |
-| ERC-Requirement-3 (minimal PR diff)            | 3.6, 3.7, 6.2      |
-| ERC-Requirement-4 (no auto-merge)              | 3.6, 3.7, 6.2      |
+| ERC-Requirement-3 (minimal PR diff)            | 3.6, 6.2           |
+| ERC-Requirement-4 (no auto-merge)              | 3.6, 6.2           |
 
 ## Execution waves
 
