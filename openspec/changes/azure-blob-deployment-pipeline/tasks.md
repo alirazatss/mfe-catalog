@@ -175,6 +175,36 @@
   - Owner: tester
   - Verification: Workflow fails at `azure/login` step; Azure AD sign-in logs show a rejected federated-credential exchange with the subject that was attempted.
 
+
+## 7. Turborepo deployment optimization
+
+**Owns files:**
+
+- `.github/workflows/deploy-mfes-turbo.yml`
+- `docs/turborepo-deployment-optimization.md`
+
+**Depends on:** task groups 1, 2, 3 (Azure infrastructure, configs, and unified MFE workflow must exist). This is an optimization of task group 3, replacing git diff with Turborepo intelligence.
+
+- [ ] 7.1 Author `.github/workflows/deploy-mfes-turbo.yml` that replaces manual git diff parsing with Turborepo's `turbo build --dry-run --filter='[HEAD^1]'` command to detect changed packages. The workflow SHALL use Turborepo's output to build the deployment matrix, automatically discovering MFEs that changed directly or transitively (via shared package dependencies).
+  - Requirements: MDP-Requirement-10 (Turborepo dependency graph), MDP-Requirement-8 (unified workflow scalability)
+  - Owner: backend-developer
+  - Verification: Modify `packages/dynamic-loader/src/loader.ts` and push to main; Turborepo detects both `mfe-widget` and `mfe-landing-page` as affected without consulting hardcoded lists; workflow deploys both.
+
+- [ ] 7.2 Replace `pnpm --filter <package> build` commands with `turbo build --filter=<package>` in both dev and prod deploy jobs. Add `--output-logs=new-only` flag to show only logs for packages that were rebuilt (not cached).
+  - Requirements: MDP-Requirement-11 (Turborepo caching)
+  - Owner: backend-developer
+  - Verification: Run workflow twice with no code changes between runs; second run shows cached output for all packages; build time is significantly reduced (verify via workflow run duration logs).
+
+- [ ] 7.3 Configure Turborepo to fetch git history by setting `fetch-depth: 0` in checkout actions. This enables Turborepo to accurately detect changes and leverage cache based on git history.
+  - Requirements: MDP-Requirement-11 (Turborepo caching)
+  - Owner: backend-developer
+  - Verification: Workflow logs show `fetch-depth: 0` in checkout step; Turborepo commands execute without "shallow clone" warnings.
+
+- [ ] 7.4 Author `docs/turborepo-deployment-optimization.md` documenting the benefits of Turborepo integration: dependency-aware detection (no hardcoded lists), build caching (24-43% faster builds), zero-maintenance MFE additions, and future remote cache integration path. Include performance comparison tables and real-world scenarios.
+  - Requirements: (documentation)
+  - Owner: team-lead
+  - Verification: Documentation includes before/after performance numbers, explains cache behavior, documents migration path from git-based to Turborepo-based detection.
+
 ## Requirement coverage matrix
 
 | Requirement                                    | Task(s)            |
@@ -207,10 +237,17 @@
 
 ## Execution waves
 
-Derived from the dependency graph across task groups 1–6. Each wave MUST complete (all PRs merged to `main`) before the next wave begins.
+Derived from the dependency graph across task groups 1–7. Each wave MUST complete (all PRs merged to `main`) before the next wave begins.
 
 - **Wave 1 (parallel):** task groups 1, 2. No dependencies; can be spawned as concurrent agent sessions in isolated worktrees.
 - **Wave 2 (parallel, after wave 1 merges):** task groups 3, 4. Both need task group 1's infra and repo variables merged; task group 4 additionally needs task group 2's config files and build-time selection merged.
 - **Wave 3 (parallel, after wave 2 merges):** task groups 5, 6. Task group 5 (ADR + CONTEXT.md) documents what shipped; task group 6 (E2E verification) exercises what shipped. They own different files and are safely parallel.
+- **Wave 4 (after wave 2 merges):** task group 7. Turborepo optimization builds on task group 3 (unified workflow). Can run in parallel with wave 3.
 
-Total: 3 waves, up to 6 concurrent worktrees at peak (waves 1 and 2 each have 2 parallel groups; wave 3 has 2 parallel groups). At any point, each worktree maps to exactly one branch and one PR per spec-executor rules.
+Total: 4 waves, up to 6 concurrent worktrees at peak (waves 1 and 2 each have 2 parallel groups; wave 3 has 2 parallel groups; wave 4 has 1 group). At any point, each worktree maps to exactly one branch and one PR per spec-executor rules.
+
+Note: Task group 7 is an optimization enhancement and can be implemented after initial deployment pipeline is operational (waves 1-3 complete).
+| MDP-Requirement-8 (unified workflow)           | 3.1, 3.2, 3.3      |
+| MDP-Requirement-9 (route discovery)            | 3.6                |
+| MDP-Requirement-10 (Turborepo dependency graph)| 7.1                |
+| MDP-Requirement-11 (Turborepo caching)         | 7.2, 7.3           |

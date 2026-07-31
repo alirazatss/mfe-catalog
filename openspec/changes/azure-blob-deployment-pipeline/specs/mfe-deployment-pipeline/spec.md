@@ -114,3 +114,61 @@ After the artifact upload step succeeds, the system SHALL open a pull request ag
 - **GIVEN** the prod deploy upload step fails (for any reason)
 - **WHEN** the workflow terminates
 - **THEN** no pull request is opened
+
+### Requirement: MFE change detection SHALL use Turborepo to understand dependency graph
+
+The system SHALL use Turborepo's `--filter='[HEAD^1]'` syntax to detect which MFEs have changed, rather than manual git diff parsing. Turborepo SHALL read `package.json` dependencies to determine which MFEs are affected by shared package changes. The system SHALL NOT require hardcoded lists of shared packages or MFE dependencies.
+
+#### Scenario: Turborepo detects changed MFE from source modification
+
+- **GIVEN** the MFE `mfe-widget` exists with dependencies in `package.json`
+- **WHEN** a commit is pushed to `main` that modifies `apps/mfes/mfe-widget/src/App.tsx`
+- **THEN** Turborepo's `turbo build --dry-run --filter='[HEAD^1]'` command includes `@mfe-runtime/mfe-widget` in its output
+- **AND** the workflow builds a matrix containing only `mfe-widget`
+
+#### Scenario: Turborepo detects affected MFEs when shared package changes
+
+- **GIVEN** MFEs `mfe-widget` and `mfe-landing-page` both declare dependency on `@mfe-runtime/dynamic-loader` in their `package.json`
+- **WHEN** a commit is pushed to `main` that modifies `packages/dynamic-loader/src/loader.ts`
+- **THEN** Turborepo automatically identifies both MFEs as affected
+- **AND** the workflow builds a matrix containing both `mfe-widget` and `mfe-landing-page`
+- **AND** no hardcoded dependency list is consulted
+
+#### Scenario: New MFE automatically detected without workflow changes
+
+- **GIVEN** a new MFE `mfe-dashboard` is added to `apps/mfes/mfe-dashboard/` with a valid `package.json`
+- **WHEN** a commit modifying `mfe-dashboard` is pushed to `main`
+- **THEN** Turborepo automatically detects `@mfe-runtime/mfe-dashboard`
+- **AND** the workflow deploys it without any workflow file modifications
+
+### Requirement: MFE builds SHALL use Turborepo caching to improve performance
+
+The system SHALL use `turbo build --filter=<package>` instead of `pnpm --filter <package> build` to leverage Turborepo's local build cache. Turborepo SHALL cache build outputs based on input hashes (source files, dependencies, environment variables). Unchanged dependencies SHALL be served from cache rather than rebuilt.
+
+#### Scenario: Turborepo caches unchanged shared package builds
+
+- **GIVEN** the shared package `@mfe-runtime/dynamic-loader` was built in a previous commit
+- **AND** `mfe-widget` is being built in the current commit
+- **AND** `dynamic-loader` source files have not changed
+- **WHEN** the workflow runs `turbo build --filter=@mfe-runtime/mfe-widget`
+- **THEN** Turborepo loads the cached build output for `dynamic-loader`
+- **AND** only `mfe-widget` is rebuilt from source
+- **AND** build time is reduced compared to building both from scratch
+
+#### Scenario: Turborepo cache miss rebuilds from source
+
+- **GIVEN** a shared package `@mfe-runtime/dynamic-loader` source files have changed
+- **WHEN** the workflow runs `turbo build --filter=@mfe-runtime/mfe-widget`
+- **THEN** Turborepo detects the cache miss for `dynamic-loader`
+- **AND** rebuilds `dynamic-loader` from source
+- **AND** rebuilds `mfe-widget` from source (dependency changed)
+- **AND** caches both new build outputs for future runs
+
+#### Scenario: Turborepo cache hit skips build entirely
+
+- **GIVEN** an MFE `mfe-widget` was built in a previous commit
+- **AND** no source files, dependencies, or environment variables have changed
+- **WHEN** the workflow runs `turbo build --filter=@mfe-runtime/mfe-widget`
+- **THEN** Turborepo loads the entire build output from cache
+- **AND** no compilation or bundling steps execute
+- **AND** build completes in minimal time
