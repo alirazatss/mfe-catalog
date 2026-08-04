@@ -11,15 +11,18 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     },
     "./bridge": {
       "types": "./dist/bridge/index.d.mts",
-      "import": "./dist/bridge/index.mjs"
+      "import": "./dist/bridge/index.mjs",
+      "default": "./dist/bridge/index.mjs"
     },
     "./theme": {
       "types": "./dist/theme.d.mts",
-      "import": "./dist/theme.mjs"
+      "import": "./dist/theme.mjs",
+      "default": "./dist/theme.mjs"
     }
   },
   "scripts": {
