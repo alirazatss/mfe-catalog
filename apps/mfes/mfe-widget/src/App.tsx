@@ -32,7 +32,7 @@ export default function App({
 
   if (import.meta.env.DEV) {
     console.log(
-      `[MFE-Widget] Rendering widget mfe with basePath="${basePath}", router="${routerType}"`,
+      `[MFE-Widget] Rendering widget app mfe with basePath="${basePath}", router="${routerType}"`,
     );
     console.log(`[MFE-Widget] Auth state:`, { isAuthenticated, user: user?.email });
   }
