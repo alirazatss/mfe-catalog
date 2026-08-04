@@ -102,7 +102,8 @@ jobs:
 
       # Implements SDP-Requirement-5: Bundle remotes.config.dev.json
       - name: Build shell (dev)
-        run: pnpm --filter website build
+        # "..." suffix builds workspace dependencies first (topological order)
+        run: pnpm --filter "website..." build
         env:
           NODE_ENV: production
           DEPLOY_ENV: dev
@@ -170,7 +171,8 @@ jobs:
 
       # Implements SDP-Requirement-5: Bundle remotes.config.prod.json
       - name: Build shell (prod)
-        run: pnpm --filter website build
+        # "..." suffix builds workspace dependencies first (topological order)
+        run: pnpm --filter "website..." build
         env:
           NODE_ENV: production
           DEPLOY_ENV: prod
@@ -234,7 +236,8 @@ jobs:
 
       # Implements SDP-Requirement-5: Bundle remotes.config.prod.json
       - name: Build shell (prod)
-        run: pnpm --filter website build
+        # "..." suffix builds workspace dependencies first (topological order)
+        run: pnpm --filter "website..." build
         env:
           NODE_ENV: production
           DEPLOY_ENV: prod
