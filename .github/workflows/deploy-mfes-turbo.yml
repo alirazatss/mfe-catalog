@@ -48,16 +48,18 @@ jobs:
         with:
           version: 11.10.0
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       # Turborepo's dry-run shows what would be built
       - name: Detect changed MFEs using Turborepo
         id: detect
         run: |
-          # Install turbo globally
-          npm install -g turbo
-
           # Use turbo to detect what changed since last commit
           # --filter=[HEAD^1] means "packages changed since previous commit"
-          CHANGED_PACKAGES=$(turbo build --dry-run --filter='[HEAD^1]' 2>&1 | grep -A 100 "Packages in Scope" | grep "apps/mfes" | sed 's/.*apps\/mfes\///' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          # Parse the JSON dry-run output and keep only direct MFE directories
+          CHANGED_PACKAGES=$(pnpm exec turbo build --dry-run=json --filter='[HEAD^1]' \
+            | jq -c '[.tasks[].directory | select(startswith("apps/mfes/")) | sub("^apps/mfes/"; "") | select(contains("/") | not)] | unique')
 
           if [ -z "$CHANGED_PACKAGES" ] || [ "$CHANGED_PACKAGES" = "[]" ]; then
             echo "No MFE changes detected by Turborepo"
