@@ -3,19 +3,19 @@
   "schemaVersion": "2.0.0",
   "chrome": {},
   "features": {
-    "/": {
+    "/landing-page": {
       "mfe": "mfe-landing-page",
-      "entryUrl": "http://localhost:5175/remoteEntry.js",
+      "entryUrl": "http://localhost:5174/remoteEntry.js",
       "scope": "landingPage",
       "version": "0.0.0",
-      "basePath": "/",
+      "basePath": "/landing-page",
       "requiresAuth": false,
       "requiredRoles": [],
       "enabled": true
     },
     "/widget": {
       "mfe": "mfe-widget",
-      "entryUrl": "http://localhost:5174/remoteEntry.js",
+      "entryUrl": "http://localhost:5175/remoteEntry.js",
       "scope": "widget",
       "version": "0.0.0",
       "basePath": "/widget",
