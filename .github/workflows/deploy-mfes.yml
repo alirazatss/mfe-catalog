@@ -12,19 +12,19 @@ name: Deploy MFEs
       - main
     tags:
       # Trigger on any MFE version tag (pattern: mfe-<name>-v<semver>)
-      - 'mfe-*-v*'
+      - "mfe-*-v*"
     paths:
       # Trigger on any MFE changes
-      - 'apps/mfes/**'
+      - "apps/mfes/**"
       # Trigger on shared package changes (will deploy all MFEs)
-      - 'packages/dynamic-loader/**'
-      - 'packages/events/**'
+      - "packages/dynamic-loader/**"
+      - "packages/events/**"
       # Trigger on this workflow itself
-      - '.github/workflows/deploy-mfes.yml'
+      - ".github/workflows/deploy-mfes.yml"
 
 permissions:
-  id-token: write      # Required for Azure OIDC authentication
-  contents: read       # Required to checkout code
+  id-token: write # Required for Azure OIDC authentication
+  contents: read # Required to checkout code
   pull-requests: write # Required to open PR for config updates
 
 jobs:
@@ -40,17 +40,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # Need previous commit for diff
+          fetch-depth: 2 # Need previous commit for diff
 
       - name: Detect changed MFEs
         id: detect
         run: |
           # Get list of all MFEs
           ALL_MFES=$(ls -d apps/mfes/mfe-* 2>/dev/null | xargs -n1 basename | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          
+
           # Check which files changed in this push
           CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-          
+
           # Check if shared packages changed (deploy all MFEs)
           if echo "$CHANGED_FILES" | grep -qE '^packages/(dynamic-loader|events)/'; then
             echo "Shared package changed, deploying all MFEs"
@@ -58,10 +58,10 @@ jobs:
             echo "has_changes=true" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # Detect which specific MFEs changed
           CHANGED_MFES=$(echo "$CHANGED_FILES" | grep '^apps/mfes/mfe-' | cut -d/ -f3 | sort -u | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          
+
           if [ "$(echo $CHANGED_MFES | jq '. | length')" -gt 0 ]; then
             echo "Changed MFEs: $CHANGED_MFES"
             echo "matrix={\"mfe\":$CHANGED_MFES}" >> $GITHUB_OUTPUT
@@ -86,13 +86,13 @@ jobs:
         run: |
           # Tag format: mfe-widget-v1.2.0 or mfe-landing-page-v0.1.0
           TAG_NAME="${GITHUB_REF_NAME}"
-          
+
           # Extract version (everything after final '-v')
           VERSION=$(echo "$TAG_NAME" | sed -E 's/.*-v([0-9].*)/\1/')
-          
+
           # Extract MFE name (everything before '-v<version>')
           MFE_NAME=$(echo "$TAG_NAME" | sed -E "s/-v${VERSION}$//")
-          
+
           echo "mfe_name=$MFE_NAME" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Detected MFE: $MFE_NAME, Version: $VERSION"
@@ -112,7 +112,7 @@ jobs:
         run: |
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
           TAG_VERSION="${{ needs.detect-tagged-mfe.outputs.version }}"
-          
+
           PKG_VERSION=$(jq -r '.version' "apps/mfes/$MFE_NAME/package.json")
           echo "package_version=$PKG_VERSION" >> $GITHUB_OUTPUT
           echo "Package.json version: $PKG_VERSION"
@@ -122,13 +122,13 @@ jobs:
           TAG_VERSION="${{ needs.detect-tagged-mfe.outputs.version }}"
           PKG_VERSION="${{ steps.package.outputs.package_version }}"
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
-          
+
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Version mismatch for $MFE_NAME! Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
             echo "::error::Please update apps/mfes/$MFE_NAME/package.json to version $TAG_VERSION before tagging"
             exit 1
           fi
-          
+
           echo "✓ Version validation passed: $TAG_VERSION"
 
   # Dev deployment (runs for each changed MFE) - Implements MDP-Requirement-1
@@ -140,7 +140,7 @@ jobs:
     environment: dev
     strategy:
       matrix: ${{ fromJson(needs.detect-changed-mfes.outputs.matrix) }}
-      fail-fast: false  # Continue deploying other MFEs if one fails
+      fail-fast: false # Continue deploying other MFEs if one fails
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -148,7 +148,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -212,7 +212,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -250,9 +250,9 @@ jobs:
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
           CONTAINER="mfes-prod"
           PREFIX="$MFE_NAME/v${VERSION}/"
-          
+
           echo "Checking if version v${VERSION} already exists for $MFE_NAME..."
-          
+
           EXISTING=$(az storage blob list \
             --account-name tssmfestorage \
             --container-name "$CONTAINER" \
@@ -260,14 +260,14 @@ jobs:
             --auth-mode login \
             --query "length([?name])" \
             --output tsv)
-          
+
           if [ "$EXISTING" -gt 0 ]; then
             echo "::error::Version v${VERSION} already exists in production for $MFE_NAME!"
             echo "::error::Found $EXISTING blob(s) at path $PREFIX"
             echo "::error::Refusing to overwrite existing versioned artifacts"
             exit 1
           fi
-          
+
           echo "✓ Version v${VERSION} does not exist in prod, proceeding with upload"
 
       # Implements MDP-Requirement-6: Immutable cache header for versioned artifacts
@@ -275,7 +275,7 @@ jobs:
         run: |
           VERSION="${{ needs.detect-tagged-mfe.outputs.version }}"
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
-          
+
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination mfes-prod \
@@ -305,29 +305,29 @@ jobs:
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
           BRANCH="bots/pin-$MFE_NAME-v${VERSION}"
           CONFIG_FILE="apps/shells/website/public/remotes.config.prod.json"
-          
+
           # Get route path from remotes.config.prod.json
           ROUTE_PATH=$(jq -r --arg mfe "$MFE_NAME" '.features | to_entries[] | select(.value.entryUrl | contains($mfe)) | .key' "$CONFIG_FILE" | head -n1)
-          
+
           if [ -z "$ROUTE_PATH" ]; then
             echo "::error::Could not find route for $MFE_NAME in $CONFIG_FILE"
             echo "::error::Please add an entry for this MFE in the config before deploying"
             exit 1
           fi
-          
+
           echo "Found route: $ROUTE_PATH for $MFE_NAME"
-          
+
           # Configure git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Fetch and checkout main
           git fetch origin main
           git checkout main
-          
+
           # Create new branch
           git checkout -b "$BRANCH"
-          
+
           # Update the config file using jq
           jq --arg route "$ROUTE_PATH" \
              --arg version "$VERSION" \
@@ -335,45 +335,44 @@ jobs:
              '.features[$route].entryUrl = $url | .features[$route].version = $version' \
              "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
           mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-          
+
           # Commit and push
           git add "$CONFIG_FILE"
-          git commit -m "chore(deploy): pin $MFE_NAME to v${VERSION}
+          git commit \
+            -m "chore(deploy): pin $MFE_NAME to v${VERSION}" \
+            -m "Automated update from prod deployment workflow." \
+            -m "Tag: $MFE_NAME-v${VERSION}" \
+            -m "Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-Automated update from prod deployment workflow.
-
-Tag: $MFE_NAME-v${VERSION}
-Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          
           git push origin "$BRANCH"
-          
+
           # Create pull request (without auto-merge)
+          PR_BODY=$(printf '%s\n' \
+            "## MFE Production Deployment" \
+            "" \
+            "**MFE**: $MFE_NAME" \
+            "**Version**: v${VERSION}" \
+            "**Tag**: $MFE_NAME-v${VERSION}" \
+            "**Workflow**: Run #${{ github.run_number }}" \
+            "" \
+            "### Changes" \
+            "- Updates $MFE_NAME entry URL to versioned prod path" \
+            "- Sets version to ${VERSION}" \
+            "- Route: $ROUTE_PATH" \
+            "" \
+            "### Entry URL" \
+            "https://tssmfestorage.blob.core.windows.net/mfes-prod/$MFE_NAME/v${VERSION}/remoteEntry.js" \
+            "" \
+            "### Verification" \
+            "After merging, the prod shell will load $MFE_NAME from the newly published version." \
+            "" \
+            "Automated PR from MFE deployment workflow")
+
           gh pr create \
             --base main \
             --head "$BRANCH" \
             --title "chore(deploy): pin $MFE_NAME to v${VERSION}" \
-            --body "## MFE Production Deployment
-
-**MFE**: $MFE_NAME
-**Version**: v${VERSION}
-**Tag**: [\`$MFE_NAME-v${VERSION}\`](${{ github.server_url }}/${{ github.repository }}/releases/tag/$MFE_NAME-v${VERSION})
-**Workflow**: [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-### Changes
-- Updates \`$MFE_NAME\` entry URL to versioned prod path
-- Sets version to \`${VERSION}\`
-- Route: \`$ROUTE_PATH\`
-
-### Entry URL
-\`\`\`
-https://tssmfestorage.blob.core.windows.net/mfes-prod/$MFE_NAME/v${VERSION}/remoteEntry.js
-\`\`\`
-
-### Verification
-After merging, the prod shell will load \`$MFE_NAME\` from the newly published version.
-
----
-🤖 Automated PR from MFE deployment workflow"
+            --body "$PR_BODY"
 
       - name: PR creation summary
         run: |

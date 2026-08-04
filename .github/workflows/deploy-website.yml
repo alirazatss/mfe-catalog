@@ -8,30 +8,29 @@ on:
   push:
     branches:
       - main
-    paths:
-      # Trigger on shell source changes
-      - 'apps/shells/website/**'
-      # Trigger on shared packages the shell depends on
-      - 'packages/auth/**'
-      - 'packages/dynamic-loader/**'
-      - 'packages/events/**'
-      - 'packages/remote-config/**'
-      - 'packages/shell-runtime/**'
-      - 'packages/monorepo-tools/**'
-      # Trigger on config changes (for config-only redeploys)
-      - 'apps/shells/website/public/remotes.config.prod.json'
-      - 'apps/shells/website/public/remotes.config.dev.json'
-      # Trigger on this workflow itself
-      - '.github/workflows/deploy-website.yml'
-  push:
     tags:
       # Trigger on shell version tags
-      - 'website-v*'
+      - "website-v*"
+    paths:
+      # Trigger on shell source changes
+      - "apps/shells/website/**"
+      # Trigger on shared packages the shell depends on
+      - "packages/auth/**"
+      - "packages/dynamic-loader/**"
+      - "packages/events/**"
+      - "packages/remote-config/**"
+      - "packages/shell-runtime/**"
+      - "packages/monorepo-tools/**"
+      # Trigger on config changes (for config-only redeploys)
+      - "apps/shells/website/public/remotes.config.prod.json"
+      - "apps/shells/website/public/remotes.config.dev.json"
+      # Trigger on this workflow itself
+      - ".github/workflows/deploy-website.yml"
 
 # Implements OIDC-Requirement-1: OIDC authentication requires id-token permission
 permissions:
-  id-token: write  # Required for Azure OIDC authentication
-  contents: read   # Required to checkout code
+  id-token: write # Required for Azure OIDC authentication
+  contents: read # Required to checkout code
 
 # Concurrency: serialize all shell deploys to avoid race conditions
 concurrency:
@@ -69,13 +68,13 @@ jobs:
         run: |
           TAG_VERSION="${{ steps.extract.outputs.version }}"
           PKG_VERSION="${{ steps.package.outputs.package_version }}"
-          
+
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Version mismatch! Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
             echo "::error::Please update apps/shells/website/package.json to version $TAG_VERSION before tagging"
             exit 1
           fi
-          
+
           echo "✓ Version validation passed: $TAG_VERSION"
 
   # Implements SDP-Requirement-4: Dev deploy on push to main
@@ -91,7 +90,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -159,7 +158,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -223,7 +222,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -255,9 +254,9 @@ jobs:
           VERSION="${{ needs.validate-version.outputs.version }}"
           CONTAINER='$web'
           PREFIX="v${VERSION}/"
-          
+
           echo "Checking if version v${VERSION} already exists in \$web..."
-          
+
           # Check if any blobs exist at this version path
           EXISTING=$(az storage blob list \
             --account-name tssmfestorage \
@@ -266,7 +265,7 @@ jobs:
             --auth-mode login \
             --query "length([?name])" \
             --output tsv)
-          
+
           if [ "$EXISTING" -gt 0 ]; then
             echo "::error::Version v${VERSION} already exists in \$web!"
             echo "::error::Found $EXISTING blob(s) at path $PREFIX"
@@ -274,7 +273,7 @@ jobs:
             echo "::error::If you need to republish, use a new version number"
             exit 1
           fi
-          
+
           echo "✓ Version v${VERSION} does not exist, proceeding with upload"
 
       # Implements SDP-Requirement-1: Upload to versioned path
@@ -282,7 +281,7 @@ jobs:
       - name: Upload to $web versioned path
         run: |
           VERSION="${{ needs.validate-version.outputs.version }}"
-          
+
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination '$web' \
@@ -296,7 +295,7 @@ jobs:
       - name: Upload to $web root (overwrite)
         run: |
           VERSION="${{ needs.validate-version.outputs.version }}"
-          
+
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination '$web' \
