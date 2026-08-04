@@ -13,7 +13,7 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { discoverMicroFrontends, generateConfig } from "../packages/monorepo-tools/dist/index.mjs";
+import { discoverMicroFrontends, generateConfig } from "../packages/monorepo-tools/src/index.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
