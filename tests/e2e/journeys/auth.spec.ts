@@ -17,8 +17,8 @@ test.describe("Authentication journeys", () => {
 
     await authenticatedPage.waitForLoadState("networkidle");
 
-    // Verify protected content is visible
-    const main = authenticatedPage.locator("main, #root, #app");
+    // Assert against the shell's single main mount slot to avoid strict-mode ambiguity.
+    const main = authenticatedPage.locator("#main-slot");
     await expect(main).toBeVisible();
 
     // Verify no auth error messages

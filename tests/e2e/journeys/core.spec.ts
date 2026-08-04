@@ -34,25 +34,24 @@ test.describe("Core user journeys", () => {
     // Wait for MFE to load
     await authenticatedPage.waitForLoadState("networkidle");
 
-    // Verify MFE content is visible (adjust selector based on actual MFE)
-    // This is a placeholder—real test would check for specific MFE content
-    const main = authenticatedPage.locator("main, #root, #app");
+    // Assert against the shell's single main mount slot to avoid strict-mode ambiguity.
+    const main = authenticatedPage.locator("#main-slot");
     await expect(main).toBeVisible();
   });
 
   test("should navigate directly to nested route", async ({ authenticatedPage }) => {
-    // Navigate directly to a nested MFE route
-    await authenticatedPage.goto("/widget/detail/123");
+    // Navigate directly to a supported nested MFE route.
+    await authenticatedPage.goto("/widget/counter");
 
     await authenticatedPage.waitForLoadState("networkidle");
 
     // Verify URL reflects the route
-    expect(authenticatedPage.url()).toContain("/widget/detail/123");
+    expect(authenticatedPage.url()).toContain("/widget/counter");
   });
 
   test("should handle browser refresh on nested route", async ({ authenticatedPage }) => {
     // Navigate to nested route
-    await authenticatedPage.goto("/widget/detail/456");
+    await authenticatedPage.goto("/widget/counter");
     await authenticatedPage.waitForLoadState("networkidle");
 
     // Refresh the page
@@ -60,10 +59,10 @@ test.describe("Core user journeys", () => {
     await authenticatedPage.waitForLoadState("networkidle");
 
     // Verify we're still on the same route after refresh
-    expect(authenticatedPage.url()).toContain("/widget/detail/456");
+    expect(authenticatedPage.url()).toContain("/widget/counter");
 
     // Verify content is still visible
-    const main = authenticatedPage.locator("main, #root, #app");
+    const main = authenticatedPage.locator("#main-slot");
     await expect(main).toBeVisible();
   });
 
