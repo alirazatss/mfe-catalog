@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
+    "prebuild": "pnpm --filter @mfe-runtime/events build && pnpm --filter @mfe-runtime/remote-config build && pnpm --filter @mfe-runtime/dynamic-loader build",
     "build": "tsc && vp build",
     "preview": "vp preview",
     "test": "vitest run",
