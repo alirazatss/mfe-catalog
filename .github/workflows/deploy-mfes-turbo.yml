@@ -162,7 +162,7 @@ jobs:
       # Uses cache from previous runs (local or remote)
       - name: Build MFE with Turborepo
         run: |
-          npx turbo build --filter="${{ steps.package.outputs.package_name }}" \
+          pnpm exec turbo build --filter="${{ steps.package.outputs.package_name }}" \
             --output-logs=new-only
         env:
           NODE_ENV: production
@@ -230,7 +230,7 @@ jobs:
       # Turborepo builds only what's needed, uses cache
       - name: Build MFE with Turborepo
         run: |
-          npx turbo build --filter="${{ steps.package.outputs.package_name }}" \
+          pnpm exec turbo build --filter="${{ steps.package.outputs.package_name }}" \
             --output-logs=new-only
         env:
           NODE_ENV: production
