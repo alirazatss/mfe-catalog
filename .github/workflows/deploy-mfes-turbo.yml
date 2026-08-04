@@ -4,20 +4,19 @@
 
 name: Deploy MFEs (Turborepo-Optimized)
 
-on:
+"on":
   push:
     branches:
       - main
+    tags:
+      # Trigger on any MFE version tag
+      - 'mfe-*-v*'
     paths:
       # Trigger on any MFE or package changes
       - 'apps/mfes/**'
       - 'packages/**'
       - 'turbo.json'
       - '.github/workflows/deploy-mfes.yml'
-  push:
-    tags:
-      # Trigger on any MFE version tag
-      - 'mfe-*-v*'
 
 permissions:
   id-token: write      # Required for Azure OIDC authentication
