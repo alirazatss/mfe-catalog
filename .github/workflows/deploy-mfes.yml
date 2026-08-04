@@ -6,10 +6,13 @@
 
 name: Deploy MFEs
 
-on:
+"on":
   push:
     branches:
       - main
+    tags:
+      # Trigger on any MFE version tag (pattern: mfe-<name>-v<semver>)
+      - 'mfe-*-v*'
     paths:
       # Trigger on any MFE changes
       - 'apps/mfes/**'
@@ -18,10 +21,6 @@ on:
       - 'packages/events/**'
       # Trigger on this workflow itself
       - '.github/workflows/deploy-mfes.yml'
-  push:
-    tags:
-      # Trigger on any MFE version tag (pattern: mfe-<name>-v<semver>)
-      - 'mfe-*-v*'
 
 permissions:
   id-token: write      # Required for Azure OIDC authentication
