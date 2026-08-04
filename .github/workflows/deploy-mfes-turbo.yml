@@ -10,17 +10,17 @@ name: Deploy MFEs (Turborepo-Optimized)
       - main
     tags:
       # Trigger on any MFE version tag
-      - 'mfe-*-v*'
+      - "mfe-*-v*"
     paths:
       # Trigger on any MFE or package changes
-      - 'apps/mfes/**'
-      - 'packages/**'
-      - 'turbo.json'
-      - '.github/workflows/deploy-mfes.yml'
+      - "apps/mfes/**"
+      - "packages/**"
+      - "turbo.json"
+      - ".github/workflows/deploy-mfes.yml"
 
 permissions:
-  id-token: write      # Required for Azure OIDC authentication
-  contents: read       # Required to checkout code
+  id-token: write # Required for Azure OIDC authentication
+  contents: read # Required to checkout code
   pull-requests: write # Required to open PR for config updates
 
 jobs:
@@ -36,12 +36,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for turbo
+          fetch-depth: 0 # Full history for turbo
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -54,11 +54,11 @@ jobs:
         run: |
           # Install turbo globally
           npm install -g turbo
-          
+
           # Use turbo to detect what changed since last commit
           # --filter=[HEAD^1] means "packages changed since previous commit"
           CHANGED_PACKAGES=$(turbo build --dry-run --filter='[HEAD^1]' 2>&1 | grep -A 100 "Packages in Scope" | grep "apps/mfes" | sed 's/.*apps\/mfes\///' | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          
+
           if [ -z "$CHANGED_PACKAGES" ] || [ "$CHANGED_PACKAGES" = "[]" ]; then
             echo "No MFE changes detected by Turborepo"
             echo "matrix={\"mfe\":[]}" >> $GITHUB_OUTPUT
@@ -84,7 +84,7 @@ jobs:
           TAG_NAME="${GITHUB_REF_NAME}"
           VERSION=$(echo "$TAG_NAME" | sed -E 's/.*-v([0-9].*)/\1/')
           MFE_NAME=$(echo "$TAG_NAME" | sed -E "s/-v${VERSION}$//")
-          
+
           echo "mfe_name=$MFE_NAME" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Detected MFE: $MFE_NAME, Version: $VERSION"
@@ -104,7 +104,7 @@ jobs:
         run: |
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
           TAG_VERSION="${{ needs.detect-tagged-mfe.outputs.version }}"
-          
+
           PKG_VERSION=$(jq -r '.version' "apps/mfes/$MFE_NAME/package.json")
           echo "package_version=$PKG_VERSION" >> $GITHUB_OUTPUT
           echo "Package.json version: $PKG_VERSION"
@@ -114,12 +114,12 @@ jobs:
           TAG_VERSION="${{ needs.detect-tagged-mfe.outputs.version }}"
           PKG_VERSION="${{ steps.package.outputs.package_version }}"
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
-          
+
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Version mismatch for $MFE_NAME! Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
             exit 1
           fi
-          
+
           echo "✓ Version validation passed: $TAG_VERSION"
 
   # Dev deployment using Turborepo for builds
@@ -136,12 +136,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Turbo needs git history for remote cache
+          fetch-depth: 0 # Turbo needs git history for remote cache
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -205,12 +205,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Turbo needs git history
+          fetch-depth: 0 # Turbo needs git history
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -249,9 +249,9 @@ jobs:
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
           CONTAINER="mfes-prod"
           PREFIX="$MFE_NAME/v${VERSION}/"
-          
+
           echo "Checking if version v${VERSION} already exists for $MFE_NAME..."
-          
+
           EXISTING=$(az storage blob list \
             --account-name tssmfestorage \
             --container-name "$CONTAINER" \
@@ -259,19 +259,19 @@ jobs:
             --auth-mode login \
             --query "length([?name])" \
             --output tsv)
-          
+
           if [ "$EXISTING" -gt 0 ]; then
             echo "::error::Version v${VERSION} already exists in production for $MFE_NAME!"
             exit 1
           fi
-          
+
           echo "✓ Version v${VERSION} does not exist in prod, proceeding with upload"
 
       - name: Upload to Azure Blob Storage (Prod)
         run: |
           VERSION="${{ needs.detect-tagged-mfe.outputs.version }}"
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
-          
+
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination mfes-prod \
@@ -300,28 +300,28 @@ jobs:
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
           BRANCH="bots/pin-$MFE_NAME-v${VERSION}"
           CONFIG_FILE="apps/shells/website/public/remotes.config.prod.json"
-          
+
           # Get route path from remotes.config.prod.json
           ROUTE_PATH=$(jq -r --arg mfe "$MFE_NAME" '.features | to_entries[] | select(.value.entryUrl | contains($mfe)) | .key' "$CONFIG_FILE" | head -n1)
-          
+
           if [ -z "$ROUTE_PATH" ]; then
             echo "::error::Could not find route for $MFE_NAME in $CONFIG_FILE"
             exit 1
           fi
-          
+
           echo "Found route: $ROUTE_PATH for $MFE_NAME"
-          
+
           # Configure git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Fetch and checkout main
           git fetch origin main
           git checkout main
-          
+
           # Create new branch
           git checkout -b "$BRANCH"
-          
+
           # Update the config file using jq
           jq --arg route "$ROUTE_PATH" \
              --arg version "$VERSION" \
@@ -329,47 +329,46 @@ jobs:
              '.features[$route].entryUrl = $url | .features[$route].version = $version' \
              "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
           mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-          
+
           # Commit and push
           git add "$CONFIG_FILE"
-          git commit -m "chore(deploy): pin $MFE_NAME to v${VERSION}
+          git commit \
+            -m "chore(deploy): pin $MFE_NAME to v${VERSION}" \
+            -m "Automated update from Turborepo-optimized deployment workflow." \
+            -m "Tag: $MFE_NAME-v${VERSION}" \
+            -m "Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-Automated update from Turborepo-optimized deployment workflow.
-
-Tag: $MFE_NAME-v${VERSION}
-Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          
           git push origin "$BRANCH"
-          
+
           # Create pull request
+          PR_BODY=$(printf '%s\n' \
+            "## MFE Production Deployment (Turborepo-Optimized)" \
+            "" \
+            "**MFE**: $MFE_NAME" \
+            "**Version**: v${VERSION}" \
+            "**Tag**: $MFE_NAME-v${VERSION}" \
+            "**Workflow**: Run #${{ github.run_number }}" \
+            "" \
+            "### Build Optimization" \
+            "- Turborepo intelligent dependency detection" \
+            "- Cached builds for unchanged dependencies" \
+            "- Only affected packages rebuilt" \
+            "" \
+            "### Changes" \
+            "- Updates $MFE_NAME entry URL to versioned prod path" \
+            "- Sets version to ${VERSION}" \
+            "- Route: $ROUTE_PATH" \
+            "" \
+            "### Entry URL" \
+            "https://tssmfestorage.blob.core.windows.net/mfes-prod/$MFE_NAME/v${VERSION}/remoteEntry.js" \
+            "" \
+            "Automated PR from Turborepo-optimized MFE deployment workflow")
+
           gh pr create \
             --base main \
             --head "$BRANCH" \
             --title "chore(deploy): pin $MFE_NAME to v${VERSION}" \
-            --body "## MFE Production Deployment (Turborepo-Optimized)
-
-**MFE**: $MFE_NAME
-**Version**: v${VERSION}
-**Tag**: [\`$MFE_NAME-v${VERSION}\`](${{ github.server_url }}/${{ github.repository }}/releases/tag/$MFE_NAME-v${VERSION})
-**Workflow**: [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-### Build Optimization
-- ✅ Turborepo intelligent dependency detection
-- ✅ Cached builds for unchanged dependencies
-- ✅ Only affected packages rebuilt
-
-### Changes
-- Updates \`$MFE_NAME\` entry URL to versioned prod path
-- Sets version to \`${VERSION}\`
-- Route: \`$ROUTE_PATH\`
-
-### Entry URL
-\`\`\`
-https://tssmfestorage.blob.core.windows.net/mfes-prod/$MFE_NAME/v${VERSION}/remoteEntry.js
-\`\`\`
-
----
-🤖 Automated PR from Turborepo-optimized MFE deployment workflow"
+            --body "$PR_BODY"
 
       - name: PR creation summary
         run: |
