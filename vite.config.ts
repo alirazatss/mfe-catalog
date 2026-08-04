@@ -21,7 +21,21 @@ export default defineConfig({
       }
       return commands;
     },
-    "!*.{ts,tsx}": "vp check --fix",
+    "!*.{ts,tsx}": (filenames) => {
+      const workflowYamlFiles = filenames.filter((f) => /^\.github\/workflows\/.*\.ya?ml$/.test(f));
+      const nonWorkflowFiles = filenames.filter((f) => !/^\.github\/workflows\/.*\.ya?ml$/.test(f));
+
+      const commands = [];
+      if (nonWorkflowFiles.length > 0) {
+        commands.push(`vp check --fix ${nonWorkflowFiles.join(" ")}`);
+      }
+      if (workflowYamlFiles.length > 0) {
+        commands.push(
+          "echo 'Skipping workflow YAML in vp staged due to parser bug; validate workflows in CI.'",
+        );
+      }
+      return commands;
+    },
   },
   fmt: {},
   lint: {
