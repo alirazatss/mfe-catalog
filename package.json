@@ -36,6 +36,8 @@
     "@testing-library/user-event": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
+    "ajv": "catalog:",
+    "ajv-formats": "catalog:",
     "happy-dom": "catalog:",
     "tsx": "catalog:",
     "turbo": "catalog:",
