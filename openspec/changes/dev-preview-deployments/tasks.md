@@ -154,15 +154,15 @@ Requirement IDs used below:
 
 **Depends on:** none
 
-- [ ] 5.1 Write ADR-0010 recording the immutable-SHA + PR-preview dev policy as an extension of ADR-0009 A3 (decision, alternatives, trade-offs, TTL conventions)
+- [x] 5.1 Write ADR-0010 recording the immutable-SHA + PR-preview dev policy as an extension of ADR-0009 A3 (decision, alternatives, trade-offs, TTL conventions)
   - Requirements: MDP-A1, SDP-A1, PPD-1, ABL-A2 (documentation of)
   - Owner: architect
   - Verification: ADR follows existing `docs/adr/` format and cross-links ADR-0009
-- [ ] 5.2 Add glossary terms to `CONTEXT.md`: floating pointer, immutable dev artifact, preview deployment, build metadata file
+- [x] 5.2 Add glossary terms to `CONTEXT.md`: floating pointer, immutable dev artifact, preview deployment, build metadata file
   - Requirements: ABL-A1 (documentation of)
   - Owner: architect
   - Verification: terms present and consistent with spec wording
-- [ ] 5.3 Amend ADR-0009 A3 with a "superseded in part" pointer to ADR-0010
+- [x] 5.3 Amend ADR-0009 A3 with a "superseded in part" pointer to ADR-0010
   - Requirements: MDP-A1 (documentation of)
   - Owner: architect
   - Verification: ADR-0009 links forward to ADR-0010

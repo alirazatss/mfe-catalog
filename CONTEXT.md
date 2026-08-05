@@ -190,6 +190,113 @@ A **deployment stage** representing stability/testing level.
 
 ---
 
+### Floating Pointer
+
+A **deployment path** that always points to the latest dev build via overwriting.
+
+**Examples:**
+
+- `mfes-dev/mfe-widget/dev/` - Overwritten on every push to `main`
+- `dev-shell/` - Overwritten on every push to `main`
+
+**Properties:**
+
+- Mutable (new commits overwrite existing files)
+- Cache headers: `no-cache, must-revalidate`
+- Zero version management overhead
+- Dev shell `remotes.config.dev.json` points here
+- No historical builds accessible (only latest)
+
+**Introduced in:** [ADR-0009 A3 (Floating Pointers for Dev)](./docs/adr/0009-azure-blob-deployment-pipeline.md#a3-floating-pointers-for-dev)
+
+---
+
+### Immutable Dev Artifact
+
+A **commit-addressable dev build** deployed to `sha-<short>/` paths for reproducibility.
+
+**Examples:**
+
+- `mfes-dev/mfe-widget/sha-a1b2c3d4/remoteEntry.js`
+- `dev-shell/sha-f5e6d7c8/index.html`
+
+**Properties:**
+
+- Immutable (write-once, conditional upload tolerates re-runs)
+- Cache headers: `public, max-age=31536000, immutable`
+- Retained for 30 days (lifecycle policy deletes after TTL)
+- Addressed by 8-char commit SHA prefix
+- Enables "load exact build from 3 days ago" debugging
+
+**Use Cases:**
+
+- Debugging: "This bug appeared after commit a1b2c3d4, test that exact build"
+- Provenance: "Which commit produced deployed artifact X?"
+
+**Introduced in:** [ADR-0010 A1 (Immutable SHA Paths)](./docs/adr/0010-dev-preview-deployments.md#a1-immutable-sha-paths-alongside-floating-dev-pointers)
+
+---
+
+### Preview Deployment
+
+A **PR-scoped isolated dev environment** for pre-merge verification.
+
+**Path Structure:**
+
+- `mfes-dev/<mfe>/pr-<number>/` - MFE builds from PR branch
+- `dev-shell/pr-<number>/` - Shell with auto-generated config pointing to PR artifacts
+
+**Properties:**
+
+- Isolated (PR 42 never affects PR 43 or dev/prod)
+- Cleanup on PR close (workflow deletes all `pr-<number>/` blobs)
+- Lifecycle backstop: 14-day TTL deletes stale previews
+- Same-repo boundary: fork PRs cannot trigger preview deploys (OIDC guard)
+- Preview shell config auto-generated: changed MFEs use `pr-<number>/` URLs, unchanged use `dev/` URLs
+
+**Verification:**
+
+- GitHub Actions posts sticky PR comment with preview URLs
+- Reviewers click link to test live before merge
+
+**Security:**
+
+- `pull_request` trigger (not `pull_request_target`)
+- Job-level guard: `github.event.pull_request.head.repo.full_name == github.repository`
+- Fork PRs skip deploy jobs (no Azure credentials granted)
+
+**Introduced in:** [ADR-0010 A2 (PR-Scoped Preview Deployments)](./docs/adr/0010-dev-preview-deployments.md#a2-pr-scoped-preview-deployments-for-same-repo-prs)
+
+---
+
+### Build Metadata File
+
+A **machine-readable provenance record** uploaded alongside all dev/SHA/preview artifacts.
+
+**Filename:** `build-info.json`
+
+**Schema:**
+
+```json
+{
+  "commitSha": "a1b2c3d4e5f6789012345678901234567890abcd",
+  "runId": "12345678",
+  "workflow": "Deploy MFEs (Turborepo)",
+  "timestamp": "2026-08-05T14:23:00Z",
+  "prNumber": "42" // present for preview deploys only
+}
+```
+
+**Purpose:**
+
+- Provenance: "Which commit produced this deployed artifact?"
+- Debugging: "This bug appeared after GitHub Actions run #12345678"
+- Verification: Shell or MFE can fetch and log metadata on load
+
+**Introduced in:** [ADR-0010 A3 (Build Metadata Files)](./docs/adr/0010-dev-preview-deployments.md#a3-build-metadata-files)
+
+---
+
 ### Slot
 
 A **DOM placeholder** where MFEs mount their content.
@@ -445,15 +552,18 @@ Result: User logs into `customer.example.com`, opens `admin.example.com`, SSO wo
 **Git tag-based releases to Azure Blob Storage with OIDC authentication.**
 
 **Dev deploys** (push to `main`):
+
 - MFEs → `mfes-dev/<mfe-name>/dev/` (floating pointer, auto-loads latest)
 - Shell → `dev-shell/` container (raw blob URL)
 
 **Prod deploys** (git tag `<artifact>-v<semver>`):
+
 - MFEs → `mfes-prod/<mfe-name>/v<version>/` (versioned, immutable)
 - Shell → `$web/v<version>/` (versioned) + `$web/` root (static website)
 - Opens PR to update `remotes.config.prod.json` (not auto-merged)
 
 **Config-only redeploys** (merge to `main` updating `remotes.config.prod.json`):
+
 - Rebuilds shell with new config, deploys to `$web/` root only
 - Use case: Point shell to newly published MFE version without cutting new shell version
 
