@@ -75,6 +75,7 @@ export function createWebsiteFailureRenderer(): FailureRenderer {
 export function createWebsiteShellRuntimeConfig(appConfig: AppConfig): ShellRuntimeConfig {
   // TODO: Use appConfig values for auth initialization and API calls
   // For now, appConfig is validated and available but not yet wired into auth/API layers
+  void appConfig; // Suppress unused warning
   return {
     manifest: {
       async load() {
