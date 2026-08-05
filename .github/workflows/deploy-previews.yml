@@ -1,0 +1,322 @@
+# PR Preview Deployment Workflow
+# Implements PPD-1, PPD-2, PPD-3, PPD-4, PPD-6 from dev-preview-deployments change
+# Deploys changed MFEs and preview shell to pr-<number>/ paths for same-repo PRs only
+# See: openspec/changes/dev-preview-deployments/specs/pr-preview-deployments/spec.md
+
+name: Deploy PR Previews
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+
+# PPD-3: Use pull_request (not pull_request_target) for security
+# PPD-6: Cancel in-progress preview runs when new push arrives
+concurrency:
+  group: preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write # Required for Azure OIDC (gated by same-repo check)
+  contents: read # Required to checkout code
+  pull-requests: write # Required for sticky comment
+
+jobs:
+  # PPD-1: Detect changed MFEs using Turborepo
+  detect-changed-mfes:
+    name: Detect Changed MFEs
+    # PPD-3: Only run for same-repo PRs (fork PRs skip this job)
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+      has_changes: ${{ steps.detect.outputs.has_changes }}
+      changed_mfes: ${{ steps.detect.outputs.changed_mfes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Turborepo detects changed MFEs since origin/main
+      - name: Detect changed MFEs using Turborepo
+        id: detect
+        run: |
+          # Fetch main for comparison
+          git fetch origin main
+
+          # Use turbo to detect what changed since origin/main
+          CHANGED_PACKAGES=$(pnpm exec turbo build --dry-run=json --filter='[origin/main...HEAD]' \
+            | jq -c '[.tasks[].directory | select(startswith("apps/mfes/")) | sub("^apps/mfes/"; "") | select(contains("/") | not)] | unique')
+
+          if [ -z "$CHANGED_PACKAGES" ] || [ "$CHANGED_PACKAGES" = "[]" ]; then
+            echo "No MFE changes detected by Turborepo"
+            echo "matrix={\"mfe\":[]}" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "changed_mfes=[]" >> $GITHUB_OUTPUT
+          else
+            echo "Turborepo detected changed MFEs: $CHANGED_PACKAGES"
+            echo "matrix={\"mfe\":$CHANGED_PACKAGES}" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "changed_mfes=$CHANGED_PACKAGES" >> $GITHUB_OUTPUT
+          fi
+
+  # PPD-1: Deploy changed MFEs to pr-<number>/ paths
+  deploy-preview-mfes:
+    name: Deploy ${{ matrix.mfe }} Preview
+    needs: detect-changed-mfes
+    if: needs.detect-changed-mfes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    environment: dev
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changed-mfes.outputs.matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+
+      - name: Get package name
+        id: package
+        run: |
+          PKG_NAME=$(jq -r '.name' "apps/mfes/${{ matrix.mfe }}/package.json")
+          echo "package_name=$PKG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build MFE with Turborepo
+        run: |
+          pnpm exec turbo build --filter="${{ steps.package.outputs.package_name }}" \
+            --output-logs=new-only
+        env:
+          NODE_ENV: production
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_DEV }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # PPD-1: Upload to pr-<number>/ path with no-cache headers
+      - name: Upload to Azure Blob Storage (Preview)
+        run: |
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination mfes-dev \
+            --destination-path "${{ matrix.mfe }}/pr-${{ github.event.pull_request.number }}" \
+            --source "apps/mfes/${{ matrix.mfe }}/dist" \
+            --overwrite true \
+            --content-cache-control "no-cache, must-revalidate" \
+            --auth-mode login
+
+      # PPD-4: Generate and upload build metadata (including PR number)
+      - name: Generate build-info.json
+        run: |
+          BUILD_INFO=$(jq -n \
+            --arg commitSha "${{ github.event.pull_request.head.sha }}" \
+            --arg runId "${{ github.run_id }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg prNumber "${{ github.event.pull_request.number }}" \
+            '{commitSha: $commitSha, runId: $runId, workflow: $workflow, timestamp: $timestamp, prNumber: $prNumber}')
+
+          echo "$BUILD_INFO" | tee build-info.json
+
+      - name: Upload build-info.json to preview path
+        run: |
+          az storage blob upload \
+            --account-name tssmfestorage \
+            --container-name mfes-dev \
+            --name "${{ matrix.mfe }}/pr-${{ github.event.pull_request.number }}/build-info.json" \
+            --file build-info.json \
+            --overwrite true \
+            --content-type "application/json" \
+            --content-cache-control "no-cache, must-revalidate" \
+            --auth-mode login
+
+  # PPD-2: Deploy preview shell with generated per-PR config
+  deploy-preview-shell:
+    name: Deploy Preview Shell
+    needs: [detect-changed-mfes, deploy-preview-mfes]
+    # Run if MFEs changed OR shell/packages changed (even if no MFE changed)
+    if: |
+      always() &&
+      needs.detect-changed-mfes.result == 'success'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # PPD-2: Generate preview config with pr-<n> URLs for changed MFEs
+      - name: Generate preview remotes config
+        id: preview_config
+        run: |
+          CHANGED_MFES='${{ needs.detect-changed-mfes.outputs.changed_mfes }}'
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+
+          # Run the generator script
+          cat > generate-config.mjs <<'SCRIPT'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { generatePreviewConfig } from './scripts/azure/generate-preview-config.js';
+
+          const devConfig = JSON.parse(readFileSync('apps/shells/website/public/remotes.config.dev.json', 'utf-8'));
+          const changedMfes = JSON.parse(process.argv[1]);
+          const prNumber = parseInt(process.argv[2], 10);
+
+          const previewConfig = generatePreviewConfig(devConfig, changedMfes, prNumber);
+          writeFileSync('apps/shells/website/public/remotes.config.json', JSON.stringify(previewConfig, null, 2));
+          console.log('Generated preview config:', JSON.stringify(previewConfig, null, 2));
+          SCRIPT
+
+          node generate-config.mjs "$CHANGED_MFES" "$PR_NUMBER"
+
+      - name: Build shell (preview)
+        run: pnpm --filter "website..." build
+        env:
+          NODE_ENV: production
+          DEPLOY_ENV: dev
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_DEV }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # PPD-2: Upload preview shell to dev-shell/pr-<number>/
+      - name: Upload to Azure Blob Storage (Preview Shell)
+        run: |
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination dev-shell \
+            --destination-path "pr-${{ github.event.pull_request.number }}" \
+            --source apps/shells/website/dist \
+            --overwrite true \
+            --content-cache-control "no-cache, must-revalidate" \
+            --auth-mode login
+
+      # PPD-4: Upload build metadata to preview shell
+      - name: Generate and upload build-info.json
+        run: |
+          BUILD_INFO=$(jq -n \
+            --arg commitSha "${{ github.event.pull_request.head.sha }}" \
+            --arg runId "${{ github.run_id }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg prNumber "${{ github.event.pull_request.number }}" \
+            '{commitSha: $commitSha, runId: $runId, workflow: $workflow, timestamp: $timestamp, prNumber: $prNumber}')
+
+          echo "$BUILD_INFO" | tee build-info.json
+
+          az storage blob upload \
+            --account-name tssmfestorage \
+            --container-name dev-shell \
+            --name "pr-${{ github.event.pull_request.number }}/build-info.json" \
+            --file build-info.json \
+            --overwrite true \
+            --content-type "application/json" \
+            --content-cache-control "no-cache, must-revalidate" \
+            --auth-mode login
+
+  # PPD-4: Create/update sticky PR comment with preview URLs
+  comment-preview-urls:
+    name: Comment Preview URLs
+    needs: [detect-changed-mfes, deploy-preview-mfes, deploy-preview-shell]
+    if: |
+      always() &&
+      needs.deploy-preview-shell.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or update PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const changedMfes = JSON.parse('${{ needs.detect-changed-mfes.outputs.changed_mfes }}');
+
+            let commentBody = `## 🚀 Preview Deployment\n\n`;
+            commentBody += `**PR #${prNumber}** - Commit: \`${context.payload.pull_request.head.sha.substring(0, 8)}\`\n\n`;
+            commentBody += `### Preview Shell\n`;
+            commentBody += `- 🌐 https://tssmfestorage.blob.core.windows.net/dev-shell/pr-${prNumber}/index.html\n`;
+            commentBody += `- 📄 [build-info.json](https://tssmfestorage.blob.core.windows.net/dev-shell/pr-${prNumber}/build-info.json)\n\n`;
+
+            if (changedMfes.length > 0) {
+              commentBody += `### Changed MFEs (${changedMfes.length})\n\n`;
+              for (const mfe of changedMfes) {
+                commentBody += `- **${mfe}**\n`;
+                commentBody += `  - Entry: https://tssmfestorage.blob.core.windows.net/mfes-dev/${mfe}/pr-${prNumber}/remoteEntry.js\n`;
+                commentBody += `  - [build-info.json](https://tssmfestorage.blob.core.windows.net/mfes-dev/${mfe}/pr-${prNumber}/build-info.json)\n`;
+              }
+            } else {
+              commentBody += `### Changed MFEs\nNone (preview shell uses all dev MFEs)\n`;
+            }
+
+            commentBody += `\n---\n🤖 Auto-deployed by preview workflow`;
+
+            // Find existing preview comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existingComment = comments.data.find(c => 
+              c.user.type === 'Bot' && c.body.includes('🚀 Preview Deployment')
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody,
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: commentBody,
+              });
+            }
