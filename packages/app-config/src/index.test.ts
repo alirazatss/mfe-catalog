@@ -2,14 +2,7 @@
 // Implements verification for ACS-1, ACS-2, ACS-3, ACS-4
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import {
-  appConfigSchema,
-  parseAppConfig,
-  loadAppConfig,
-  schemaVersion,
-  LoadError,
-  type AppConfig,
-} from "./index.js";
+import { parseAppConfig, schemaVersion, loadAppConfig, LoadError } from "./index.js";
 
 describe("app-config-schema", () => {
   // ACS-2: Scenario - schemaVersion constant matches package.json
@@ -151,7 +144,7 @@ describe("app-config-schema", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => validConfig,
-      } as Response);
+      } as unknown as Response);
 
       const result = await loadAppConfig("https://example.com/app-config.json");
 
@@ -184,7 +177,7 @@ describe("app-config-schema", () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-      } as Response);
+      } as unknown as Response);
 
       try {
         await loadAppConfig("https://example.com/app-config.json");
@@ -205,7 +198,7 @@ describe("app-config-schema", () => {
         json: async () => {
           throw new Error("Invalid JSON");
         },
-      } as Response);
+      } as unknown as Response);
 
       try {
         await loadAppConfig("https://example.com/app-config.json");
@@ -228,7 +221,7 @@ describe("app-config-schema", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => invalidConfig,
-      } as Response);
+      } as unknown as Response);
 
       try {
         await loadAppConfig("https://example.com/app-config.json");
