@@ -230,6 +230,69 @@ POST /api/auth/logout
 - `backend-developer` - Config structure design
 - `tester` - Config validation tests
 
+**Note**: The environment detection from hostname approach from the original `environment-configuration` change has been superseded by `app-config-contract`. See `openspec/changes/environment-configuration/SUPERSEDED.md` for details.
+
+#### 2.3 Kubernetes Deploy-Time Config Validation
+
+**Owner**: DevOps + Backend Team  
+**Effort**: 12-16 hours  
+**Depends on**: app-config-contract change (merged)  
+**Status**: Deferred (post-MVP)
+
+**Design Intent**:
+
+This is a **deferred design** captured for future implementation. The app-config-contract change provides the foundation (schema generation, portable validator CLI), but Kubernetes-specific validation is deferred until Kubernetes deployment is implemented.
+
+**Proposed Architecture**:
+
+- **Helm pre-install/pre-upgrade hook**: Job validates rendered ConfigMap against pinned shell version's published schema
+- **Optional initContainer gate**: Blocks pod start if config invalid
+- **Values file per customer**: Each customer values file pins `shellVersion` + config atomically
+- **Corporate repo CI**: Uses `scripts/validate-app-config.ts` with version-pinned schema URL
+
+**Implementation Steps** (when ready):
+
+1. **Helm Hook Job** (4-5h)
+   - Create `templates/hooks/validate-config.yaml`
+   - Job fetches schema from `https://cdn.example.com/shell/${shellVersion}/app-config.schema.json`
+   - Validates rendered ConfigMap against schema using `validate-app-config.ts`
+   - Fails deployment on validation error
+
+2. **initContainer Validation** (3-4h)
+   - Optional gate that runs before main container
+   - Validates config from mounted ConfigMap
+   - Prevents pod from starting if config invalid
+
+3. **Customer Values Schema** (3-4h)
+   - Define Helm values schema for customer configs
+   - Pin `shellVersion` and `appConfig` together
+   - Validate values file structure in CI
+
+4. **CI Validation** (2-3h)
+   - Add GitHub Actions step to validate customer values
+   - Fetch schema from pinned shell version's published URL
+   - Run `scripts/validate-app-config.ts` against rendered config
+
+**Deferred Because**:
+
+- Kubernetes deployment not yet implemented
+- CDN schema publishing not yet in place
+- Customer onboarding workflow not yet defined
+- Current priority is completing core MFE features
+
+**Prerequisites for Implementation**:
+
+- [ ] Kubernetes deployment infrastructure
+- [ ] CDN for versioned shell artifacts
+- [ ] Customer values file repository
+- [ ] Helm chart structure defined
+
+**Skills to Use**:
+
+- `architect` - Kubernetes deployment design
+- `backend-developer` - Hook implementation
+- `team-lead` - Customer onboarding workflow
+
 ---
 
 ### Priority 3: IMPORTANT for Quality 🟡
