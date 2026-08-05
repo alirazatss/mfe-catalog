@@ -239,7 +239,7 @@ jobs:
           pnpm --filter @mfe-runtime/app-config build
 
           echo "Formatting schema..."
-          vp check --fix packages/app-config/schema.json
+          pnpm exec vp check --fix packages/app-config/schema.json
 
           echo "Checking for drift..."
           if ! git diff --quiet packages/app-config/schema.json; then
@@ -251,7 +251,7 @@ jobs:
             echo ""
             echo "Please regenerate the schema locally:"
             echo "  pnpm --filter @mfe-runtime/app-config build"
-            echo "  vp check --fix packages/app-config/schema.json"
+            echo "  pnpm exec vp check --fix packages/app-config/schema.json"
             echo "  git add packages/app-config/schema.json"
             echo "  git commit -m 'chore: regenerate app-config schema'"
             exit 1
