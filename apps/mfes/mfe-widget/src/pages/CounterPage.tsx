@@ -36,7 +36,7 @@ export default function CounterPage() {
       </div>
 
       <h2 style={{ marginBottom: "1rem", fontSize: "1.5rem", fontWeight: "bold" }}>
-        Counter Widget
+        Counter Widget Page
       </h2>
 
       <p style={{ marginBottom: "2rem", color: "#6b7280" }}>
