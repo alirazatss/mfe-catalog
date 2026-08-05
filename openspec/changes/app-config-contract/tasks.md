@@ -67,9 +67,9 @@ Requirement IDs reference the spec deltas in this change:
 
 **Depends on:** none
 
-- [ ] 4.1 Add ROADMAP section "Kubernetes deploy-time config validation" recording the deferred design: Helm pre-install/pre-upgrade hook Job validating the rendered ConfigMap against the pinned `shellVersion`'s published schema; optional initContainer gate; one values file per customer pinning version + config atomically; corporate-repo CI step using `scripts/validate-app-config.ts` with the version-pinned schema URL. — design §Kubernetes design intent — Skill: team-lead
-- [ ] 4.2 Create `openspec/changes/environment-configuration/SUPERSEDED.md` pointing to `app-config-contract`, summarizing what carried over (config package, runtime loader, type safety) and what was dropped (hostname-based environment detection) with rationale. — proposal §What Changes — Skill: team-lead
-- [ ] 4.3 Update `ROADMAP.md` entry for the old `environment-configuration` change to reference the supersession. — proposal §What Changes — Skill: team-lead
+- [x] 4.1 Add ROADMAP section "Kubernetes deploy-time config validation" recording the deferred design: Helm pre-install/pre-upgrade hook Job validating the rendered ConfigMap against the pinned `shellVersion`'s published schema; optional initContainer gate; one values file per customer pinning version + config atomically; corporate-repo CI step using `scripts/validate-app-config.ts` with the version-pinned schema URL. — design §Kubernetes design intent — Skill: team-lead
+- [x] 4.2 Create `openspec/changes/environment-configuration/SUPERSEDED.md` pointing to `app-config-contract`, summarizing what carried over (config package, runtime loader, type safety) and what was dropped (hostname-based environment detection) with rationale. — proposal §What Changes — Skill: team-lead
+- [x] 4.3 Update `ROADMAP.md` entry for the old `environment-configuration` change to reference the supersession. — proposal §What Changes — Skill: team-lead
 
 ## Execution waves
 
