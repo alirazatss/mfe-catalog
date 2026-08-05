@@ -16,12 +16,12 @@ Requirement IDs reference the spec deltas in this change:
 
 **Depends on:** none
 
-- [ ] 1.1 Scaffold `packages/app-config` (`@mfe-runtime/app-config`) matching the `remote-config` package layout: `vp pack` build, `vp test`, exports map including `./schema.json`. — ACS-1 — Skill: backend-developer
-- [ ] 1.2 Write failing unit tests for `appConfigSchema` / `parseAppConfig`: valid fixture parses; missing `apiBaseUrl` + malformed `auth.keycloakUrl` reports BOTH field paths; mismatched `schemaVersion` rejected with expected/actual in message. — ACS-1, ACS-2, ACS-3 — Skill: tester
-- [ ] 1.3 Implement the Zod schema (`schemaVersion` literal, `apiBaseUrl`, `logoutUrl`, `auth.{keycloakUrl,realm,clientId}`), export `appConfigSchema`, `AppConfig`, `schemaVersion` constant, and `parseAppConfig` returning a result type with all issues. Add a test asserting `schemaVersion` constant matches `package.json` version. — ACS-1, ACS-2, ACS-3 — Skill: backend-developer
-- [ ] 1.4 Write failing tests then implement `loadAppConfig(url, options?)`: success path; fetch-reject and non-OK categorized as load errors distinct from validation errors. — ACS-4 — Skill: backend-developer
-- [ ] 1.5 Implement the generation script (`packages/app-config/scripts/generate-schema.ts`) emitting `schema.json` via `zod-to-json-schema` with the `schemaVersion` const; wire into the package `build` script. — AAR-1 — Skill: backend-developer
-- [ ] 1.6 Add Zod↔ajv parity test: shared valid/invalid fixtures validated through both `parseAppConfig` and ajv against the generated schema, asserting identical accept/reject outcomes. — AAR-1 — Skill: tester
+- [x] 1.1 Scaffold `packages/app-config` (`@mfe-runtime/app-config`) matching the `remote-config` package layout: `vp pack` build, `vp test`, exports map including `./schema.json`. — ACS-1 — Skill: backend-developer
+- [x] 1.2 Write failing unit tests for `appConfigSchema` / `parseAppConfig`: valid fixture parses; missing `apiBaseUrl` + malformed `auth.keycloakUrl` reports BOTH field paths; mismatched `schemaVersion` rejected with expected/actual in message. — ACS-1, ACS-2, ACS-3 — Skill: tester
+- [x] 1.3 Implement the Zod schema (`schemaVersion` literal, `apiBaseUrl`, `logoutUrl`, `auth.{keycloakUrl,realm,clientId}`), export `appConfigSchema`, `AppConfig`, `schemaVersion` constant, and `parseAppConfig` returning a result type with all issues. Add a test asserting `schemaVersion` constant matches `package.json` version. — ACS-1, ACS-2, ACS-3 — Skill: backend-developer
+- [x] 1.4 Write failing tests then implement `loadAppConfig(url, options?)`: success path; fetch-reject and non-OK categorized as load errors distinct from validation errors. — ACS-4 — Skill: backend-developer
+- [x] 1.5 Implement the generation script (`packages/app-config/scripts/generate-schema.ts`) emitting `schema.json` via `zod-to-json-schema` with the `schemaVersion` const; wire into the package `build` script. — AAR-1 — Skill: backend-developer
+- [x] 1.6 Add Zod↔ajv parity test: shared valid/invalid fixtures validated through both `parseAppConfig` and ajv against the generated schema, asserting identical accept/reject outcomes. — AAR-1 — Skill: tester
 
 ## 2. Shell boot validation and served config
 

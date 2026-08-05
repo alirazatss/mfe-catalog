@@ -1,3 +1,36 @@
+# Review manifest — agent/app-config-contract-tg1-app-config-package
+
+Task group: 1 (App-config package - schema, parser, loader, generation)
+Change: app-config-contract
+Base: main @ eb3f6fa68f6c0581ae0f98a2dd3dfc9bb6b0b502
+Head: agent/app-config-contract-tg1-app-config-package @ 9364df04b3441e11d81f18412b0f05a9488c052e
+Delivery: push-and-pr
+
+**Tasks completed**: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6
+**Requirements covered**: ACS-1, ACS-2, ACS-3, ACS-4, AAR-1
+
+## Diff summary
+
+```
+ PR_BODY.md                                         | 110 +--------
+ docs/turborepo-deployment-optimization.md          |  20 +-
+ openspec/changes/app-config-contract/tasks.md      |  12 +-
+ .../azure-blob-deployment-pipeline/tasks.md        |   9 +-
+ packages/app-config/package.json                   |  32 +++
+ packages/app-config/schema.json                    |  45 ++++
+ packages/app-config/scripts/generate-schema.ts     |  25 ++
+ packages/app-config/src/index.test.ts              | 258 +++++++++++++++++++++
+ packages/app-config/src/index.ts                   | 113 +++++++++
+ packages/app-config/src/parity.test.ts             | 119 ++++++++++
+ packages/app-config/tsconfig.json                  |  19 ++
+ packages/app-config/vite.config.ts                 |  19 ++
+ pnpm-lock.yaml                                     |  45 ++++
+ pnpm-workspace.yaml                                |   2 +
+ 14 files changed, 718 insertions(+), 110 deletions(-)
+```
+
+## Verification Evidence
+
 # Task Group 1 Implementation: App-config Package
 
 ## Tasks Completed
@@ -140,3 +173,41 @@ Coverage:
 ✓ Build complete in 363ms
 ✓ Generated schema.json (version 0.1.0)
 ```
+
+## Deviations from Spec
+
+None. All requirements implemented exactly as specified.
+
+## Follow-ups
+
+- Task Group 2 (Shell boot validation) depends on this package
+- Task Group 3 (Portable CLI validator) depends on this package
+- Task Group 4 (Roadmap/supersession) can run in parallel
+
+## To review locally
+
+```bash
+cd /Users/ali.raza/dev/dev_worktrees/app-config-contract-tg1-app-config-package
+git diff origin/main..HEAD    # full diff
+git log origin/main..HEAD --stat
+pnpm --filter "@mfe-runtime/app-config" test  # run tests
+pnpm --filter "@mfe-runtime/app-config" build # verify build + schema generation
+```
+
+## Next steps
+
+PR opened. Reviewer merges into `main` when approved.
+
+## Cleanup after merge
+
+```bash
+cd /Users/ali.raza/dev/mf-mono
+git worktree remove /Users/ali.raza/dev/dev_worktrees/app-config-contract-tg1-app-config-package
+git branch -d agent/app-config-contract-tg1-app-config-package
+git push origin --delete agent/app-config-contract-tg1-app-config-package   # if not auto-deleted
+git worktree prune
+```
+
+---
+
+🤖 Written by spec-executor agent (delivery: push-and-pr). Requires human review before merge.

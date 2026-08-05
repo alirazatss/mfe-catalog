@@ -169,7 +169,6 @@
   - Owner: tester
   - Verification: Workflow fails at `azure/login` step; Azure AD sign-in logs show a rejected federated-credential exchange with the subject that was attempted.
 
-
 ## 7. Turborepo deployment optimization
 
 **Owns files:**
@@ -243,7 +242,7 @@ Derived from the dependency graph across task groups 1–7. Each wave MUST compl
 Total: 4 waves, up to 6 concurrent worktrees at peak (waves 1 and 2 each have 2 parallel groups; wave 3 has 2 parallel groups; wave 4 has 1 group). At any point, each worktree maps to exactly one branch and one PR per spec-executor rules.
 
 Note: Task group 7 is an optimization enhancement and can be implemented after initial deployment pipeline is operational (waves 1-3 complete).
-| MDP-Requirement-8 (unified workflow)           | 3.1, 3.2, 3.3      |
-| MDP-Requirement-9 (route discovery)            | 3.6                |
-| MDP-Requirement-10 (Turborepo dependency graph)| 7.1                |
-| MDP-Requirement-11 (Turborepo caching)         | 7.2, 7.3           |
+| MDP-Requirement-8 (unified workflow) | 3.1, 3.2, 3.3 |
+| MDP-Requirement-9 (route discovery) | 3.6 |
+| MDP-Requirement-10 (Turborepo dependency graph)| 7.1 |
+| MDP-Requirement-11 (Turborepo caching) | 7.2, 7.3 |
