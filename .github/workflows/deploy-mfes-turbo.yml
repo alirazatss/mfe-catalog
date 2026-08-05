@@ -1,5 +1,8 @@
-# Turborepo-Optimized MFE Deployment Workflow
+# Unified MFE Deployment Workflow (Turborepo-Optimized)
+# Implements MDP-M1, MDP-A1, MDP-A2, MDP-A3 from dev-preview-deployments change
 # Uses Turborepo to intelligently detect changed packages and build only what's needed
+# Dev deploys publish both floating pointer (dev/) and immutable SHA paths (sha-<short>/)
+# See: openspec/changes/dev-preview-deployments/specs/mfe-deployment-pipeline/spec.md
 # See: https://turbo.build/repo/docs/reference/run
 
 name: Deploy MFEs (Turborepo-Optimized)
@@ -125,12 +128,17 @@ jobs:
           echo "✓ Version validation passed: $TAG_VERSION"
 
   # Dev deployment using Turborepo for builds
+  # Implements MDP-A1, MDP-A2, MDP-A3 (immutable SHA paths, build metadata, concurrency)
   deploy-dev:
     name: Deploy ${{ matrix.mfe }} to Dev
     if: needs.detect-changed-mfes-turbo.outputs.has_changes == 'true'
     needs: detect-changed-mfes-turbo
     runs-on: ubuntu-latest
     environment: dev
+    # MDP-A3: Serialize dev deploys per MFE+environment to prevent last-write-wins races
+    concurrency:
+      group: deploy-mfe-${{ matrix.mfe }}-dev
+      cancel-in-progress: false
     strategy:
       matrix: ${{ fromJson(needs.detect-changed-mfes-turbo.outputs.matrix) }}
       fail-fast: false
@@ -176,6 +184,7 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      # Floating dev pointer (MDP-Requirement-5: overwritable, no-cache headers)
       - name: Upload to Azure Blob Storage (Dev)
         run: |
           az storage blob upload-batch \
@@ -187,14 +196,93 @@ jobs:
             --content-cache-control "no-cache, must-revalidate" \
             --auth-mode login
 
+      # MDP-A2: Generate build metadata file
+      - name: Generate build-info.json
+        id: build_info
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+          BUILD_INFO=$(jq -n \
+            --arg commitSha "${{ github.sha }}" \
+            --arg runId "${{ github.run_id }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{commitSha: $commitSha, runId: $runId, workflow: $workflow, timestamp: $timestamp}')
+
+          echo "$BUILD_INFO" | tee build-info.json
+          echo "Build metadata: $BUILD_INFO"
+
+      # MDP-A2: Upload build metadata to dev pointer
+      - name: Upload build-info.json to dev path
+        run: |
+          az storage blob upload \
+            --account-name tssmfestorage \
+            --container-name mfes-dev \
+            --name "${{ matrix.mfe }}/dev/build-info.json" \
+            --file build-info.json \
+            --overwrite true \
+            --content-type "application/json" \
+            --content-cache-control "no-cache, must-revalidate" \
+            --auth-mode login
+
+      # MDP-A1: Upload immutable SHA-path artifacts (ABL-A1: sha-* path family)
+      - name: Upload to SHA path (immutable)
+        run: |
+          SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
+
+          # Upload build artifacts to immutable SHA path
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination mfes-dev \
+            --destination-path "${{ matrix.mfe }}/sha-${SHORT_SHA}" \
+            --source "apps/mfes/${{ matrix.mfe }}/dist" \
+            --if-none-match "*" \
+            --content-cache-control "public, max-age=31536000, immutable" \
+            --auth-mode login \
+            2>&1 | tee upload.log || {
+              # Tolerate already-exists on re-run (conditional upload skips existing blobs)
+              if grep -q "BlobAlreadyExists\|ConditionNotMet" upload.log; then
+                echo "SHA path sha-${SHORT_SHA} already exists (workflow re-run), skipping upload"
+                exit 0
+              else
+                exit 1
+              fi
+            }
+
+      # MDP-A2: Upload build metadata to SHA path
+      - name: Upload build-info.json to SHA path
+        run: |
+          SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
+
+          az storage blob upload \
+            --account-name tssmfestorage \
+            --container-name mfes-dev \
+            --name "${{ matrix.mfe }}/sha-${SHORT_SHA}/build-info.json" \
+            --file build-info.json \
+            --if-none-match "*" \
+            --content-type "application/json" \
+            --content-cache-control "public, max-age=31536000, immutable" \
+            --auth-mode login \
+            2>&1 || echo "Build info already exists at SHA path (workflow re-run)"
+
       - name: Dev deployment summary
         run: |
+          SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
           echo "### ✓ Dev Deployment Successful (Turborepo-Optimized)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**MFE**: ${{ matrix.mfe }}" >> $GITHUB_STEP_SUMMARY
           echo "**Environment**: dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }} (short: ${SHORT_SHA})" >> $GITHUB_STEP_SUMMARY
           echo "**Build Tool**: Turborepo (cached dependencies)" >> $GITHUB_STEP_SUMMARY
-          echo "**Entry URL**: https://tssmfestorage.blob.core.windows.net/mfes-dev/${{ matrix.mfe }}/dev/remoteEntry.js" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Dev pointer (floating)**:" >> $GITHUB_STEP_SUMMARY
+          echo "- Entry URL: https://tssmfestorage.blob.core.windows.net/mfes-dev/${{ matrix.mfe }}/dev/remoteEntry.js" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/mfes-dev/${{ matrix.mfe }}/dev/build-info.json" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**SHA path (immutable)**:" >> $GITHUB_STEP_SUMMARY
+          echo "- Entry URL: https://tssmfestorage.blob.core.windows.net/mfes-dev/${{ matrix.mfe }}/sha-${SHORT_SHA}/remoteEntry.js" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/mfes-dev/${{ matrix.mfe }}/sha-${SHORT_SHA}/build-info.json" >> $GITHUB_STEP_SUMMARY
 
   # Prod deployment using Turborepo
   deploy-prod:

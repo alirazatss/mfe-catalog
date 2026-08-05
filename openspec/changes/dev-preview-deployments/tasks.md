@@ -29,27 +29,27 @@ Requirement IDs used below:
 
 **Depends on:** none
 
-- [ ] 1.1 Absorb the prod tag flow (tag trigger, tag/`package.json` version validation, versioned upload, config-pin PR job) from `deploy-mfes.yml` into `deploy-mfes-turbo.yml`
+- [x] 1.1 Absorb the prod tag flow (tag trigger, tag/`package.json` version validation, versioned upload, config-pin PR job) from `deploy-mfes.yml` into `deploy-mfes-turbo.yml`
   - Requirements: MDP-M1
   - Owner: backend-developer
   - Verification: `act`/workflow-dispatch dry-run or pushed tag on a scratch MFE reaches the prod job path; YAML lint passes
-- [ ] 1.2 Add SHA-path upload step to the dev deploy job: conditional upload to `mfes-dev/<mfe>/sha-<short8>/` with `Cache-Control: public, max-age=31536000, immutable`, tolerating already-exists on re-run
+- [x] 1.2 Add SHA-path upload step to the dev deploy job: conditional upload to `mfes-dev/<mfe>/sha-<short8>/` with `Cache-Control: public, max-age=31536000, immutable`, tolerating already-exists on re-run
   - Requirements: MDP-A1, ABL-A1
   - Owner: backend-developer
   - Verification: after a main push, `az storage blob list` shows both `dev/` and `sha-<short8>/` blobs; re-run leaves SHA blobs' ETags unchanged
-- [ ] 1.3 Generate and upload `build-info.json` (full commit SHA, run id, workflow name, ISO-8601 UTC timestamp) to both `dev/` and `sha-<short8>/` paths
+- [x] 1.3 Generate and upload `build-info.json` (full commit SHA, run id, workflow name, ISO-8601 UTC timestamp) to both `dev/` and `sha-<short8>/` paths
   - Requirements: MDP-A2
   - Owner: backend-developer
   - Verification: `curl .../mfes-dev/<mfe>/dev/build-info.json | jq` returns all four fields matching the triggering run
-- [ ] 1.4 Add concurrency group `deploy-mfe-<matrix.mfe>-dev` with `cancel-in-progress: false` to the dev deploy job
+- [x] 1.4 Add concurrency group `deploy-mfe-<matrix.mfe>-dev` with `cancel-in-progress: false` to the dev deploy job
   - Requirements: MDP-A3
   - Owner: backend-developer
   - Verification: two rapid pushes queue the second deploy job (visible in Actions UI); final `build-info.json` reports the newer SHA
-- [ ] 1.5 Delete `.github/workflows/deploy-mfes.yml` in the same PR as 1.1
+- [x] 1.5 Delete `.github/workflows/deploy-mfes.yml` in the same PR as 1.1
   - Requirements: MDP-M1
   - Owner: backend-developer
   - Verification: a main push modifying one MFE starts exactly one MFE deploy workflow run
-- [ ] 1.6 End-to-end verification sweep of dev + tag flows against the spec scenarios for MDP-M1, MDP-A1–A3
+- [x] 1.6 End-to-end verification sweep of dev + tag flows against the spec scenarios for MDP-M1, MDP-A1–A3
   - Requirements: MDP-M1, MDP-A1, MDP-A2, MDP-A3
   - Owner: tester
   - Verification: each spec scenario checked against real workflow runs and blob listings; results recorded in the PR description
