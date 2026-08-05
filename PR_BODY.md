@@ -1,120 +1,106 @@
-# Task Group 3: PR Preview and Cleanup Workflows
+# Task Group 2: Shell Dev Pipeline
 
 ## Implementation Summary
 
-Implemented all tasks from task group 3 of the dev-preview-deployments change.
+Implemented all tasks from task group 2 of the dev-preview-deployments change.
 
-### Task 3.1: ✅ Preview config generator with tests
+### Task 2.1: ✅ SHA-path uploads added
 
-**Requirements**: PPD-2  
+**Requirements**: SDP-A1, ABL-A1  
 **Changes**:
 
-- Created `scripts/azure/generate-preview-config.ts` with full TypeScript types
-- Created `scripts/azure/generate-preview-config.test.ts` with 5 test cases
-- All tests pass (`vp test scripts/azure/generate-preview-config.test.ts`)
-- Function rewrites entryUrls from `/dev/` to `/pr-<n>/` for changed MFEs only
+- Added "Upload to SHA path (immutable)" step to deploy-dev job
+- Uploads to `dev-shell/sha-<short8>/` with `Cache-Control: public, max-age=31536000, immutable`
+- Uses `--if-none-match "*"` for conditional upload (fail-if-exists semantics)
+- Tolerates BlobAlreadyExists on workflow re-run (exit 0 if already exists)
 
-**Test Coverage**:
+**Files**: .github/workflows/deploy-website.yml
 
-- ✅ Changed MFE gets pr-<n> URL
-- ✅ Untouched MFE keeps dev/ URL
-- ✅ Zero changed MFEs returns dev config unchanged
-- ✅ Multiple changed MFEs handled correctly
-- ✅ All config properties preserved
+### Task 2.2: ✅ build-info.json generation added
 
-### Task 3.2: ✅ deploy-previews.yml workflow created
-
-**Requirements**: PPD-1  
+**Requirements**: SDP-A2  
 **Changes**:
 
-- Trigger: `pull_request` types `[opened, synchronize]`
-- Turborepo change detection using `--filter='[origin/main...HEAD]'`
-- Matrix deploy of changed MFEs to `mfes-dev/<mfe>/pr-<n>/`
-- `Cache-Control: no-cache, must-revalidate` for preview blobs
+- Added "Generate build-info.json" step generating JSON with:
+  - `commitSha`: full commit SHA
+  - `runId`: GitHub Actions run ID
+  - `workflow`: workflow name
+  - `timestamp`: ISO-8601 UTC timestamp
+- Uploads to both `dev-shell/build-info.json` and `dev-shell/sha-<short>/build-info.json`
 
-### Task 3.3: ✅ Preview shell job added
+**Files**: .github/workflows/deploy-website.yml
 
-**Requirements**: PPD-2  
+### Task 2.3: ✅ Concurrency groups added
+
+**Requirements**: SDP-A3  
 **Changes**:
 
-- Generates per-PR config using `generate-preview-config.ts`
-- Builds shell with preview config embedded
-- Uploads to `dev-shell/pr-<n>/`
-- Preview config points changed MFEs to pr-<n> URLs, others to dev/
-
-### Task 3.4: ✅ Same-repo boundary enforced
-
-**Requirements**: PPD-3  
-**Changes**:
-
-- Uses `pull_request` trigger (not `pull_request_target`)
-- Explicit `if: github.event.pull_request.head.repo.full_name == github.repository` on all jobs requesting Azure credentials
-- Fork PRs skip all deploy jobs (no `id-token: write` granted)
-
-### Task 3.5: ✅ build-info.json and sticky PR comment
-
-**Requirements**: PPD-4  
-**Changes**:
-
-- `build-info.json` includes: `commitSha`, `runId`, `workflow`, `timestamp`, **`prNumber`**
-- Uploaded to all preview paths (MFEs and shell)
-- Sticky PR comment created/updated using `actions/github-script`
-- Comment lists preview shell URL and all changed MFE URLs
-
-### Task 3.6: ✅ Concurrency groups added
-
-**Requirements**: PPD-6  
-**Changes**:
-
-- Concurrency block at workflow level:
+- Moved concurrency from workflow level to deploy-dev job specifically
+- Concurrency block:
   ```yaml
   concurrency:
-    group: preview-pr-${{ github.event.pull_request.number }}
-    cancel-in-progress: true
+    group: deploy-website-dev
+    cancel-in-progress: false
   ```
-- Rapid pushes to same PR cancel in-progress runs
-- Different PRs run in parallel (separate groups)
+- Ensures dev shell deploys serialize instead of racing
+- Keeps tag/prod groups separate (not affected by dev concurrency)
 
-### Task 3.7: ✅ cleanup-previews.yml created
+**Files**: .github/workflows/deploy-website.yml
 
-**Requirements**: PPD-5  
-**Changes**:
+### Task 2.4: Verification Plan
 
-- Trigger: `pull_request` type `closed`
-- Deletes all blobs under `dev-shell/pr-<n>/`
-- Deletes all blobs under `mfes-dev/*/pr-<n>/` for all MFEs
-- Succeeds when no blobs exist (idempotent)
-- Does NOT touch `dev/`, `sha-*`, or other PRs' paths
+**Requirements**: SDP-A1, SDP-A2, SDP-A3
 
-### Task 3.8: Verification Plan
+**Verification to be performed post-merge** (requires live GitHub Actions + Azure):
 
-**Requirements**: PPD-1–PPD-6
+1. **SDP-A1 Scenario: Dev shell deploy publishes both root and SHA path**
+   - Push commit modifying shell to main
+   - After deploy completes, run:
+     ```bash
+     az storage blob list --account-name tssmfestorage --container-name dev-shell --prefix "" --auth-mode login
+     ```
+   - Verify: both root `index.html` and `sha-<short>/index.html` exist
+   - Verify: SHA-path blob has `Cache-Control: public, max-age=31536000, immutable`
 
-**E2E verification with real test PR** (post-merge):
+2. **SDP-A1 Scenario: Re-run does not modify SHA path**
+   - Re-run the workflow from step 1
+   - Verify: SHA-path blobs' ETags unchanged (conditional upload skipped)
+   - Verify: root files refreshed
 
-1. **Open test PR** touching one MFE (e.g., mfe-widget)
-2. **Verify PPD-1**: Check `az storage blob list` shows `mfes-dev/mfe-widget/pr-<n>/` only
-3. **Verify PPD-2**: Check `dev-shell/pr-<n>/remotes.config.json` points mfe-widget to pr-<n>, others to dev/
-4. **Verify PPD-3**: Open fork PR, verify no Azure jobs run
-5. **Verify PPD-4**: Check PR comment created with URLs; check build-info.json has prNumber
-6. **Push again to PR**, verify PPD-4 (comment updated in place) and PPD-6 (first run cancelled)
-7. **Close PR**, verify PPD-5: all pr-<n> blobs deleted, dev/ and sha-\* unchanged
+3. **SDP-A2 Scenario: Metadata file is served from dev shell root**
+   - Fetch `https://tssmfestorage.blob.core.windows.net/dev-shell/build-info.json`
+   - Verify: JSON contains `commitSha` (full), `runId`, `workflow`, `timestamp` (ISO-8601 UTC)
+   - Verify: all four fields match the triggering workflow run
+
+4. **SDP-A3 Scenario: Rapid successive shell merges queue instead of racing**
+   - Push commit A modifying shell to main
+   - Immediately push commit B modifying shell to main
+   - Verify: second deploy job waits (visible in Actions UI as "queued")
+   - After both complete, verify: `dev-shell/build-info.json` reports commit B's SHA
+
+## Verification Commands
+
+```bash
+# Check blob paths exist
+az storage blob list --account-name tssmfestorage --container-name dev-shell --auth-mode login --output table
+
+# Fetch and inspect build-info.json
+curl https://tssmfestorage.blob.core.windows.net/dev-shell/build-info.json | jq
+curl https://tssmfestorage.blob.core.windows.net/dev-shell/sha-XXXXXXXX/build-info.json | jq
+
+# Check blob properties (Cache-Control headers)
+az storage blob show --account-name tssmfestorage --container-name dev-shell --name "sha-XXXXXXXX/index.html" --auth-mode login --query "properties.contentSettings.cacheControl"
+```
 
 ## Requirements Coverage
 
-| Requirement | Implemented | Evidence                                                            |
-| ----------- | ----------- | ------------------------------------------------------------------- |
-| PPD-1       | ✅          | deploy-previews.yml deploys changed MFEs to pr-<n>/                 |
-| PPD-2       | ✅          | generate-preview-config.ts + preview shell job                      |
-| PPD-3       | ✅          | pull_request trigger + head.repo check                              |
-| PPD-4       | ✅          | build-info.json with prNumber + sticky comment                      |
-| PPD-5       | ✅          | cleanup-previews.yml deletes pr-<n>/ on close                       |
-| PPD-6       | ✅          | concurrency group preview-pr-<number> with cancel-in-progress: true |
+| Requirement | Implemented | Evidence                                                              |
+| ----------- | ----------- | --------------------------------------------------------------------- |
+| SDP-A1      | ✅          | SHA-path upload step added with immutable cache headers               |
+| SDP-A2      | ✅          | build-info.json generation and upload to both root and sha-<short>/   |
+| SDP-A3      | ✅          | Concurrency group `deploy-website-dev` with cancel-in-progress: false |
 
-## Files Created/Modified
+## Files Modified
 
-- `.github/workflows/deploy-previews.yml` (new)
-- `.github/workflows/cleanup-previews.yml` (new)
-- `scripts/azure/generate-preview-config.ts` (new)
-- `scripts/azure/generate-preview-config.test.ts` (new)
+- `.github/workflows/deploy-website.yml` (extended with SHA paths, metadata, concurrency)
 - `openspec/changes/dev-preview-deployments/tasks.md` (checkboxes updated)

@@ -1,5 +1,7 @@
 # Shell Website Deployment Workflow
-# Implements: SDP-Requirement-1 through SDP-Requirement-5
+# Implements SDP-A1, SDP-A2, SDP-A3 from dev-preview-deployments change
+# Dev deploys publish both container root and immutable SHA paths (sha-<short>/)
+# See: openspec/changes/dev-preview-deployments/specs/shell-deployment-pipeline/spec.md
 # See: openspec/changes/azure-blob-deployment-pipeline/specs/shell-deployment-pipeline/spec.md
 
 name: Deploy Website Shell
@@ -31,11 +33,6 @@ on:
 permissions:
   id-token: write # Required for Azure OIDC authentication
   contents: read # Required to checkout code
-
-# Concurrency: serialize all shell deploys to avoid race conditions
-concurrency:
-  group: deploy-website-${{ github.ref }}
-  cancel-in-progress: false
 
 jobs:
   # Implements SDP-Requirement-2: Validate tag version matches package.json
@@ -78,11 +75,16 @@ jobs:
           echo "✓ Version validation passed: $TAG_VERSION"
 
   # Implements SDP-Requirement-4: Dev deploy on push to main
+  # Implements SDP-A1, SDP-A2, SDP-A3 (immutable SHA paths, build metadata, concurrency)
   deploy-dev:
     name: Deploy to Dev
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: dev
+    # SDP-A3: Serialize dev shell deploys to prevent last-write-wins races
+    concurrency:
+      group: deploy-website-dev
+      cancel-in-progress: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -116,7 +118,7 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      # Implements SDP-Requirement-4: Upload to dev-shell container root
+      # Implements SDP-Requirement-4: Upload to dev-shell container root (floating pointer)
       # Implements ABL-Requirement-2: Dev shell path structure (dev-shell/ root)
       - name: Upload to Azure Blob Storage (Dev Shell)
         run: |
@@ -128,16 +130,94 @@ jobs:
             --content-cache-control "no-cache, must-revalidate" \
             --auth-mode login
 
+      # SDP-A2: Generate build metadata file
+      - name: Generate build-info.json
+        id: build_info
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+          BUILD_INFO=$(jq -n \
+            --arg commitSha "${{ github.sha }}" \
+            --arg runId "${{ github.run_id }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{commitSha: $commitSha, runId: $runId, workflow: $workflow, timestamp: $timestamp}')
+
+          echo "$BUILD_INFO" | tee build-info.json
+          echo "Build metadata: $BUILD_INFO"
+
+      # SDP-A2: Upload build metadata to dev-shell root
+      - name: Upload build-info.json to dev-shell root
+        run: |
+          az storage blob upload \
+            --account-name tssmfestorage \
+            --container-name dev-shell \
+            --name build-info.json \
+            --file build-info.json \
+            --overwrite true \
+            --content-type "application/json" \
+            --content-cache-control "no-cache, must-revalidate" \
+            --auth-mode login
+
+      # SDP-A1: Upload immutable SHA-path artifacts (ABL-A1: sha-* path family)
+      - name: Upload to SHA path (immutable)
+        run: |
+          SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
+
+          # Upload build artifacts to immutable SHA path
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination dev-shell \
+            --destination-path "sha-${SHORT_SHA}" \
+            --source apps/shells/website/dist \
+            --if-none-match "*" \
+            --content-cache-control "public, max-age=31536000, immutable" \
+            --auth-mode login \
+            2>&1 | tee upload.log || {
+              # Tolerate already-exists on re-run (conditional upload skips existing blobs)
+              if grep -q "BlobAlreadyExists\|ConditionNotMet" upload.log; then
+                echo "SHA path sha-${SHORT_SHA} already exists (workflow re-run), skipping upload"
+                exit 0
+              else
+                exit 1
+              fi
+            }
+
+      # SDP-A2: Upload build metadata to SHA path
+      - name: Upload build-info.json to SHA path
+        run: |
+          SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
+
+          az storage blob upload \
+            --account-name tssmfestorage \
+            --container-name dev-shell \
+            --name "sha-${SHORT_SHA}/build-info.json" \
+            --file build-info.json \
+            --if-none-match "*" \
+            --content-type "application/json" \
+            --content-cache-control "public, max-age=31536000, immutable" \
+            --auth-mode login \
+            2>&1 || echo "Build info already exists at SHA path (workflow re-run)"
+
       - name: Dev deployment summary
         run: |
+          SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
           echo "### ✓ Dev Shell Deployment Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Shell**: website" >> $GITHUB_STEP_SUMMARY
           echo "**Environment**: dev" >> $GITHUB_STEP_SUMMARY
           echo "**Container**: dev-shell" >> $GITHUB_STEP_SUMMARY
-          echo "**URL**: https://tssmfestorage.blob.core.windows.net/dev-shell/index.html" >> $GITHUB_STEP_SUMMARY
-          echo "**Cache-Control**: no-cache, must-revalidate" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }} (short: ${SHORT_SHA})" >> $GITHUB_STEP_SUMMARY
           echo "**Config**: remotes.config.dev.json bundled" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Dev shell root (floating)**:" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/build-info.json" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**SHA path (immutable)**:" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/sha-${SHORT_SHA}/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/sha-${SHORT_SHA}/build-info.json" >> $GITHUB_STEP_SUMMARY
 
   # Implements SDP-Requirement-3: Config-only redeploy to $web root
   deploy-prod-config-only:
