@@ -189,25 +189,25 @@ jobs:
       # PPD-2: Generate preview config with pr-<n> URLs for changed MFEs
       - name: Generate preview remotes config
         id: preview_config
+        env:
+          CHANGED_MFES: ${{ needs.detect-changed-mfes.outputs.changed_mfes }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          CHANGED_MFES='${{ needs.detect-changed-mfes.outputs.changed_mfes }}'
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-
-          # Run the generator script
-          cat > generate-config.mjs <<'SCRIPT'
+          # Run the generator script via tsx (resolves .ts import directly)
+          cat > generate-config.ts <<'SCRIPT'
           import { readFileSync, writeFileSync } from 'node:fs';
-          import { generatePreviewConfig } from './scripts/azure/generate-preview-config.js';
+          import { generatePreviewConfig } from './scripts/azure/generate-preview-config.ts';
 
           const devConfig = JSON.parse(readFileSync('apps/shells/website/public/remotes.config.dev.json', 'utf-8'));
-          const changedMfes = JSON.parse(process.argv[1]);
-          const prNumber = parseInt(process.argv[2], 10);
+          const changedMfes = JSON.parse(process.env.CHANGED_MFES ?? '[]');
+          const prNumber = parseInt(process.env.PR_NUMBER ?? '0', 10);
 
           const previewConfig = generatePreviewConfig(devConfig, changedMfes, prNumber);
           writeFileSync('apps/shells/website/public/remotes.config.json', JSON.stringify(previewConfig, null, 2));
           console.log('Generated preview config:', JSON.stringify(previewConfig, null, 2));
           SCRIPT
 
-          node generate-config.mjs "$CHANGED_MFES" "$PR_NUMBER"
+          pnpm exec tsx generate-config.ts
 
       - name: Build shell (preview)
         run: pnpm --filter "website..." build
