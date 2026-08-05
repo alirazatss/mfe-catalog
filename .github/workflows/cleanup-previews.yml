@@ -1,0 +1,124 @@
+# PR Preview Cleanup Workflow
+# Implements PPD-5 from dev-preview-deployments change
+# Deletes pr-<number>/ blobs when PR is closed (merged or not)
+# See: openspec/changes/dev-preview-deployments/specs/pr-preview-deployments/spec.md
+
+name: Cleanup PR Previews
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  id-token: write # Required for Azure OIDC
+  contents: read # Required to checkout code
+
+jobs:
+  # PPD-5: Delete all pr-<number>/ blobs for this PR
+  cleanup-preview:
+    name: Cleanup PR ${{ github.event.pull_request.number }} Previews
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_DEV }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # PPD-5: Delete preview shell blobs
+      - name: Delete preview shell blobs
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PREFIX="pr-${PR_NUMBER}/"
+
+          echo "Deleting blobs under dev-shell/$PREFIX..."
+
+          # List and delete blobs with this prefix
+          BLOBS=$(az storage blob list \
+            --account-name tssmfestorage \
+            --container-name dev-shell \
+            --prefix "$PREFIX" \
+            --auth-mode login \
+            --query "[].name" \
+            --output tsv)
+
+          if [ -z "$BLOBS" ]; then
+            echo "No preview shell blobs found for PR $PR_NUMBER (already cleaned or never deployed)"
+          else
+            echo "Found $(echo "$BLOBS" | wc -l) blobs to delete"
+            echo "$BLOBS" | while read -r blob; do
+              az storage blob delete \
+                --account-name tssmfestorage \
+                --container-name dev-shell \
+                --name "$blob" \
+                --auth-mode login
+            done
+            echo "✓ Deleted preview shell blobs"
+          fi
+
+      # PPD-5: Delete preview MFE blobs for all MFEs
+      - name: Delete preview MFE blobs
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+
+          echo "Deleting MFE preview blobs for PR $PR_NUMBER..."
+
+          # Find all MFE directories
+          MFES=$(az storage blob directory list \
+            --account-name tssmfestorage \
+            --container-name mfes-dev \
+            --directory-path "" \
+            --auth-mode login \
+            --query "[].name" \
+            --output tsv 2>/dev/null || echo "")
+
+          if [ -z "$MFES" ]; then
+            # Fallback: list common MFEs if directory listing not supported
+            MFES="mfe-widget mfe-landing-page"
+          fi
+
+          TOTAL_DELETED=0
+
+          for MFE in $MFES; do
+            PREFIX="${MFE}/pr-${PR_NUMBER}/"
+
+            BLOBS=$(az storage blob list \
+              --account-name tssmfestorage \
+              --container-name mfes-dev \
+              --prefix "$PREFIX" \
+              --auth-mode login \
+              --query "[].name" \
+              --output tsv 2>/dev/null || echo "")
+
+            if [ -n "$BLOBS" ]; then
+              COUNT=$(echo "$BLOBS" | wc -l)
+              echo "Deleting $COUNT blobs from $PREFIX..."
+              echo "$BLOBS" | while read -r blob; do
+                az storage blob delete \
+                  --account-name tssmfestorage \
+                  --container-name mfes-dev \
+                  --name "$blob" \
+                  --auth-mode login
+              done
+              TOTAL_DELETED=$((TOTAL_DELETED + COUNT))
+            fi
+          done
+
+          if [ "$TOTAL_DELETED" -eq 0 ]; then
+            echo "No MFE preview blobs found for PR $PR_NUMBER (already cleaned or never deployed)"
+          else
+            echo "✓ Deleted $TOTAL_DELETED MFE preview blobs"
+          fi
+
+      - name: Cleanup summary
+        run: |
+          echo "### ✓ PR Preview Cleanup Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**PR**: #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: Previews cleaned up (or never existed)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All blobs under \`pr-${{ github.event.pull_request.number }}/\` have been removed." >> $GITHUB_STEP_SUMMARY

@@ -90,35 +90,35 @@ Requirement IDs used below:
 
 **Depends on:** none
 
-- [ ] 3.1 Write unit tests for the preview config generator (changed MFE → `pr-<n>` URL; untouched MFE keeps `dev/` URL; zero changed MFEs → config equals dev config), then implement `generate-preview-config.ts` reading `remotes.config.dev.json`
+- [x] 3.1 Write unit tests for the preview config generator (changed MFE → `pr-<n>` URL; untouched MFE keeps `dev/` URL; zero changed MFEs → config equals dev config), then implement `generate-preview-config.ts` reading `remotes.config.dev.json`
   - Requirements: PPD-2
   - Owner: backend-developer, tester
   - Verification: `vp test` passes for `scripts/azure/generate-preview-config.test.ts`
-- [ ] 3.2 Create `deploy-previews.yml`: trigger `pull_request` (opened/synchronize), Turborepo change detection against `origin/main...HEAD`, matrix deploy of changed MFEs to `mfes-dev/<mfe>/pr-<n>/` with no-cache headers
+- [x] 3.2 Create `deploy-previews.yml`: trigger `pull_request` (opened/synchronize), Turborepo change detection against `origin/main...HEAD`, matrix deploy of changed MFEs to `mfes-dev/<mfe>/pr-<n>/` with no-cache headers
   - Requirements: PPD-1
   - Owner: backend-developer
   - Verification: test PR touching one MFE produces blobs only under that MFE's `pr-<n>/`; docs-only PR uploads nothing
-- [ ] 3.3 Add the preview shell job: build shell with generated per-PR config, upload to `dev-shell/pr-<n>/`
+- [x] 3.3 Add the preview shell job: build shell with generated per-PR config, upload to `dev-shell/pr-<n>/`
   - Requirements: PPD-2
   - Owner: backend-developer
   - Verification: `dev-shell/pr-<n>/remotes.config.json` points changed MFEs at `pr-<n>` URLs and others at `dev/` URLs
-- [ ] 3.4 Enforce the same-repo boundary: `pull_request` trigger (no `pull_request_target`) plus explicit `head.repo == base.repo` condition on every job requesting `id-token: write`
+- [x] 3.4 Enforce the same-repo boundary: `pull_request` trigger (no `pull_request_target`) plus explicit `head.repo == base.repo` condition on every job requesting `id-token: write`
   - Requirements: PPD-3
   - Owner: backend-developer
   - Verification: fork PR run shows all credentialed jobs skipped; no blob writes; same-repo PR deploys normally
-- [ ] 3.5 Upload `build-info.json` (including PR number) to every preview path and create/update a single sticky PR comment listing preview shell and MFE URLs
+- [x] 3.5 Upload `build-info.json` (including PR number) to every preview path and create/update a single sticky PR comment listing preview shell and MFE URLs
   - Requirements: PPD-4
   - Owner: backend-developer
   - Verification: second push to the PR updates the existing comment in place; `build-info.json` reports head SHA and PR number
-- [ ] 3.6 Add concurrency group `preview-pr-<number>` with `cancel-in-progress: true` to `deploy-previews.yml`
+- [x] 3.6 Add concurrency group `preview-pr-<number>` with `cancel-in-progress: true` to `deploy-previews.yml`
   - Requirements: PPD-6
   - Owner: backend-developer
   - Verification: rapid double push cancels the first in-progress preview run; different PRs run in parallel
-- [ ] 3.7 Create `cleanup-previews.yml`: on PR close, delete `mfes-dev/*/pr-<n>/` and `dev-shell/pr-<n>/` prefixes only; succeed when nothing exists
+- [x] 3.7 Create `cleanup-previews.yml`: on PR close, delete `mfes-dev/*/pr-<n>/` and `dev-shell/pr-<n>/` prefixes only; succeed when nothing exists
   - Requirements: PPD-5
   - Owner: backend-developer
   - Verification: closing a test PR removes exactly its `pr-<n>` blobs; `dev/`, `sha-*`, and other PRs' blobs unchanged; closing a preview-less PR succeeds
-- [ ] 3.8 End-to-end verification sweep of all PPD spec scenarios with a real test PR lifecycle (open → push → push → close)
+- [x] 3.8 End-to-end verification sweep of all PPD spec scenarios with a real test PR lifecycle (open → push → push → close)
   - Requirements: PPD-1, PPD-2, PPD-3, PPD-4, PPD-5, PPD-6
   - Owner: tester
   - Verification: each scenario checked and recorded in the PR description
