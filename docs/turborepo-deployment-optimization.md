@@ -9,18 +9,21 @@ This document explains how Turborepo optimizes the MFE deployment workflow by in
 ### 1. Intelligent Change Detection
 
 **Before (Git Diff)**:
+
 ```bash
 # Manual git diff parsing
 git diff --name-only HEAD^ HEAD | grep '^apps/mfes/mfe-' | cut -d/ -f3
 ```
 
 **After (Turborepo)**:
+
 ```bash
 # Turborepo understands package dependencies
 turbo build --dry-run --filter='[HEAD^1]'
 ```
 
 **Why Better?**
+
 - Turborepo understands `package.json` dependencies
 - Detects when shared packages changed (e.g., `@mfe-runtime/dynamic-loader`)
 - Automatically includes dependent MFEs
@@ -29,17 +32,20 @@ turbo build --dry-run --filter='[HEAD^1]'
 ### 2. Build Caching
 
 **Before**:
+
 - Every workflow run rebuilds everything from scratch
 - Shared dependencies rebuilt for each MFE
 - No cache between workflow runs
 
 **After (Turborepo)**:
+
 - Local cache: Reuses builds from previous commits
 - Remote cache (optional): Share cache across machines
 - Incremental builds: Only rebuild what changed
 - Dependency cache: Shared packages built once
 
 **Performance Gains**:
+
 ```
 Scenario: Modify mfe-widget only
 
@@ -68,6 +74,7 @@ Total: 60s (43% faster)
 **Scenario**: You modify `packages/dynamic-loader`
 
 **Before (Git Diff)**:
+
 ```bash
 # Git diff only sees:
 changed: packages/dynamic-loader/src/loader.ts
@@ -77,6 +84,7 @@ changed: packages/dynamic-loader/src/loader.ts
 ```
 
 **After (Turborepo)**:
+
 ```bash
 # Turborepo sees:
 changed: packages/dynamic-loader/src/loader.ts
@@ -92,6 +100,7 @@ dependent: mfe-landing-page (uses @mfe-runtime/dynamic-loader)
 ### 4. Parallel Builds with Smart Concurrency
 
 **turbo.json Configuration**:
+
 ```json
 {
   "concurrency": "12",
@@ -104,6 +113,7 @@ dependent: mfe-landing-page (uses @mfe-runtime/dynamic-loader)
 ```
 
 Turborepo automatically:
+
 - Builds independent packages in parallel
 - Respects dependency order (`^build` means "build dependencies first")
 - Uses available CPU cores efficiently
@@ -118,7 +128,7 @@ detect-changed-mfes:
     - run: |
         # Manual git diff parsing
         CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-        
+
         # Check if shared packages changed
         if echo "$CHANGED_FILES" | grep -qE '^packages/(dynamic-loader|events)/'; then
           # Deploy all MFEs manually
@@ -131,6 +141,7 @@ detect-changed-mfes:
 ```
 
 **Problems**:
+
 - Manual parsing of git output
 - Hardcoded shared package list
 - No understanding of `package.json` dependencies
@@ -147,6 +158,7 @@ detect-changed-mfes-turbo:
 ```
 
 **Benefits**:
+
 - Turborepo reads `package.json` automatically
 - Understands dependency graph
 - Detects transitive dependencies
@@ -167,6 +179,7 @@ Enable shared cache across CI runs and team members:
 ```
 
 **Benefits**:
+
 - PR builds reuse cache from main branch
 - Multiple workflow runs share cache
 - Developer builds reuse CI cache
@@ -242,12 +255,14 @@ npx turbo link
 ### Scenario: Fix bug in mfe-widget
 
 **Current Git-Based Workflow**:
+
 1. Modify `apps/mfes/mfe-widget/src/components/Button.tsx`
 2. Git diff detects: `apps/mfes/mfe-widget/**`
 3. Workflow builds: mfe-widget
 4. Build time: ~90s (deps install + build from scratch)
 
 **Turborepo Workflow**:
+
 1. Modify `apps/mfes/mfe-widget/src/components/Button.tsx`
 2. Turbo detects: `@mfe-runtime/mfe-widget` changed
 3. Turbo checks cache: dynamic-loader cached, events cached
@@ -257,12 +272,14 @@ npx turbo link
 ### Scenario: Update shared package
 
 **Current Git-Based Workflow**:
+
 1. Modify `packages/dynamic-loader/src/loader.ts`
 2. Git diff detects: `packages/dynamic-loader/**`
 3. Workflow sees shared package → deploys ALL MFEs
 4. Build time: ~180s (2 MFEs × 90s each, sequential)
 
 **Turborepo Workflow**:
+
 1. Modify `packages/dynamic-loader/src/loader.ts`
 2. Turbo detects: dynamic-loader changed
 3. Turbo finds dependents: mfe-widget, mfe-landing-page
@@ -272,6 +289,7 @@ npx turbo link
 ## Recommendation
 
 **Adopt Turborepo workflow** because:
+
 1. ✅ Smarter change detection (understands `package.json`)
 2. ✅ Faster builds (caching, parallelization)
 3. ✅ Less maintenance (no hardcoded dependency lists)

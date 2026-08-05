@@ -1,0 +1,45 @@
+{
+  "$ref": "#/definitions/AppConfig",
+  "definitions": {
+    "AppConfig": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "0.1.0"
+        },
+        "apiBaseUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "logoutUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "keycloakUrl": {
+              "type": "string",
+              "format": "uri"
+            },
+            "realm": {
+              "type": "string",
+              "minLength": 1
+            },
+            "clientId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["keycloakUrl", "realm", "clientId"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["schemaVersion", "apiBaseUrl", "logoutUrl", "auth"],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "Generated from Zod schema. Schema version: 0.1.0"
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@mfe-runtime/app-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./schema.json": "./schema.json"
+  },
+  "scripts": {
+    "build": "vp pack && tsx scripts/generate-schema.ts",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "test:coverage": "vp test --coverage"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "ajv": "catalog:",
+    "ajv-formats": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "~6.0.2",
+    "vite-plus": "catalog:",
+    "zod-to-json-schema": "catalog:"
+  }
+}
