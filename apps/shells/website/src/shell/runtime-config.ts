@@ -6,6 +6,7 @@ import type {
   ShellRuntimeConfig,
   ShellRuntimeFailure,
 } from "@mfe-runtime/shell-runtime";
+import type { AppConfig } from "@mfe-runtime/app-config";
 import { FALLBACK_REMOTES } from "../config/remotes.js";
 import { userFromToken } from "./auth-helpers.js";
 import { setupAuthBridge } from "./auth-bridge.js";
@@ -71,7 +72,9 @@ export function createWebsiteFailureRenderer(): FailureRenderer {
   };
 }
 
-export function createWebsiteShellRuntimeConfig(): ShellRuntimeConfig {
+export function createWebsiteShellRuntimeConfig(appConfig: AppConfig): ShellRuntimeConfig {
+  // TODO: Use appConfig values for auth initialization and API calls
+  // For now, appConfig is validated and available but not yet wired into auth/API layers
   return {
     manifest: {
       async load() {

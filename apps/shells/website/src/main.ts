@@ -25,9 +25,30 @@ import "./style.css";
 import { createShellRuntime } from "@mfe-runtime/shell-runtime";
 import { renderCriticalError } from "./shell/critical-error.js";
 import { createWebsiteShellRuntimeConfig } from "./shell/runtime-config.js";
+import { loadShellAppConfig } from "./shell/app-config.js";
+import { LoadError } from "@mfe-runtime/app-config";
 
 async function bootstrap(): Promise<void> {
-  const runtime = createShellRuntime(createWebsiteShellRuntimeConfig());
+  // Load and validate app config before runtime initialization
+  let appConfigResult;
+  try {
+    appConfigResult = await loadShellAppConfig();
+  } catch (error) {
+    if (error instanceof LoadError) {
+      // Configuration error - render error screen with details
+      const category = error.category;
+      const details = `Configuration ${category} error: ${error.message}`;
+      renderCriticalError(details);
+      return;
+    }
+    throw error;
+  }
+
+  if (import.meta.env.DEV && appConfigResult.source === "fallback") {
+    console.warn("[shell] Using fallback config in development mode");
+  }
+
+  const runtime = createShellRuntime(createWebsiteShellRuntimeConfig(appConfigResult.config));
   await runtime.start();
 
   if (import.meta.env.DEV) {

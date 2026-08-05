@@ -15,6 +15,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@mfe-runtime/app-config": "workspace:*",
     "@mfe-runtime/auth": "workspace:*",
     "@mfe-runtime/dynamic-loader": "workspace:*",
     "@mfe-runtime/events": "workspace:*",

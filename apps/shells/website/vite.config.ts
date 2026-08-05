@@ -20,6 +20,24 @@ export default defineConfig({
     ],
   },
   plugins: [
+    // Implements AAR-2: Copy app-config schema into dist
+    {
+      name: "copy-app-config-schema",
+      closeBundle() {
+        const sourceFile = resolve(__dirname, "../../../packages/app-config/schema.json");
+        const destFile = resolve(__dirname, "dist/app-config.schema.json");
+
+        if (!existsSync(sourceFile)) {
+          throw new Error(
+            `App config schema not found: ${sourceFile}\n` +
+              `Run: pnpm --filter @mfe-runtime/app-config build`,
+          );
+        }
+
+        copyFileSync(sourceFile, destFile);
+        console.log(`✓ Copied app-config schema.json → dist/app-config.schema.json`);
+      },
+    },
     // Implements SDP-Requirement-5: Copy env-specific remote config at build time
     {
       name: "copy-env-remote-config",

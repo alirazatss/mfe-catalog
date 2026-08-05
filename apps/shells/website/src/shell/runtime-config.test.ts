@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import type { AppConfig } from "@mfe-runtime/app-config";
 
 vi.mock("@mfe-runtime/auth", () => ({
   tokenManager: {
@@ -23,6 +24,17 @@ import { fetchManifest } from "./manifest.js";
 const mockedTokenManager = vi.mocked(tokenManager);
 const mockedFetchManifest = vi.mocked(fetchManifest);
 
+const mockAppConfig: AppConfig = {
+  schemaVersion: "0.1.0",
+  apiBaseUrl: "https://api.test.com",
+  logoutUrl: "https://test.com/logout",
+  auth: {
+    keycloakUrl: "https://auth.test.com",
+    realm: "test-realm",
+    clientId: "test-client",
+  },
+};
+
 describe("website runtime config", () => {
   beforeEach(() => {
     document.body.innerHTML = `
@@ -42,7 +54,7 @@ describe("website runtime config", () => {
 
   it("falls back to bundled remotes when manifest fetch returns null", async () => {
     mockedFetchManifest.mockResolvedValue(null);
-    const config = createWebsiteShellRuntimeConfig();
+    const config = createWebsiteShellRuntimeConfig(mockAppConfig);
     const manifest = await config.manifest.load();
     expect(manifest).toEqual(expect.objectContaining({ features: expect.any(Object) }));
   });
