@@ -62,19 +62,19 @@ Requirement IDs used below:
 
 **Depends on:** none
 
-- [ ] 2.1 Add SHA-path upload step to the dev shell job: conditional upload to `dev-shell/sha-<short8>/` with immutable cache headers, tolerating already-exists on re-run
+- [x] 2.1 Add SHA-path upload step to the dev shell job: conditional upload to `dev-shell/sha-<short8>/` with immutable cache headers, tolerating already-exists on re-run
   - Requirements: SDP-A1, ABL-A1
   - Owner: backend-developer
   - Verification: after a main push, `dev-shell` contains root blobs plus `sha-<short8>/` blobs; re-run leaves SHA blobs unchanged
-- [ ] 2.2 Generate and upload `build-info.json` to the `dev-shell` root and SHA path
+- [x] 2.2 Generate and upload `build-info.json` to the `dev-shell` root and SHA path
   - Requirements: SDP-A2
   - Owner: backend-developer
   - Verification: `curl https://tssmfestorage.blob.core.windows.net/dev-shell/build-info.json | jq` returns commit SHA, run id, workflow name, timestamp
-- [ ] 2.3 Scope the dev job's concurrency to group `deploy-website-dev` with `cancel-in-progress: false` (keep tag/prod groups separate)
+- [x] 2.3 Scope the dev job's concurrency to group `deploy-website-dev` with `cancel-in-progress: false` (keep tag/prod groups separate)
   - Requirements: SDP-A3
   - Owner: backend-developer
   - Verification: two rapid shell merges show the second dev job queued, not cancelled and not racing
-- [ ] 2.4 Verification sweep of shell dev spec scenarios (SDP-A1–A3)
+- [x] 2.4 Verification sweep of shell dev spec scenarios (SDP-A1–A3)
   - Requirements: SDP-A1, SDP-A2, SDP-A3
   - Owner: tester
   - Verification: each scenario checked against workflow runs and blob listings; results recorded in the PR description
