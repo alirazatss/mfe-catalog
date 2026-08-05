@@ -52,11 +52,11 @@ Requirement IDs reference the spec deltas in this change:
 
 **Depends on:** task group 1 (schema generation must exist)
 
-- [x] 3.1 Write failing tests for the CLI (invoke via node, assert exit codes/output): valid doc → exit 0 + schema version echoed; invalid doc → non-zero + both violations with JSON paths. — AVT-1 — Skill: tester
-- [x] 3.2 Implement `scripts/validate-app-config.ts` with ajv(+formats): accepts schema and document as file path or HTTP(S) URL; zero imports from shell/app internals. — AVT-1 — Skill: backend-developer
-- [x] 3.3 Verify URL mode against a served schema (local static server in test or the deployed dev shell) — schema fetched by URL validates a local document. — AVT-1 — Skill: tester
-- [x] 3.4 Add CI step to `test.yml`: regenerate schema, fail on diff vs committed `schema.json` (drift check), then validate `apps/shells/website/public/app-config.json` with the CLI. — AAR-3, AVT-2 — Skill: backend-developer
-- [x] 3.5 Verify the dev deployment publishes the schema: after a dev shell deploy, `app-config.schema.json` is retrievable from the shell base URL (manual check or smoke assertion documented in the workflow summary). — AAR-2 — Skill: tester
+- [ ] 3.1 Write failing tests for the CLI (invoke via node, assert exit codes/output): valid doc → exit 0 + schema version echoed; invalid doc → non-zero + both violations with JSON paths. — AVT-1 — Skill: tester
+- [ ] 3.2 Implement `scripts/validate-app-config.ts` with ajv(+formats): accepts schema and document as file path or HTTP(S) URL; zero imports from shell/app internals. — AVT-1 — Skill: backend-developer
+- [ ] 3.3 Verify URL mode against a served schema (local static server in test or the deployed dev shell) — schema fetched by URL validates a local document. — AVT-1 — Skill: tester
+- [ ] 3.4 Add CI step to `test.yml`: regenerate schema, fail on diff vs committed `schema.json` (drift check), then validate `apps/shells/website/public/app-config.json` with the CLI. — AAR-3, AVT-2 — Skill: backend-developer
+- [ ] 3.5 Verify the dev deployment publishes the schema: after a dev shell deploy, `app-config.schema.json` is retrievable from the shell base URL (manual check or smoke assertion documented in the workflow summary). — AAR-2 — Skill: tester
 
 ## 4. Roadmap and supersession bookkeeping
 
@@ -67,9 +67,9 @@ Requirement IDs reference the spec deltas in this change:
 
 **Depends on:** none
 
-- [x] 4.1 Add ROADMAP section "Kubernetes deploy-time config validation" recording the deferred design: Helm pre-install/pre-upgrade hook Job validating the rendered ConfigMap against the pinned `shellVersion`'s published schema; optional initContainer gate; one values file per customer pinning version + config atomically; corporate-repo CI step using `scripts/validate-app-config.ts` with the version-pinned schema URL. — design §Kubernetes design intent — Skill: team-lead
-- [x] 4.2 Create `openspec/changes/environment-configuration/SUPERSEDED.md` pointing to `app-config-contract`, summarizing what carried over (config package, runtime loader, type safety) and what was dropped (hostname-based environment detection) with rationale. — proposal §What Changes — Skill: team-lead
-- [x] 4.3 Update `ROADMAP.md` entry for the old `environment-configuration` change to reference the supersession. — proposal §What Changes — Skill: team-lead
+- [ ] 4.1 Add ROADMAP section "Kubernetes deploy-time config validation" recording the deferred design: Helm pre-install/pre-upgrade hook Job validating the rendered ConfigMap against the pinned `shellVersion`'s published schema; optional initContainer gate; one values file per customer pinning version + config atomically; corporate-repo CI step using `scripts/validate-app-config.ts` with the version-pinned schema URL. — design §Kubernetes design intent — Skill: team-lead
+- [ ] 4.2 Create `openspec/changes/environment-configuration/SUPERSEDED.md` pointing to `app-config-contract`, summarizing what carried over (config package, runtime loader, type safety) and what was dropped (hostname-based environment detection) with rationale. — proposal §What Changes — Skill: team-lead
+- [ ] 4.3 Update `ROADMAP.md` entry for the old `environment-configuration` change to reference the supersession. — proposal §What Changes — Skill: team-lead
 
 ## Execution waves
 
