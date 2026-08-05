@@ -38,7 +38,9 @@ export const FALLBACK_REMOTES: RemoteConfig = {
     },
     "/widget": {
       mfe: "mfe-widget",
-      entryUrl: "http://localhost:5174/remoteEntry.js",
+      // entryUrl: "http://localhost:5174/remoteEntry.js",
+      entryUrl:
+        "https://tssmfestorage.blob.core.windows.net/mfes-dev/mfe-widget/dev/remoteEntry.js",
       scope: "widget",
       version: "0.0.0",
       basePath: "/widget",
