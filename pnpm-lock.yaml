@@ -456,6 +456,9 @@ importers:
 
   apps/shells/website:
     dependencies:
+      '@mfe-runtime/app-config':
+        specifier: workspace:*
+        version: link:../../../packages/app-config
       '@mfe-runtime/auth':
         specifier: workspace:*
         version: link:../../../packages/auth

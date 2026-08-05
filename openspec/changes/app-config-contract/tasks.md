@@ -37,11 +37,11 @@ Requirement IDs reference the spec deltas in this change:
 
 **Depends on:** task group 1 (package published in workspace)
 
-- [ ] 2.1 Write failing tests: bootstrap with valid config starts runtime using config values; schema-invalid config renders configuration-error screen naming violating fields and mounts no MFEs. — SBV-1 — Skill: tester
-- [ ] 2.2 Implement boot-time load: fetch `/app-config.json` via `loadAppConfig` before `runtime.start()`; thread validated `AppConfig` into the shell runtime config; render config-error screen on failure (reuse/extend `critical-error` rendering). — SBV-1 — Skill: frontend-developer
-- [ ] 2.3 Implement mode-dependent failure handling with tests: dev fetch-failure → built-in fallback + console warning; prod fetch/schema failure → error screen, no fallback. — SBV-2 — Skill: frontend-developer
-- [ ] 2.4 Add `public/app-config.json` (dev/default document) and a built-in fallback fixture; test that both validate against `appConfigSchema`. — SBV-3 — Skill: frontend-developer
-- [ ] 2.5 Emit `app-config.schema.json` into the shell `dist/` during build (Vite plugin or build-script copy from the package); test/verify the built dist contains it with the bundled `schemaVersion`. — AAR-2 — Skill: frontend-developer
+- [x] 2.1 Write failing tests: bootstrap with valid config starts runtime using config values; schema-invalid config renders configuration-error screen naming violating fields and mounts no MFEs. — SBV-1 — Skill: tester
+- [x] 2.2 Implement boot-time load: fetch `/app-config.json` via `loadAppConfig` before `runtime.start()`; thread validated `AppConfig` into the shell runtime config; render config-error screen on failure (reuse/extend `critical-error` rendering). — SBV-1 — Skill: frontend-developer
+- [x] 2.3 Implement mode-dependent failure handling with tests: dev fetch-failure → built-in fallback + console warning; prod fetch/schema failure → error screen, no fallback. — SBV-2 — Skill: frontend-developer
+- [x] 2.4 Add `public/app-config.json` (dev/default document) and a built-in fallback fixture; test that both validate against `appConfigSchema`. — SBV-3 — Skill: frontend-developer
+- [x] 2.5 Emit `app-config.schema.json` into the shell `dist/` during build (Vite plugin or build-script copy from the package); test/verify the built dist contains it with the bundled `schemaVersion`. — AAR-2 — Skill: frontend-developer
 
 ## 3. Portable validator CLI and CI wiring
 
