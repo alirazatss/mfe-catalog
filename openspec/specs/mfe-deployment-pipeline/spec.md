@@ -1,4 +1,10 @@
-## MODIFIED Requirements
+# mfe-deployment-pipeline Specification
+
+## Purpose
+
+TBD - created by archiving change dev-preview-deployments. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: MFE deployment SHALL use a unified workflow that scales to any number of MFEs
 
@@ -25,8 +31,6 @@ The system SHALL use a single GitHub Actions workflow file (`.github/workflows/d
 - **WHEN** a commit modifying `apps/mfes/mfe-widget/src/` is pushed to `main`
 - **THEN** exactly one MFE deploy workflow run starts for that commit
 - **AND** no workflow file named `deploy-mfes.yml` exists in `.github/workflows/`
-
-## ADDED Requirements
 
 ### Requirement: MFE dev deploy SHALL publish an immutable commit-SHA artifact alongside the floating pointer
 
