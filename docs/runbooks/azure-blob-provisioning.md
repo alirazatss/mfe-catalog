@@ -10,6 +10,7 @@
 This runbook provisions a single Azure Blob Storage account (`tssmfestorage`) with container-based environment separation and GitHub Actions OIDC authentication. No secrets are stored; all authentication uses federated identity credentials.
 
 **Architecture Summary:**
+
 - **Single storage account**: `tssmfestorage`
 - **Containers**: `mfes-dev`, `mfes-prod`, `dev-shell`, `$web`
 - **OIDC Identities**: `gha-mfe-dev` (container-scoped to dev), `gha-mfe-prod` (container-scoped to prod)
@@ -43,6 +44,7 @@ export GITHUB_REPO="mfe-catalog"
 ## Task 1.1: Provision Storage Account and Containers
 
 ### Implements
+
 - **ABL-Requirement-1**: Single account, container-based separation
 - **ABL-Requirement-2**: MFE path structure
 - **ABL-Requirement-3**: `$web` prod + `dev-shell` dev
@@ -59,6 +61,7 @@ az group create \
 ```
 
 **Expected Output:**
+
 ```json
 {
   "id": "/subscriptions/<sub-id>/resourceGroups/mfe-catalog-rg",
@@ -83,6 +86,7 @@ az storage account create \
 ```
 
 **Expected Output:**
+
 ```json
 {
   "name": "tssmfestorage",
@@ -104,6 +108,7 @@ az storage blob service-properties update \
 ```
 
 **Expected Output:**
+
 ```json
 {
   "staticWebsite": {
@@ -137,6 +142,7 @@ az storage container create \
 ```
 
 **Expected Output (for each):**
+
 ```json
 {
   "created": true
@@ -197,6 +203,7 @@ az storage cors list --services b --account-name "$STORAGE_ACCOUNT_NAME" -o json
 ## Task 1.2: Create Azure AD Applications with Container-Scoped RBAC
 
 ### Implements
+
 - **OIDC-Requirement-2**: One identity per env, container-scoped RBAC
 
 ### Steps
@@ -208,6 +215,7 @@ az ad app create --display-name "gha-mfe-dev"
 ```
 
 **Capture Output:**
+
 ```bash
 export DEV_APP_ID=$(az ad app list --display-name "gha-mfe-dev" --query "[0].appId" -o tsv)
 export DEV_OBJECT_ID=$(az ad sp list --display-name "gha-mfe-dev" --query "[0].id" -o tsv)
@@ -229,6 +237,7 @@ az ad app create --display-name "gha-mfe-prod"
 ```
 
 **Capture Output:**
+
 ```bash
 export PROD_APP_ID=$(az ad app list --display-name "gha-mfe-prod" --query "[0].appId" -o tsv)
 export PROD_OBJECT_ID=$(az ad sp list --display-name "gha-mfe-prod" --query "[0].id" -o tsv)
@@ -355,6 +364,7 @@ az role assignment list --assignee "$PROD_APP_ID" --all -o json | \
 ## Task 1.3: Add Federated Credentials
 
 ### Implements
+
 - **OIDC-Requirement-3**: Prod tag-only trust
 - **OIDC-Requirement-4**: Dev main-only trust
 
@@ -374,6 +384,7 @@ az ad app federated-credential create \
 ```
 
 **Expected Output:**
+
 ```json
 {
   "name": "gha-mfe-dev-main",
@@ -396,6 +407,7 @@ az ad app federated-credential create \
 ```
 
 **Expected Output:**
+
 ```json
 {
   "name": "gha-mfe-prod-tags",
@@ -441,6 +453,7 @@ To verify that prod credentials reject non-tag refs, you can create a throwaway 
 ## Task 1.4: GitHub Repository Variables
 
 ### Implements
+
 - **OIDC-Requirement-1**: No secrets stored
 
 Add these values as **repository variables** (not secrets) in GitHub:
@@ -544,10 +557,10 @@ az monitor activity-log alert list --resource-group "$AZURE_RESOURCE_GROUP" -o t
 
 ### Azure AD Applications
 
-| Application      | Client ID              | Container Assignments      | Federated Credential Subject                                  |
-| ---------------- | ---------------------- | -------------------------- | ------------------------------------------------------------- |
-| `gha-mfe-dev`    | `$DEV_APP_ID`          | `mfes-dev`, `dev-shell`    | `repo:alirazatss/mfe-catalog:ref:refs/heads/main`            |
-| `gha-mfe-prod`   | `$PROD_APP_ID`         | `mfes-prod`, `$web`        | `repo:alirazatss/mfe-catalog:ref:refs/tags/*-v*`             |
+| Application    | Client ID      | Container Assignments   | Federated Credential Subject                      |
+| -------------- | -------------- | ----------------------- | ------------------------------------------------- |
+| `gha-mfe-dev`  | `$DEV_APP_ID`  | `mfes-dev`, `dev-shell` | `repo:alirazatss/mfe-catalog:ref:refs/heads/main` |
+| `gha-mfe-prod` | `$PROD_APP_ID` | `mfes-prod`, `$web`     | `repo:alirazatss/mfe-catalog:ref:refs/tags/*-v*`  |
 
 ### GitHub Repository Variables (Non-Secret)
 
@@ -607,12 +620,14 @@ az group delete --name "$AZURE_RESOURCE_GROUP" --yes --no-wait
 To add a new `sst` environment following this pattern:
 
 1. **Create Containers**:
+
    ```bash
    az storage container create --name "mfes-sst" --account-name "$STORAGE_ACCOUNT_NAME" --public-access blob
    az storage container create --name "sst-shell" --account-name "$STORAGE_ACCOUNT_NAME" --public-access blob
    ```
 
 2. **Create Azure AD App**:
+
    ```bash
    az ad app create --display-name "gha-mfe-sst"
    export SST_APP_ID=$(az ad app list --display-name "gha-mfe-sst" --query "[0].appId" -o tsv)
@@ -620,15 +635,17 @@ To add a new `sst` environment following this pattern:
    ```
 
 3. **Assign Container-Scoped RBAC**:
+
    ```bash
    export MFES_SST_SCOPE="${STORAGE_RESOURCE_ID}/blobServices/default/containers/mfes-sst"
    export SST_SHELL_SCOPE="${STORAGE_RESOURCE_ID}/blobServices/default/containers/sst-shell"
-   
+
    az role assignment create --role "Storage Blob Data Contributor" --assignee "$SST_APP_ID" --scope "$MFES_SST_SCOPE"
    az role assignment create --role "Storage Blob Data Contributor" --assignee "$SST_APP_ID" --scope "$SST_SHELL_SCOPE"
    ```
 
 4. **Add Federated Credential** (adjust subject as needed):
+
    ```bash
    az ad app federated-credential create --id "$SST_APP_ID" --parameters '{
      "name": "gha-mfe-sst-main",
@@ -639,6 +656,7 @@ To add a new `sst` environment following this pattern:
    ```
 
 5. **Add GitHub Variable**:
+
    ```bash
    gh variable set AZURE_CLIENT_ID_SST --body "$SST_APP_ID"
    ```
@@ -669,6 +687,7 @@ az storage cors add --services b --methods GET OPTIONS --origins '*' --allowed-h
 If workflows fail at `azure/login`:
 
 1. **Verify federated credential subject** matches the GitHub ref pattern:
+
    ```bash
    az ad app federated-credential list --id "$PROD_APP_ID"
    ```
@@ -685,6 +704,7 @@ If workflows fail at `azure/login`:
 If workflows fail with "permission denied" when uploading blobs:
 
 1. **Verify role assignments are container-scoped**:
+
    ```bash
    az role assignment list --assignee "$DEV_APP_ID" --all
    ```
@@ -695,11 +715,170 @@ If workflows fail with "permission denied" when uploading blobs:
 
 ---
 
+## Task 1.5: Dev Path Families and Lifecycle Management
+
+**Change**: `dev-preview-deployments`  
+**Implements**: ABL-A1, ABL-A2
+
+### Dev Path Family Overview
+
+Dev containers (`mfes-dev`, `dev-shell`) support three path families with distinct mutability and TTL rules:
+
+| Path Family             | Example                                                          | Mutability          | TTL       | Use Case                                              |
+| ----------------------- | ---------------------------------------------------------------- | ------------------- | --------- | ----------------------------------------------------- |
+| **Floating pointer**    | `mfes-dev/mfe-widget/dev/` or `dev-shell/` root                  | Overwritable        | Permanent | Latest dev build, always points at newest main commit |
+| **Immutable SHA paths** | `mfes-dev/mfe-widget/sha-a1b2c3d4/` or `dev-shell/sha-a1b2c3d4/` | Write-once          | 30 days   | Reproducible dev builds addressable by commit SHA     |
+| **PR preview paths**    | `mfes-dev/mfe-widget/pr-42/` or `dev-shell/pr-42/`               | Overwritable per PR | 14 days   | Isolated preview deploys for same-repo PRs            |
+
+**Production containers (`mfes-prod`, `$web`) are NOT subject to lifecycle policies** — versioned prod artifacts are permanent.
+
+### Steps
+
+#### 1.5.1 Author Lifecycle Policy
+
+The lifecycle policy deletes stale `pr-*` and `sha-*` prefixes automatically.
+
+**Policy File**: `scripts/azure/lifecycle-policy.json`
+
+Review the policy:
+
+```bash
+cat scripts/azure/lifecycle-policy.json
+```
+
+Expected content:
+
+```json
+{
+  "rules": [
+    {
+      "enabled": true,
+      "name": "delete-pr-previews-after-14-days",
+      "type": "Lifecycle",
+      "definition": {
+        "actions": {
+          "baseBlob": {
+            "delete": {
+              "daysAfterModificationGreaterThan": 14
+            }
+          }
+        },
+        "filters": {
+          "blobTypes": ["blockBlob"],
+          "prefixMatch": [
+            "mfes-dev/mfe-widget/pr-",
+            "mfes-dev/mfe-landing-page/pr-",
+            "dev-shell/pr-"
+          ]
+        }
+      }
+    },
+    {
+      "enabled": true,
+      "name": "delete-sha-artifacts-after-30-days",
+      "type": "Lifecycle",
+      "definition": {
+        "actions": {
+          "baseBlob": {
+            "delete": {
+              "daysAfterModificationGreaterThan": 30
+            }
+          }
+        },
+        "filters": {
+          "blobTypes": ["blockBlob"],
+          "prefixMatch": [
+            "mfes-dev/mfe-widget/sha-",
+            "mfes-dev/mfe-landing-page/sha-",
+            "dev-shell/sha-"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+**Critical**: `prefixMatch` filters exclude `mfes-prod` and `$web` containers entirely. Verify before applying.
+
+#### 1.5.2 Apply Lifecycle Policy
+
+```bash
+az storage account management-policy create \
+  --account-name "$STORAGE_ACCOUNT_NAME" \
+  --policy @scripts/azure/lifecycle-policy.json
+```
+
+**Expected Output:**
+
+```json
+{
+  "policy": {
+    "rules": [
+      {
+        "enabled": true,
+        "name": "delete-pr-previews-after-14-days",
+        ...
+      },
+      {
+        "enabled": true,
+        "name": "delete-sha-artifacts-after-30-days",
+        ...
+      }
+    ]
+  }
+}
+```
+
+This command is **idempotent** — running it multiple times replaces the existing policy with the new one.
+
+### Verification for Task 1.5
+
+```bash
+# Show current lifecycle policy
+az storage account management-policy show \
+  --account-name "$STORAGE_ACCOUNT_NAME" \
+  --query "policy.rules[].{Name:name, Enabled:enabled, Filters:definition.filters.prefixMatch}" \
+  --output table
+
+# Expected output:
+# Name                              Enabled  Filters
+# delete-pr-previews-after-14-days  True     ["mfes-dev/.../pr-", "dev-shell/pr-"]
+# delete-sha-artifacts-after-30-days True    ["mfes-dev/.../sha-", "dev-shell/sha-"]
+
+# Verify NO prod container prefixes are matched
+az storage account management-policy show \
+  --account-name "$STORAGE_ACCOUNT_NAME" \
+  --query "policy.rules[].definition.filters.prefixMatch[]" \
+  --output tsv | grep -E 'mfes-prod|\$web'
+
+# Expected: (no output — prod containers are not matched)
+```
+
+### Tuning TTL Values
+
+The 14-day and 30-day TTL values are conventions, not hard requirements. To adjust:
+
+1. Edit `scripts/azure/lifecycle-policy.json`
+2. Change `daysAfterModificationGreaterThan` values
+3. Re-run the `az storage account management-policy create` command (idempotent)
+
+Example use cases:
+
+- Increase PR preview TTL to 21 days if debugging requires longer retention
+- Decrease SHA TTL to 7 days if storage costs are a concern
+- Disable a rule by setting `"enabled": false`
+
+---
+
 ## References
 
-- OpenSpec Change: `openspec/changes/azure-blob-deployment-pipeline/`
+- OpenSpec Changes:
+  - `openspec/changes/azure-blob-deployment-pipeline/`
+  - `openspec/changes/dev-preview-deployments/`
 - Requirements:
   - `ABL-Requirement-1` through `ABL-Requirement-5` (azure-blob-storage-layout/spec.md)
+  - `ABL-A1`, `ABL-A2` (dev path families and lifecycle policy)
   - `OIDC-Requirement-1` through `OIDC-Requirement-4` (github-actions-azure-oidc/spec.md)
 
 ---

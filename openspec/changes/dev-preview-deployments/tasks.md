@@ -132,15 +132,15 @@ Requirement IDs used below:
 
 **Depends on:** none
 
-- [ ] 4.1 Author `lifecycle-policy.json`: delete-after-modification rules for `pr-` prefixes (14 days) and `sha-` prefixes (30 days) scoped to `mfes-dev` and `dev-shell` prefix filters only
+- [x] 4.1 Author `lifecycle-policy.json`: delete-after-modification rules for `pr-` prefixes (14 days) and `sha-` prefixes (30 days) scoped to `mfes-dev` and `dev-shell` prefix filters only
   - Requirements: ABL-A2
   - Owner: backend-developer
   - Verification: policy JSON validates via `az storage account management-policy create --dry-run`-equivalent review; prefix filters exclude `mfes-prod` and `$web`
-- [ ] 4.2 Add a runbook section documenting the path families (`dev`/`sha-*`/`pr-*`), TTL conventions, and the idempotent `az` command to apply the policy
+- [x] 4.2 Add a runbook section documenting the path families (`dev`/`sha-*`/`pr-*`), TTL conventions, and the idempotent `az` command to apply the policy
   - Requirements: ABL-A1, ABL-A2
   - Owner: team-lead
   - Verification: runbook steps executed verbatim on `tssmfestorage` apply the policy; `az storage account management-policy show` returns the expected rules
-- [ ] 4.3 Apply the policy and verify prod containers are unmatched
+- [x] 4.3 Apply the policy and verify prod containers are unmatched
   - Requirements: ABL-A2
   - Owner: backend-developer
   - Verification: `management-policy show` output reviewed; rules match only dev-container prefixes

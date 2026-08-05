@@ -1,0 +1,48 @@
+{
+  "rules": [
+    {
+      "enabled": true,
+      "name": "delete-pr-previews-after-14-days",
+      "type": "Lifecycle",
+      "definition": {
+        "actions": {
+          "baseBlob": {
+            "delete": {
+              "daysAfterModificationGreaterThan": 14
+            }
+          }
+        },
+        "filters": {
+          "blobTypes": ["blockBlob"],
+          "prefixMatch": [
+            "mfes-dev/mfe-widget/pr-",
+            "mfes-dev/mfe-landing-page/pr-",
+            "dev-shell/pr-"
+          ]
+        }
+      }
+    },
+    {
+      "enabled": true,
+      "name": "delete-sha-artifacts-after-30-days",
+      "type": "Lifecycle",
+      "definition": {
+        "actions": {
+          "baseBlob": {
+            "delete": {
+              "daysAfterModificationGreaterThan": 30
+            }
+          }
+        },
+        "filters": {
+          "blobTypes": ["blockBlob"],
+          "prefixMatch": [
+            "mfes-dev/mfe-widget/sha-",
+            "mfes-dev/mfe-landing-page/sha-",
+            "dev-shell/sha-"
+          ]
+        }
+      }
+    }
+  ]
+}
