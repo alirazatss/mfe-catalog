@@ -56,3 +56,6 @@ manifest.staging.json
 !.vscode/extensions.json
 
 presentation/
+
+# Local-only preview helpers
+local-pr-preview-server.mjs
