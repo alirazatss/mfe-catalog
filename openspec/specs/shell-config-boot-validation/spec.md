@@ -8,21 +8,21 @@ TBD - created by archiving change app-config-contract. Update Purpose after arch
 
 ### Requirement: Shell bootstrap loads and validates app config before starting the runtime
 
-The website shell SHALL fetch `/app-config.json` during bootstrap and validate it with `parseAppConfig` (the Zod schema baked into the bundle) before initializing the shell runtime. The validated `AppConfig` SHALL be the only source of runtime app configuration for the shell.
+The website shell SHALL fetch `app-config.json` resolved against the deployed base path (Vite `BASE_URL`, so the same artifact works at container root, `sha-*`, `v*`, and `pr-*` paths) during bootstrap and validate it with `parseAppConfig` (the Zod schema baked into the bundle) before initializing the shell runtime. The validated `AppConfig` SHALL be the only source of runtime app configuration for the shell.
 
 #### Scenario: Valid config boots the shell
 
-- **WHEN** `/app-config.json` returns a document valid for the bundled schema
+- **WHEN** the base-relative `app-config.json` returns a document valid for the bundled schema
 - **THEN** the shell runtime starts and the parsed config values are used (e.g., auth endpoints come from the config, not hardcoded constants)
 
 #### Scenario: Invalid config renders a configuration error screen
 
-- **WHEN** `/app-config.json` returns JSON that fails schema validation (missing key, wrong `schemaVersion`, malformed URL)
+- **WHEN** the base-relative `app-config.json` returns JSON that fails schema validation (missing key, wrong `schemaVersion`, malformed URL)
 - **THEN** the shell renders an explicit configuration-error screen naming the violating fields, and does not attempt to mount MFEs
 
 ### Requirement: Development fallback config
 
-In development mode, when `/app-config.json` is unreachable, the shell SHALL fall back to a built-in default config (mirroring the `FALLBACK_REMOTES` pattern) and log a console warning. In production builds, an unreachable config SHALL render the configuration-error screen instead of silently falling back.
+In development mode, when the base-relative `app-config.json` is unreachable, the shell SHALL fall back to a built-in default config (mirroring the `FALLBACK_REMOTES` pattern) and log a console warning. In production builds, an unreachable config SHALL render the configuration-error screen instead of silently falling back.
 
 #### Scenario: Dev fallback on missing file
 

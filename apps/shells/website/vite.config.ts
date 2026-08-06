@@ -10,6 +10,9 @@ import { resolve } from "node:path";
 const DEPLOY_ENV = process.env.DEPLOY_ENV || "dev";
 
 export default defineConfig({
+  // Use relative asset URLs so the shell works when served from nested paths
+  // like dev-shell/pr-<n>/ as well as container root.
+  base: "./",
   optimizeDeps: {
     exclude: [
       "@mfe-runtime/auth",

@@ -1,7 +1,7 @@
 /**
  * App config loading for website shell.
  *
- * Fetches and validates /app-config.json during bootstrap.
+ * Fetches and validates app-config.json (base-relative) during bootstrap.
  * - Production: Fails hard on any error (fetch, parse, validation)
  * - Development: Falls back to built-in default on fetch failure
  *
@@ -9,6 +9,9 @@
  */
 
 import { loadAppConfig, type AppConfig, LoadError } from "@mfe-runtime/app-config";
+
+// Base-relative so the same artifact works at container root, sha-*, v*, and pr-* paths.
+const APP_CONFIG_URL = `${import.meta.env.BASE_URL}app-config.json`;
 
 export interface ShellAppConfig {
   config: AppConfig;
@@ -31,7 +34,7 @@ export const DEV_FALLBACK_CONFIG: AppConfig = {
 };
 
 /**
- * Loads and validates the app config from /app-config.json.
+ * Loads and validates the app config from app-config.json (base-relative).
  *
  * @param mode - Optional mode override for testing ('development' | 'production')
  * @throws {LoadError} In production, any error (fetch/parse/validation) throws.
@@ -43,7 +46,7 @@ export async function loadShellAppConfig(
   const isDev = mode === "development";
 
   try {
-    const config = await loadAppConfig("/app-config.json");
+    const config = await loadAppConfig(APP_CONFIG_URL);
     return { config, source: "remote" };
   } catch (error) {
     if (!(error instanceof LoadError)) {
@@ -58,7 +61,7 @@ export async function loadShellAppConfig(
     // In development, only fetch errors get fallback; validation errors still throw
     if (error.category === "fetch") {
       console.warn(
-        `[shell] Failed to load /app-config.json in dev mode: ${error.message}. Using built-in fallback.`,
+        `[shell] Failed to load ${APP_CONFIG_URL} in dev mode: ${error.message}. Using built-in fallback.`,
       );
       return { config: DEV_FALLBACK_CONFIG, source: "fallback" };
     }

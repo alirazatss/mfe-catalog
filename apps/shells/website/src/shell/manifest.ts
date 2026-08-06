@@ -2,7 +2,7 @@
  * Thin Shell — manifest fetching with retry and fallback.
  *
  * MVP Architecture:
- * - Fetches `/remotes.config.json` (served by the shell itself) with exponential backoff (1s, 2s, 4s)
+ * - Fetches `remotes.config.json` (base-relative, served alongside the shell) with exponential backoff (1s, 2s, 4s)
  * - If network fetch fails, falls back to the bundled FALLBACK_REMOTES configuration
  * - This dual-layer approach ensures resilience: the shell can load even if serving the
  *   static config file temporarily fails
@@ -15,7 +15,8 @@ import type { RemoteConfig } from "@mfe-runtime/remote-config";
 import { safeValidateRemoteConfig } from "@mfe-runtime/remote-config";
 import { FALLBACK_REMOTES } from "../config/remotes.js";
 
-const DEFAULT_URL = "/remotes.config.json";
+// Base-relative so the same artifact works at container root, sha-*, v*, and pr-* paths.
+const DEFAULT_URL = `${import.meta.env.BASE_URL}remotes.config.json`;
 const RETRY_DELAYS_MS = [1000, 2000, 4000];
 
 async function tryFetchManifest(url: string): Promise<RemoteConfig> {

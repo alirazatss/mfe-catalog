@@ -249,6 +249,7 @@ This is a **deferred design** captured for future implementation. The app-config
 - **Optional initContainer gate**: Blocks pod start if config invalid
 - **Values file per customer**: Each customer values file pins `shellVersion` + config atomically
 - **Corporate repo CI**: Uses `scripts/validate-app-config.ts` with version-pinned schema URL
+- **SPA deep-link serving**: The shell is built with a relative base (`base: "./"`) so one artifact works at any Blob path. Behind nginx/ingress with SPA fallback rewrites, nested routes (e.g. `/widget/details`) would resolve `./assets/...` against the route path and break — inject `<base href="/<deploy-prefix>/">` into `index.html` at deploy time (or via nginx `sub_filter`) when K8s serving is introduced
 
 **Implementation Steps** (when ready):
 
