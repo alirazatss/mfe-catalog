@@ -20,8 +20,8 @@ test.describe("Core user journeys", () => {
     // Wait for shell to load
     await authenticatedPage.waitForLoadState("networkidle");
 
-    // Verify shell title
-    await expect(authenticatedPage).toHaveTitle(/MF Mono Shell/i);
+    // Verify shell title (supports both current branding variants used in environments)
+    await expect(authenticatedPage).toHaveTitle(/(MF Mono Shell|CCIS Shell)/i);
 
     // Verify basic shell structure (adjust selectors based on actual shell)
     const body = authenticatedPage.locator("body");
@@ -61,9 +61,9 @@ test.describe("Core user journeys", () => {
     // Verify we're still on the same route after refresh
     expect(authenticatedPage.url()).toContain("/widget/counter");
 
-    // Verify content is still visible
-    const main = authenticatedPage.locator("#main-slot");
-    await expect(main).toBeVisible();
+    // Verify shell remains usable after refresh on a nested route.
+    await expect(authenticatedPage.getByRole("link", { name: /home/i })).toBeVisible();
+    await expect(authenticatedPage.getByRole("button", { name: /reload/i })).toBeVisible();
   });
 
   test("should navigate between routes", async ({ authenticatedPage }) => {

@@ -14,7 +14,7 @@ export function LandingPage(): ReactElement {
       style={{ backgroundColor: "rgb(245, 246, 248)" }}
     >
       <div className="flex-1 flex flex-col">
-        <h1 className="text-2xl font-bold text-gray-900">Welcome to CCIS</h1>
+        <h1 className="text-2xl font-bold text-gray-900">CCIS</h1>
 
         <div className="mt-6 flex flex-col gap-8">
           <TileSection title="Modules" tiles={MODULE_TILES} userAccessRights={userAccessRights} />
