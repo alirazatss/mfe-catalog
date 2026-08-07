@@ -53,7 +53,9 @@ jobs:
 
           if [ -z "$SHELLS" ]; then
             echo "No shell directories found in dev-shell/ container"
+            # scaffold:shell-list:start
             SHELLS="website"  # Fallback to known shell
+            # scaffold:shell-list:end
           fi
 
           TOTAL_DELETED=0
@@ -109,7 +111,9 @@ jobs:
 
           if [ -z "$MFES" ]; then
             # Fallback: list common MFEs if directory listing not supported
+            # scaffold:mfe-list:start
             MFES="mfe-widget mfe-landing-page"
+            # scaffold:mfe-list:end
           fi
 
           TOTAL_DELETED=0
