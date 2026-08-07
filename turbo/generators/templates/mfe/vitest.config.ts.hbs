@@ -1,0 +1,38 @@
+import { defineConfig } from "vite-plus";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    name: "{{ packageName }}",
+    environment: "happy-dom",
+    globals: true,
+    setupFiles: ["./src/test/setup.ts"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      thresholds: {
+        statements: 0,
+        branches: 0,
+        functions: 0,
+        lines: 0,
+      },
+      exclude: [
+        "dist/**",
+        "node_modules/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.config.ts",
+        "**/test/**",
+        "src/main.ts",
+        "src/bootstrap.ts",
+      ],
+    },
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+});

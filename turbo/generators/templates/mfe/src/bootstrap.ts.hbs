@@ -1,0 +1,42 @@
+/**
+ * Module Federation Bootstrap Entry Point
+ *
+ * Implements app-scaffolding: lifecycle scenario (bootstrap/mount/unmount exports)
+ * See openspec/changes/mfe-shell-scaffolding/specs/app-scaffolding/spec.md
+ */
+
+import { StrictMode, createElement } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import type { MFEProps } from "@mfe-runtime/dynamic-loader";
+import App from "./App.js";
+
+export { App };
+
+const roots = new Map<HTMLElement, Root>();
+
+export function bootstrap(): Promise<void> {
+  return Promise.resolve();
+}
+
+export async function mount(props: MFEProps): Promise<void> {
+  roots.get(props.container)?.unmount();
+
+  const root = createRoot(props.container);
+  roots.set(props.container, root);
+  root.render(
+    createElement(
+      StrictMode,
+      null,
+      createElement(App, {
+        basePath: props.basePath ?? "/",
+        router: "browser",
+        isAuthenticated: props.isAuthenticated,
+      }),
+    ),
+  );
+}
+
+export async function unmount(props: MFEProps): Promise<void> {
+  roots.get(props.container)?.unmount();
+  roots.delete(props.container);
+}
