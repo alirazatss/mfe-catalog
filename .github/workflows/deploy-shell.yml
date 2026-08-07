@@ -24,6 +24,11 @@ on:
         description: 'Git tag prefix for this shell (e.g., "website-v")'
         required: true
         type: string
+      channel:
+        description: 'Deploy channel: empty/"dev" for main, "release-X.Y" for release branches'
+        required: false
+        type: string
+        default: "dev"
 
 # Implements OIDC-Requirement-1: OIDC authentication requires id-token permission
 permissions:
@@ -71,18 +76,77 @@ jobs:
 
           echo "✓ Version validation passed: $TAG_VERSION"
 
+  # Implements release-channel-deployments: Branch↔version validation requirement (Task 1.3)
+  # Validates that release-X.Y branch matches package.json major.minor
+  validate-release-channel:
+    name: Validate Release Channel
+    if: startsWith(inputs.channel, 'release-')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract major.minor from channel
+        id: channel
+        run: |
+          # Channel format: release-X.Y
+          CHANNEL="${{ inputs.channel }}"
+          if [[ ! "$CHANNEL" =~ ^release-([0-9]+\.[0-9]+)$ ]]; then
+            echo "::error::Invalid channel format: $CHANNEL (expected release-X.Y)"
+            exit 1
+          fi
+          CHANNEL_VERSION="${BASH_REMATCH[1]}"
+          echo "channel_version=$CHANNEL_VERSION" >> $GITHUB_OUTPUT
+          echo "Channel version: $CHANNEL_VERSION"
+
+      - name: Read package.json version
+        id: package
+        run: |
+          PKG_VERSION=$(jq -r '.version' ${{ inputs.shell-path }}/package.json)
+          echo "package_version=$PKG_VERSION" >> $GITHUB_OUTPUT
+          echo "Package.json version: $PKG_VERSION"
+
+      - name: Extract major.minor from package.json
+        id: pkg_major_minor
+        run: |
+          PKG_VERSION="${{ steps.package.outputs.package_version }}"
+          if [[ ! "$PKG_VERSION" =~ ^([0-9]+\.[0-9]+)\. ]]; then
+            echo "::error::Invalid package.json version format: $PKG_VERSION"
+            exit 1
+          fi
+          PKG_MAJOR_MINOR="${BASH_REMATCH[1]}"
+          echo "pkg_major_minor=$PKG_MAJOR_MINOR" >> $GITHUB_OUTPUT
+          echo "Package major.minor: $PKG_MAJOR_MINOR"
+
+      - name: Compare versions
+        run: |
+          CHANNEL_VERSION="${{ steps.channel.outputs.channel_version }}"
+          PKG_MAJOR_MINOR="${{ steps.pkg_major_minor.outputs.pkg_major_minor }}"
+
+          if [ "$CHANNEL_VERSION" != "$PKG_MAJOR_MINOR" ]; then
+            echo "::error::Version mismatch! Channel ${{ inputs.channel }} (${CHANNEL_VERSION}) does not match package.json major.minor (${PKG_MAJOR_MINOR})"
+            echo "::error::Package: ${{ inputs.shell-path }}/package.json version ${{ steps.package.outputs.package_version }}"
+            echo "::error::Please update package.json version to match the release branch"
+            exit 1
+          fi
+
+          echo "✓ Release channel validation passed: ${{ inputs.channel }} matches package.json ${PKG_MAJOR_MINOR}"
+
   # Implements shell-deployment-pipeline: Dev deploy requirements
   # Implements reusable-shell-deploy-workflow: Concurrency per shell
+  # Implements release-channel-deployments: Channel concurrency requirement (Task 1.2)
   deploy-dev:
     name: Deploy to Dev
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release-'))
     runs-on: ubuntu-latest
     environment: dev
     # Implements shell-deployment-pipeline concurrency requirement
     # Implements reusable-shell-deploy-workflow per-shell concurrency
+    # Implements release-channel-deployments: Channel-specific concurrency groups (Task 1.2)
     concurrency:
-      group: deploy-${{ inputs.shell-name }}-dev
+      group: deploy-${{ inputs.shell-name }}-${{ inputs.channel }}
       cancel-in-progress: false
+    needs: [validate-release-channel]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -116,14 +180,33 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      # Implements release-channel-deployments: Channel-based blob path mapping (Task 1.1)
+      - name: Compute channel prefix
+        id: channel_prefix
+        run: |
+          CHANNEL="${{ inputs.channel }}"
+
+          # Map channel to blob storage prefix
+          if [ -z "$CHANNEL" ] || [ "$CHANNEL" = "dev" ]; then
+            # Empty or "dev" → <shell-name>/
+            PREFIX="${{ inputs.shell-name }}"
+          else
+            # "release-X.Y" → <shell-name>/release-X.Y/
+            PREFIX="${{ inputs.shell-name }}/${CHANNEL}"
+          fi
+
+          echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
+          echo "Channel '$CHANNEL' maps to blob prefix: $PREFIX"
+
       # Implements azure-blob-storage-layout: Per-shell prefix requirement
       # Implements shell-deployment-pipeline: Dev shell floating prefix upload
+      # Implements release-channel-deployments: Channel-specific blob paths (Task 1.1)
       - name: Upload to Azure Blob Storage (Dev Shell - per-shell prefix)
         run: |
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination dev-shell \
-            --destination-path "${{ inputs.shell-name }}" \
+            --destination-path "${{ steps.channel_prefix.outputs.prefix }}" \
             --source ${{ inputs.shell-path }}/dist \
             --overwrite true \
             --content-cache-control "no-cache, must-revalidate" \
@@ -152,7 +235,7 @@ jobs:
           az storage blob upload \
             --account-name tssmfestorage \
             --container-name dev-shell \
-            --name "${{ inputs.shell-name }}/build-info.json" \
+            --name "${{ steps.channel_prefix.outputs.prefix }}/build-info.json" \
             --file build-info.json \
             --overwrite true \
             --content-type "application/json" \
@@ -161,15 +244,16 @@ jobs:
 
       # Implements azure-blob-storage-layout: SHA path nested under shell prefix
       # Implements shell-deployment-pipeline: Immutable SHA-path requirement
+      # Implements release-channel-deployments: SHA paths under channel prefix (Task 1.1)
       - name: Upload to SHA path (immutable, per-shell prefix)
         run: |
           SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
 
-          # Upload build artifacts to immutable SHA path under shell prefix
+          # Upload build artifacts to immutable SHA path under channel prefix
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination dev-shell \
-            --destination-path "${{ inputs.shell-name }}/sha-${SHORT_SHA}" \
+            --destination-path "${{ steps.channel_prefix.outputs.prefix }}/sha-${SHORT_SHA}" \
             --source ${{ inputs.shell-path }}/dist \
             --if-none-match "*" \
             --content-cache-control "public, max-age=31536000, immutable" \
@@ -177,7 +261,7 @@ jobs:
             2>&1 | tee upload.log || {
               # Tolerate already-exists on re-run (conditional upload skips existing blobs)
               if grep -q "BlobAlreadyExists\|ConditionNotMet" upload.log; then
-                echo "SHA path ${{ inputs.shell-name }}/sha-${SHORT_SHA} already exists (workflow re-run), skipping upload"
+                echo "SHA path ${{ steps.channel_prefix.outputs.prefix }}/sha-${SHORT_SHA} already exists (workflow re-run), skipping upload"
                 exit 0
               else
                 exit 1
@@ -192,7 +276,7 @@ jobs:
           az storage blob upload \
             --account-name tssmfestorage \
             --container-name dev-shell \
-            --name "${{ inputs.shell-name }}/sha-${SHORT_SHA}/build-info.json" \
+            --name "${{ steps.channel_prefix.outputs.prefix }}/sha-${SHORT_SHA}/build-info.json" \
             --file build-info.json \
             --if-none-match "*" \
             --content-type "application/json" \
@@ -203,21 +287,23 @@ jobs:
       - name: Dev deployment summary
         run: |
           SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
+          PREFIX="${{ steps.channel_prefix.outputs.prefix }}"
           echo "### ✓ Dev Shell Deployment Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Shell**: ${{ inputs.shell-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Channel**: ${{ inputs.channel }}" >> $GITHUB_STEP_SUMMARY
           echo "**Environment**: dev" >> $GITHUB_STEP_SUMMARY
           echo "**Container**: dev-shell" >> $GITHUB_STEP_SUMMARY
           echo "**Commit**: ${{ github.sha }} (short: ${SHORT_SHA})" >> $GITHUB_STEP_SUMMARY
           echo "**Config**: remotes.config.dev.json bundled" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Shell prefix (floating)**:" >> $GITHUB_STEP_SUMMARY
-          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/${{ inputs.shell-name }}/index.html" >> $GITHUB_STEP_SUMMARY
-          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/${{ inputs.shell-name }}/build-info.json" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/${PREFIX}/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/${PREFIX}/build-info.json" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**SHA path (immutable)**:" >> $GITHUB_STEP_SUMMARY
-          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/${{ inputs.shell-name }}/sha-${SHORT_SHA}/index.html" >> $GITHUB_STEP_SUMMARY
-          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/${{ inputs.shell-name }}/sha-${SHORT_SHA}/build-info.json" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/${PREFIX}/sha-${SHORT_SHA}/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/${PREFIX}/sha-${SHORT_SHA}/build-info.json" >> $GITHUB_STEP_SUMMARY
 
   # Implements shell-deployment-pipeline: Config-only redeploy
   deploy-prod-config-only:
