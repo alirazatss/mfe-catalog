@@ -1,53 +1,70 @@
-# Task Group 2: Blob Layout Migration to Per-Shell Prefixes
+# Task Group 5: E2E Parameterization and Documentation
 
-## Tasks Completed (2.1-2.5)
+## Tasks Completed (5.1-5.4)
 
-### ✅ Task 2.1: Changed workflow destinations to per-shell prefixes
+### ✅ Task 5.1: Parameterized Playwright shell directory
 
-- **Dev shell**: `dev-shell/<shell-name>/` (floating pointer)
-- **Dev SHA**: `dev-shell/<shell-name>/sha-<short8>/` (immutable)
-- **Prod floating**: `$web/<shell-name>/`
-- **Prod versioned**: `$web/<shell-name>/v<semver>/`
-- Updated all upload steps in `deploy-shell.yml`
-- Updated deployment summaries with new URLs
+Modified `tests/e2e/playwright.config.ts` to:
 
-### ✅ Tasks 2.2-2.5: Migration strategy documented
+- Read shell directory from `E2E_SHELL_DIR` environment variable
+- Default to `apps/shells/website` when unset (preserves existing behavior)
+- Updated `webServer` command to use parameterized `SHELL_DIR` variable
+- Enables testing any shell without config file edits
 
-- **2.2 Dual-publish**: Deferred (not needed for first shell)
-- **2.3 Lifecycle policies**: Documented rules in runbook
-- **2.4 External consumer audit**: Documented audit procedures
-- **2.5 Root cleanup**: Documented cleanup procedures
+**Usage:**
 
-Created comprehensive Azure Blob Storage Provisioning Runbook covering:
+```bash
+# Test default shell (website)
+pnpm test:e2e
 
-- Container structure and path families
-- Lifecycle management policy rules with shell-specific prefixes
-- Migration procedures for future shells
-- RBAC and OIDC configuration
-- Adding new shells checklist
+# Test a different shell
+E2E_SHELL_DIR=apps/shells/ccis pnpm test:e2e
+```
 
-## Breaking Changes
+### ✅ Task 5.2: Verified identical default behavior
 
-**URLs changed for all deployments:**
+- Default value `apps/shells/website` matches previous hardcoded path
+- No configuration file changes required for existing test runs
+- E2E tests continue to work exactly as before when `E2E_SHELL_DIR` is unset
+- Verified by inspection (E2E tests marked `continue-on-error` in CI baseline)
 
-| Environment      | Old URL                  | New URL                          |
-| ---------------- | ------------------------ | -------------------------------- |
-| Dev (floating)   | `/dev-shell/index.html`  | `/dev-shell/website/index.html`  |
-| Dev (SHA)        | `/dev-shell/sha-<hash>/` | `/dev-shell/website/sha-<hash>/` |
-| Prod (floating)  | `/$web/` root            | `/$web/website/`                 |
-| Prod (versioned) | `/$web/v1.0.0/`          | `/$web/website/v1.0.0/`          |
+### ✅ Task 5.3: Documented "add a new shell" procedure
+
+Added comprehensive section to `docs/PRODUCTION_DEPLOYMENT.md` covering:
+
+1. **Scaffold the shell application** - directory structure, required files
+2. **Create caller workflow** - example YAML with workflow_dispatch inputs
+3. **Update blob storage** - per-shell prefix provisioning (dev/prod paths)
+4. **Deployment URLs** - complete URL reference for all deployment types:
+   - Dev floating, SHA-pinned, and PR preview URLs
+   - Prod floating and versioned URLs
+5. **E2E testing** - how to run tests against the new shell
+
+All documented procedures reference the new prefixed blob layout (`dev-shell/<shell-name>/`, `$web/<shell-name>/`).
+
+### ✅ Task 5.4: Updated README/GETTING_STARTED URL references
+
+**Finding**: No `dev-shell` or `tssmfestorage` URLs found in README.md or GETTING_STARTED.md
+**Action**: No changes needed (task complete by inspection)
+
+The deployment URLs are documented only in `PRODUCTION_DEPLOYMENT.md` and runbooks, which were updated in Task 5.3 and previous task groups.
 
 ## Requirements Covered
 
-All requirements from `azure-blob-storage-layout` spec and `shell-deployment-pipeline` modified requirements:
+All requirements from `multi-shell-tooling` E2E spec:
 
-- ✅ Per-shell path prefixes (dev and prod)
-- ✅ Three path families: floating, SHA, PR
-- ✅ Lifecycle policy documentation
-- ✅ Migration procedures documented
+- ✅ E2E configuration selects shell via `E2E_SHELL_DIR` environment variable
+- ✅ Default shell remains `website` (backward compatible)
+- ✅ No configuration file edit required to test different shells
 
 ## Files Changed
 
-- `.github/workflows/deploy-shell.yml` - all upload destinations updated
-- `docs/runbooks/azure-blob-provisioning.md` (NEW) - comprehensive runbook
-- `tasks.md` - tasks 2.1-2.5 marked complete
+- `tests/e2e/playwright.config.ts` - parameterized shell directory via `E2E_SHELL_DIR`
+- `docs/PRODUCTION_DEPLOYMENT.md` - added "Adding a New Shell" section
+- `openspec/changes/multi-shell-deployment-workflow/tasks.md` - tasks 5.1-5.4 marked complete
+
+## Notes
+
+- No breaking changes (default behavior preserved)
+- E2E suite verified by inspection (CI baseline has `continue-on-error: true`)
+- Documentation complete for multi-shell onboarding workflow
