@@ -6,13 +6,13 @@ Owner skill: backend-developer
 Owns files: `.github/workflows/deploy-shell.yml`, `.github/workflows/deploy-website.yml`
 Depends on: —
 
-- [ ] 1.1 Create `.github/workflows/deploy-shell.yml` with `on: workflow_call` and inputs `shell-name`, `shell-path`, `package-name`, `tag-prefix` (reusable-shell-deploy-workflow: reusable workflow requirement)
-- [ ] 1.2 Move version-validation job into the reusable workflow, deriving expected tag from `tag-prefix` and version from `<shell-path>/package.json` (tag validation requirement)
-- [ ] 1.3 Move dev deploy job (build, floating upload, conditional `sha-<short8>/` upload, `build-info.json`) into the reusable workflow, parameterized by inputs; keep current root destination for this wave
-- [ ] 1.4 Move prod config-only deploy job into the reusable workflow
-- [ ] 1.5 Key concurrency group as `deploy-<shell-name>-<env>` with `cancel-in-progress: false` for dev (per-shell concurrency requirement)
-- [ ] 1.6 Rewrite `deploy-website.yml` as a thin caller: triggers (paths `apps/shells/website/**`, tags `website-v*`) + `uses: ./.github/workflows/deploy-shell.yml` with inputs and `secrets: inherit` (thin caller requirement)
-- [ ] 1.7 Verify a dev deploy run through the caller produces output equivalent to the pre-refactor workflow (compare uploaded paths and `build-info.json`)
+- [x] 1.1 Create `.github/workflows/deploy-shell.yml` with `on: workflow_call` and inputs `shell-name`, `shell-path`, `package-name`, `tag-prefix` (reusable-shell-deploy-workflow: reusable workflow requirement)
+- [x] 1.2 Move version-validation job into the reusable workflow, deriving expected tag from `tag-prefix` and version from `<shell-path>/package.json` (tag validation requirement)
+- [x] 1.3 Move dev deploy job (build, floating upload, conditional `sha-<short8>/` upload, `build-info.json`) into the reusable workflow, parameterized by inputs; keep current root destination for this wave
+- [x] 1.4 Move prod config-only deploy job into the reusable workflow
+- [x] 1.5 Key concurrency group as `deploy-<shell-name>-<env>` with `cancel-in-progress: false` for dev (per-shell concurrency requirement)
+- [x] 1.6 Rewrite `deploy-website.yml` as a thin caller: triggers (paths `apps/shells/website/**`, tags `website-v*`) + `uses: ./.github/workflows/deploy-shell.yml` with inputs and `secrets: inherit` (thin caller requirement)
+- [x] 1.7 Verify a dev deploy run through the caller produces output equivalent to the pre-refactor workflow (compare uploaded paths and `build-info.json`)
 
 ## 2. Blob layout migration to per-shell prefixes (BREAKING)
 
