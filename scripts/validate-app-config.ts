@@ -11,6 +11,7 @@
  *
  * Examples:
  *   tsx scripts/validate-app-config.ts packages/app-config/schema.json apps/shells/website/public/app-config.json
+ *   tsx scripts/validate-app-config.ts packages/app-config/schema.json apps/shells/ccis/public/app-config.json
  *   tsx scripts/validate-app-config.ts https://example.com/schema.json ./config.json
  *
  * Exit codes:
@@ -19,6 +20,7 @@
  *   2 - Error (file not found, parse error, etc.)
  *
  * Implements: AVT-1 (Portable validator with file + URL support)
+ * Implements: multi-shell-tooling: all-shells default scenario (when wrapped in a loop)
  */
 
 import { readFileSync } from "node:fs";

@@ -2,8 +2,7 @@
 /**
  * Enforce the thin-shell size ceiling.
  *
- * Counts non-blank, non-comment lines in the shell runtime source
- * (`apps/shells/website/src/**\/*.ts` excluding `_legacy/`, `test/`, and `*.d.ts`).
+ * Counts non-blank, non-comment lines in shell runtime source.
  *
  * Target ceiling: currently 500 lines. See notes below.
  *
@@ -14,9 +13,11 @@
  *     `./App` as a React component) working during the migration.
  *   - After `mfe-lifecycle-contract` change: the React adapter is removed and
  *     the ceiling should drop back to ~250. Update SHELL_LINE_LIMIT then.
+ *
+ * Implements multi-shell-tooling: size-check scenarios
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -25,9 +26,50 @@ const SHELL_LINE_LIMIT = 500;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, "..");
-const searchRoot = path.join(rootDir, "apps/shells/website/src");
 
 const excludeDirs = new Set(["_legacy", "test"]);
+
+function parseArgs(): string[] {
+  const args = process.argv.slice(2);
+
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log(`
+Usage: tsx scripts/check-shell-size.ts [shell-name]
+
+Arguments:
+  shell-name    Name of shell to check (e.g., website, ccis)
+                If omitted, checks all shells in apps/shells/*
+
+Examples:
+  tsx scripts/check-shell-size.ts website
+  tsx scripts/check-shell-size.ts          # checks all shells
+`);
+    process.exit(0);
+  }
+
+  return args;
+}
+
+function getShellsToCheck(args: string[]): string[] {
+  if (args.length > 0) {
+    // Check specific shell(s) passed as arguments
+    return args;
+  }
+
+  // Default to all shells in apps/shells/*
+  const shellsDir = path.join(rootDir, "apps/shells");
+  if (!existsSync(shellsDir)) {
+    console.error(`❌ Shells directory not found: ${shellsDir}`);
+    process.exit(1);
+  }
+
+  const allShells = readdirSync(shellsDir).filter((name) => {
+    const fullPath = path.join(shellsDir, name);
+    return statSync(fullPath).isDirectory();
+  });
+
+  return allShells;
+}
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -74,27 +116,77 @@ function countCodeLines(contents: string): number {
   return count;
 }
 
-const files = walk(searchRoot).sort();
-let total = 0;
-const perFile: Array<[string, number]> = [];
+function checkShellSize(shellName: string): {
+  total: number;
+  passed: boolean;
+  files: Array<[string, number]>;
+} {
+  const searchRoot = path.join(rootDir, `apps/shells/${shellName}/src`);
 
-for (const file of files) {
-  const count = countCodeLines(readFileSync(file, "utf-8"));
-  perFile.push([path.relative(rootDir, file), count]);
-  total += count;
+  if (!existsSync(searchRoot)) {
+    console.error(`❌ Shell source not found: ${searchRoot}`);
+    return { total: 0, passed: false, files: [] };
+  }
+
+  const files = walk(searchRoot).sort();
+  let total = 0;
+  const perFile: Array<[string, number]> = [];
+
+  for (const file of files) {
+    const count = countCodeLines(readFileSync(file, "utf-8"));
+    perFile.push([path.relative(rootDir, file), count]);
+    total += count;
+  }
+
+  const passed = total <= SHELL_LINE_LIMIT;
+  return { total, passed, files: perFile };
 }
 
-console.log(`Shell runtime line count: ${total} (limit: ${SHELL_LINE_LIMIT})`);
-for (const [file, count] of perFile) {
-  console.log(`  ${count.toString().padStart(4)}  ${file}`);
+const args = parseArgs();
+const shellsToCheck = getShellsToCheck(args);
+
+console.log(`📊 Checking shell size for ${shellsToCheck.length} shell(s)...\n`);
+
+let allPassed = true;
+const results: Array<{ shell: string; total: number; passed: boolean }> = [];
+
+for (const shellName of shellsToCheck) {
+  console.log(`🔍 Checking shell: ${shellName}`);
+  const result = checkShellSize(shellName);
+
+  if (result.total === 0) {
+    allPassed = false;
+    continue;
+  }
+
+  results.push({ shell: shellName, total: result.total, passed: result.passed });
+
+  console.log(`   Shell runtime line count: ${result.total} (limit: ${SHELL_LINE_LIMIT})`);
+  for (const [file, count] of result.files) {
+    console.log(`     ${count.toString().padStart(4)}  ${file}`);
+  }
+
+  if (result.passed) {
+    console.log(`   ✅ Within budget (${SHELL_LINE_LIMIT - result.total} lines headroom)\n`);
+  } else {
+    console.log(`   ❌ Exceeds limit by ${result.total - SHELL_LINE_LIMIT} lines\n`);
+    allPassed = false;
+  }
 }
 
-if (total > SHELL_LINE_LIMIT) {
+console.log(`\n${"=".repeat(60)}`);
+console.log(`Summary: Checked ${results.length} shell(s)`);
+for (const { shell, total, passed } of results) {
+  const status = passed ? "✅" : "❌";
+  console.log(`  ${status} ${shell}: ${total}/${SHELL_LINE_LIMIT} lines`);
+}
+
+if (!allPassed) {
   console.error(
-    `\n❌ Shell size ${total} exceeds limit ${SHELL_LINE_LIMIT}. Shell must stay thin.\n` +
-      `Move logic into MFEs or shared packages.`,
+    `\n❌ One or more shells exceed the size limit.\n` +
+      `Move logic into MFEs or shared packages to keep shells thin.`,
   );
   process.exit(1);
 }
 
-console.log(`\n✅ Shell within budget (${SHELL_LINE_LIMIT - total} lines headroom)`);
+console.log(`\n✅ All shells within budget!`);
