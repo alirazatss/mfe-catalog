@@ -88,4 +88,6 @@ export interface ConfigGenerationOptions {
   baseUrl?: string;
   /** Output file path */
   outputPath?: string;
+  /** Release channel (e.g., "release-4.10") for channel-specific URLs */
+  channel?: string;
 }

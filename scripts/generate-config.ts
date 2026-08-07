@@ -27,6 +27,7 @@ interface CLIOptions {
   environment: "development" | "production";
   gitHash?: string;
   baseUrl?: string;
+  channel?: string;
   dryRun: boolean;
 }
 
@@ -56,6 +57,8 @@ function parseArgs(): CLIOptions {
       options.gitHash = args[++i];
     } else if (arg === "--base-url" || arg === "-b") {
       options.baseUrl = args[++i];
+    } else if (arg === "--channel" || arg === "-c") {
+      options.channel = args[++i];
     } else if (arg === "--dry-run" || arg === "-d") {
       options.dryRun = true;
     } else if (arg === "--help" || arg === "-h") {
@@ -68,6 +71,7 @@ Options:
   -e, --environment <env>     Environment: development|production (default: development)
   -g, --git-hash <hash>       Git hash for production versioning
   -b, --base-url <url>        Base URL for production deployments
+  -c, --channel <channel>     Release channel (e.g., release-4.10) for channel-aware URLs with dev fallback
   -d, --dry-run               Print config without writing file
   -h, --help                  Show this help message
 
