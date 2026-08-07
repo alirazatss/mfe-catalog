@@ -19,6 +19,8 @@ This runbook covers Azure Blob Storage configuration for the MF Mono deployment 
 - Per-shell floating pointer: `<shell-name>/` (e.g., `website/`, `ccis/`)
 - Immutable SHA paths: `<shell-name>/sha-<short8>/`
 - PR preview paths: `<shell-name>/pr-<number>/`
+- Release channel paths: `<shell-name>/release-<major.minor>/` (e.g., `website/release-4.10/`)
+- Release channel SHA paths: `<shell-name>/release-<major.minor>/sha-<short8>/`
 
 **Cache-Control**:
 
@@ -27,9 +29,11 @@ This runbook covers Azure Blob Storage configuration for the MF Mono deployment 
 
 **Examples**:
 
-- `dev-shell/website/index.html` - Latest dev build
+- `dev-shell/website/index.html` - Latest dev build (main branch)
 - `dev-shell/website/sha-a1b2c3d4/index.html` - Immutable commit-specific build
 - `dev-shell/website/pr-42/index.html` - PR preview
+- `dev-shell/website/release-4.10/index.html` - Release 4.10 channel build
+- `dev-shell/website/release-4.10/sha-a1b2c3d4/index.html` - Immutable build in release channel
 
 ### `$web` (Production Shells)
 
@@ -104,10 +108,40 @@ Azure Storage lifecycle policies automatically delete stale artifacts.
 }
 ```
 
-**Important**: When adding a new shell, update both rules with new prefix entries:
+**Rule 3: Delete old release channel builds (90 days)**
+
+```json
+{
+  "name": "delete-release-channels-after-90-days",
+  "enabled": true,
+  "type": "Lifecycle",
+  "definition": {
+    "filters": {
+      "blobTypes": ["blockBlob"],
+      "prefixMatch": ["mfes-dev/*/release-", "dev-shell/*/release-"]
+    },
+    "actions": {
+      "baseBlob": {
+        "delete": {
+          "daysAfterModificationGreaterThan": 90
+        }
+      }
+    }
+  }
+}
+```
+
+**Important**: When adding a new shell, update all rules with new prefix entries:
 
 - `dev-shell/<new-shell>/pr-`
 - `dev-shell/<new-shell>/sha-`
+- Release channel prefixes use wildcards and don't require per-shell updates
+
+**Exclusions**: The following paths are NEVER deleted by lifecycle policies:
+
+- Floating dev pointers: `<shell>/` (no prefix match)
+- Production builds: `$web/<shell>/` (different container)
+- Active release channels (within 90 days of last modification)
 
 ### Policy Verification
 
