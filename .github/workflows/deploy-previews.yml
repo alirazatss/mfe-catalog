@@ -23,9 +23,9 @@ permissions:
   pull-requests: write # Required for sticky comment
 
 jobs:
-  # PPD-1: Detect changed MFEs using Turborepo
+  # PPD-1: Detect changed MFEs and shells using Turborepo
   detect-changed-mfes:
-    name: Detect Changed MFEs
+    name: Detect Changed MFEs and Shells
     # PPD-3: Only run for same-repo PRs (fork PRs skip this job)
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
@@ -33,6 +33,8 @@ jobs:
       matrix: ${{ steps.detect.outputs.matrix }}
       has_changes: ${{ steps.detect.outputs.has_changes }}
       changed_mfes: ${{ steps.detect.outputs.changed_mfes }}
+      shell_matrix: ${{ steps.detect.outputs.shell_matrix }}
+      changed_shells: ${{ steps.detect.outputs.changed_shells }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -52,27 +54,44 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Turborepo detects changed MFEs since origin/main
-      - name: Detect changed MFEs using Turborepo
+      # Turborepo detects changed MFEs and shells since origin/main
+      - name: Detect changed MFEs and shells using Turborepo
         id: detect
         run: |
           # Fetch main for comparison
           git fetch origin main
 
           # Use turbo to detect what changed since origin/main
-          CHANGED_PACKAGES=$(pnpm exec turbo build --dry-run=json --filter='[origin/main...HEAD]' \
+          TURBO_OUTPUT=$(pnpm exec turbo build --dry-run=json --filter='[origin/main...HEAD]')
+
+          # Extract changed MFEs
+          CHANGED_MFES=$(echo "$TURBO_OUTPUT" \
             | jq -c '[.tasks[].directory | select(startswith("apps/mfes/")) | sub("^apps/mfes/"; "") | select(contains("/") | not)] | unique')
 
-          if [ -z "$CHANGED_PACKAGES" ] || [ "$CHANGED_PACKAGES" = "[]" ]; then
+          # Extract changed shells
+          CHANGED_SHELLS=$(echo "$TURBO_OUTPUT" \
+            | jq -c '[.tasks[].directory | select(startswith("apps/shells/")) | sub("^apps/shells/"; "") | select(contains("/") | not)] | unique')
+
+          if [ -z "$CHANGED_MFES" ] || [ "$CHANGED_MFES" = "[]" ]; then
             echo "No MFE changes detected by Turborepo"
             echo "matrix={\"mfe\":[]}" >> $GITHUB_OUTPUT
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "changed_mfes=[]" >> $GITHUB_OUTPUT
           else
-            echo "Turborepo detected changed MFEs: $CHANGED_PACKAGES"
-            echo "matrix={\"mfe\":$CHANGED_PACKAGES}" >> $GITHUB_OUTPUT
+            echo "Turborepo detected changed MFEs: $CHANGED_MFES"
+            echo "matrix={\"mfe\":$CHANGED_MFES}" >> $GITHUB_OUTPUT
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "changed_mfes=$CHANGED_PACKAGES" >> $GITHUB_OUTPUT
+            echo "changed_mfes=$CHANGED_MFES" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -z "$CHANGED_SHELLS" ] || [ "$CHANGED_SHELLS" = "[]" ]; then
+            echo "No shell changes detected by Turborepo"
+            echo "shell_matrix={\"shell\":[]}" >> $GITHUB_OUTPUT
+            echo "changed_shells=[]" >> $GITHUB_OUTPUT
+          else
+            echo "Turborepo detected changed shells: $CHANGED_SHELLS"
+            echo "shell_matrix={\"shell\":$CHANGED_SHELLS}" >> $GITHUB_OUTPUT
+            echo "changed_shells=$CHANGED_SHELLS" >> $GITHUB_OUTPUT
           fi
 
   # PPD-1: Deploy changed MFEs to pr-<number>/ paths
@@ -161,14 +180,17 @@ jobs:
 
   # PPD-2: Deploy preview shell with generated per-PR config
   deploy-preview-shell:
-    name: Deploy Preview Shell
+    name: Deploy ${{ matrix.shell }} Preview Shell
     needs: [detect-changed-mfes, deploy-preview-mfes]
-    # Run if MFEs changed OR shell/packages changed (even if no MFE changed)
+    # Run only if this shell changed
     if: |
       always() &&
-      needs.detect-changed-mfes.result == 'success'
+      needs.detect-changed-mfes.result == 'success' &&
+      needs.detect-changed-mfes.outputs.changed_shells != '[]'
     runs-on: ubuntu-latest
     environment: dev
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changed-mfes.outputs.shell_matrix) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -192,25 +214,27 @@ jobs:
         env:
           CHANGED_MFES: ${{ needs.detect-changed-mfes.outputs.changed_mfes }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          SHELL_NAME: ${{ matrix.shell }}
         run: |
           # Run the generator script via tsx (resolves .ts import directly)
           cat > generate-config.ts <<'SCRIPT'
           import { readFileSync, writeFileSync } from 'node:fs';
           import { generatePreviewConfig } from './scripts/azure/generate-preview-config.ts';
 
-          const devConfig = JSON.parse(readFileSync('apps/shells/website/public/remotes.config.dev.json', 'utf-8'));
+          const shellName = process.env.SHELL_NAME ?? 'website';
+          const devConfig = JSON.parse(readFileSync(`apps/shells/${shellName}/public/remotes.config.dev.json`, 'utf-8'));
           const changedMfes = JSON.parse(process.env.CHANGED_MFES ?? '[]');
           const prNumber = parseInt(process.env.PR_NUMBER ?? '0', 10);
 
           const previewConfig = generatePreviewConfig(devConfig, changedMfes, prNumber);
-          writeFileSync('apps/shells/website/public/remotes.config.json', JSON.stringify(previewConfig, null, 2));
+          writeFileSync(`apps/shells/${shellName}/public/remotes.config.json`, JSON.stringify(previewConfig, null, 2));
           console.log('Generated preview config:', JSON.stringify(previewConfig, null, 2));
           SCRIPT
 
           pnpm exec tsx generate-config.ts
 
       - name: Build shell (preview)
-        run: pnpm --filter "website..." build
+        run: pnpm --filter "${{ matrix.shell }}..." build
         env:
           NODE_ENV: production
           DEPLOY_ENV: dev
@@ -222,14 +246,14 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      # PPD-2: Upload preview shell to dev-shell/pr-<number>/
+      # PPD-2: Upload preview shell to dev-shell/<shell-name>/pr-<number>/
       - name: Upload to Azure Blob Storage (Preview Shell)
         run: |
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination dev-shell \
-            --destination-path "pr-${{ github.event.pull_request.number }}" \
-            --source apps/shells/website/dist \
+            --destination-path "${{ matrix.shell }}/pr-${{ github.event.pull_request.number }}" \
+            --source apps/shells/${{ matrix.shell }}/dist \
             --overwrite true \
             --content-cache-control "no-cache, must-revalidate" \
             --auth-mode login
@@ -250,7 +274,7 @@ jobs:
           az storage blob upload \
             --account-name tssmfestorage \
             --container-name dev-shell \
-            --name "pr-${{ github.event.pull_request.number }}/build-info.json" \
+            --name "${{ matrix.shell }}/pr-${{ github.event.pull_request.number }}/build-info.json" \
             --file build-info.json \
             --overwrite true \
             --content-type "application/json" \
@@ -263,7 +287,7 @@ jobs:
     needs: [detect-changed-mfes, deploy-preview-mfes, deploy-preview-shell]
     if: |
       always() &&
-      needs.deploy-preview-shell.result == 'success'
+      (needs.deploy-preview-shell.result == 'success' || needs.deploy-preview-shell.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Create or update PR comment
@@ -272,12 +296,22 @@ jobs:
           script: |
             const prNumber = context.payload.pull_request.number;
             const changedMfes = JSON.parse('${{ needs.detect-changed-mfes.outputs.changed_mfes }}');
+            const changedShells = JSON.parse('${{ needs.detect-changed-mfes.outputs.changed_shells }}');
 
             let commentBody = `## 🚀 Preview Deployment\n\n`;
             commentBody += `**PR #${prNumber}** - Commit: \`${context.payload.pull_request.head.sha.substring(0, 8)}\`\n\n`;
-            commentBody += `### Preview Shell\n`;
-            commentBody += `- 🌐 https://tssmfestorage.blob.core.windows.net/dev-shell/pr-${prNumber}/index.html\n`;
-            commentBody += `- 📄 [build-info.json](https://tssmfestorage.blob.core.windows.net/dev-shell/pr-${prNumber}/build-info.json)\n\n`;
+
+            if (changedShells.length > 0) {
+              commentBody += `### Preview Shells (${changedShells.length})\n\n`;
+              for (const shell of changedShells) {
+                commentBody += `- **${shell}**\n`;
+                commentBody += `  - 🌐 https://tssmfestorage.blob.core.windows.net/dev-shell/${shell}/pr-${prNumber}/index.html\n`;
+                commentBody += `  - 📄 [build-info.json](https://tssmfestorage.blob.core.windows.net/dev-shell/${shell}/pr-${prNumber}/build-info.json)\n`;
+              }
+              commentBody += `\n`;
+            } else {
+              commentBody += `### Preview Shells\nNone (no shell changes detected)\n\n`;
+            }
 
             if (changedMfes.length > 0) {
               commentBody += `### Changed MFEs (${changedMfes.length})\n\n`;
@@ -287,7 +321,7 @@ jobs:
                 commentBody += `  - [build-info.json](https://tssmfestorage.blob.core.windows.net/mfes-dev/${mfe}/pr-${prNumber}/build-info.json)\n`;
               }
             } else {
-              commentBody += `### Changed MFEs\nNone (preview shell uses all dev MFEs)\n`;
+              commentBody += `### Changed MFEs\nNone (preview shells use all dev MFEs)\n`;
             }
 
             commentBody += `\n---\n🤖 Auto-deployed by preview workflow`;

@@ -29,35 +29,57 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      # PPD-5: Delete preview shell blobs
+      # PPD-5: Delete preview shell blobs for all shells
       - name: Delete preview shell blobs
         run: |
           PR_NUMBER="${{ github.event.pull_request.number }}"
-          PREFIX="pr-${PR_NUMBER}/"
 
-          echo "Deleting blobs under dev-shell/$PREFIX..."
+          echo "Deleting preview shell blobs for PR $PR_NUMBER..."
 
-          # List and delete blobs with this prefix
-          BLOBS=$(az storage blob list \
+          # Find all shell directories under dev-shell/
+          SHELLS=$(az storage blob list \
             --account-name tssmfestorage \
             --container-name dev-shell \
-            --prefix "$PREFIX" \
             --auth-mode login \
             --query "[].name" \
-            --output tsv)
+            --output tsv | cut -d'/' -f1 | sort -u)
 
-          if [ -z "$BLOBS" ]; then
+          if [ -z "$SHELLS" ]; then
+            echo "No shell directories found in dev-shell/ container"
+            SHELLS="website"  # Fallback to known shell
+          fi
+
+          TOTAL_DELETED=0
+
+          for SHELL in $SHELLS; do
+            PREFIX="${SHELL}/pr-${PR_NUMBER}/"
+
+            BLOBS=$(az storage blob list \
+              --account-name tssmfestorage \
+              --container-name dev-shell \
+              --prefix "$PREFIX" \
+              --auth-mode login \
+              --query "[].name" \
+              --output tsv 2>/dev/null || echo "")
+
+            if [ -n "$BLOBS" ]; then
+              COUNT=$(echo "$BLOBS" | wc -l)
+              echo "Deleting $COUNT blobs from $PREFIX..."
+              echo "$BLOBS" | while read -r blob; do
+                az storage blob delete \
+                  --account-name tssmfestorage \
+                  --container-name dev-shell \
+                  --name "$blob" \
+                  --auth-mode login
+              done
+              TOTAL_DELETED=$((TOTAL_DELETED + COUNT))
+            fi
+          done
+
+          if [ "$TOTAL_DELETED" -eq 0 ]; then
             echo "No preview shell blobs found for PR $PR_NUMBER (already cleaned or never deployed)"
           else
-            echo "Found $(echo "$BLOBS" | wc -l) blobs to delete"
-            echo "$BLOBS" | while read -r blob; do
-              az storage blob delete \
-                --account-name tssmfestorage \
-                --container-name dev-shell \
-                --name "$blob" \
-                --auth-mode login
-            done
-            echo "✓ Deleted preview shell blobs"
+            echo "✓ Deleted $TOTAL_DELETED preview shell blobs across all shells"
           fi
 
       # PPD-5: Delete preview MFE blobs for all MFEs
