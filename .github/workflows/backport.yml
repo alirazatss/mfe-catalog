@@ -40,19 +40,19 @@ jobs:
           PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
         run: |
           echo "PR labels: $PR_LABELS"
-          
+
           # Extract release version from labels matching "backport release-X.Y"
           TARGETS=$(echo "$PR_LABELS" | jq -r '.[] | select(startswith("backport release-")) | sub("backport "; "")')
-          
+
           if [ -z "$TARGETS" ]; then
             echo "No backport labels found"
             echo "has_targets=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           echo "Backport targets found:"
           echo "$TARGETS"
-          
+
           # Convert to JSON array for matrix
           TARGETS_JSON=$(echo "$TARGETS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "targets=$TARGETS_JSON" >> $GITHUB_OUTPUT
@@ -66,12 +66,13 @@ jobs:
           MERGE_COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
           SOURCE_PR: ${{ github.event.pull_request.number }}
           SOURCE_PR_TITLE: ${{ github.event.pull_request.title }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Cherry-picking commit $MERGE_COMMIT to target branches"
-          
+
           FAILED_TARGETS=""
           SUCCESS_TARGETS=""
-          
+
           for TARGET_BRANCH in $(echo "$TARGETS" | jq -r '.[]'); do
             echo ""
             echo "=== Processing target: $TARGET_BRANCH ==="
@@ -94,18 +95,20 @@ jobs:
               # Push backport branch
               git push -u origin "$BACKPORT_BRANCH"
               
-              # Create PR
-              gh pr create \
+              # Create PR with body piped from echo
+              {
+                echo "Backport of #${SOURCE_PR} to ${TARGET_BRANCH}."
+                echo ""
+                echo "**Original PR**: #${SOURCE_PR}"
+                echo "**Merge commit**: ${MERGE_COMMIT}"
+                echo "**Target branch**: ${TARGET_BRANCH}"
+                echo ""
+                echo "This PR was automatically created by the backport workflow."
+              } | gh pr create \
                 --base "$TARGET_BRANCH" \
                 --head "$BACKPORT_BRANCH" \
                 --title "[Backport to $TARGET_BRANCH] $SOURCE_PR_TITLE" \
-                --body "Backport of #${SOURCE_PR} to \`$TARGET_BRANCH\`.
-
-**Original PR**: #${SOURCE_PR}
-**Merge commit**: $MERGE_COMMIT
-**Target branch**: $TARGET_BRANCH
-
-This PR was automatically created by the backport workflow." \
+                --body-file - \
                 --label "backport"
               
               SUCCESS_TARGETS="$SUCCESS_TARGETS $TARGET_BRANCH"
@@ -122,31 +125,33 @@ This PR was automatically created by the backport workflow." \
               # Record failure
               FAILED_TARGETS="$FAILED_TARGETS $TARGET_BRANCH"
               
-              # Comment on source PR about conflict
-              gh pr comment "$SOURCE_PR" --body "⚠️ **Backport to \`$TARGET_BRANCH\` failed due to conflicts**
-
-**Target branch**: \`$TARGET_BRANCH\`
-**Merge commit**: \`$MERGE_COMMIT\`
-**Conflicting files**: \`$CONFLICTING_FILES\`
-
-Manual backport required. To resolve:
-\`\`\`bash
-git fetch origin
-git checkout -b backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH} origin/$TARGET_BRANCH
-git cherry-pick $MERGE_COMMIT
-# Resolve conflicts manually
-git add .
-git cherry-pick --continue
-git push -u origin backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH}
-gh pr create --base $TARGET_BRANCH --head backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH}
-\`\`\`"
+              # Comment on source PR about conflict with body piped from echo
+              {
+                echo "⚠️ **Backport to \`$TARGET_BRANCH\` failed due to conflicts**"
+                echo ""
+                echo "**Target branch**: \`$TARGET_BRANCH\`"
+                echo "**Merge commit**: \`$MERGE_COMMIT\`"
+                echo "**Conflicting files**: \`$CONFLICTING_FILES\`"
+                echo ""
+                echo "Manual backport required. To resolve:"
+                echo "\`\`\`bash"
+                echo "git fetch origin"
+                echo "git checkout -b backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH} origin/$TARGET_BRANCH"
+                echo "git cherry-pick $MERGE_COMMIT"
+                echo "# Resolve conflicts manually"
+                echo "git add ."
+                echo "git cherry-pick --continue"
+                echo "git push -u origin backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH}"
+                echo "gh pr create --base $TARGET_BRANCH --head backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH}"
+                echo "\`\`\`"
+              } | gh pr comment "$SOURCE_PR" --body-file -
             fi
             
             # Clean up local branch
             git checkout main
             git branch -D "$BACKPORT_BRANCH" 2>/dev/null || true
           done
-          
+
           # Summary
           echo ""
           echo "=== Backport Summary ==="
