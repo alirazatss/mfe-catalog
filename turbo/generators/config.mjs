@@ -4,6 +4,7 @@
 import { validateName, checkCollision } from "./lib/validation.mjs";
 import { assignPort } from "./lib/port-assignment.mjs";
 import { printSummary } from "./lib/summary.mjs";
+import { wireToShellConfigs, wireToCleanupWorkflow } from "./lib/wire-mfe.mjs";
 
 export default function generator(plop) {
   // MFE Generator
@@ -55,6 +56,23 @@ export default function generator(plop) {
           },
         },
         () => {
+          // Implements app-scaffolding: auto-wire requirement
+          const basePath = `/${name}`;
+          
+          // Wire to all shell configs
+          const configFiles = wireToShellConfigs(shortName, scope, basePath, port);
+          
+          // Wire to cleanup workflow
+          const workflowFile = wireToCleanupWorkflow(shortName);
+          
+          const filesModified = [];
+          if (configFiles.length > 0) {
+            filesModified.push(...configFiles);
+          }
+          if (workflowFile) {
+            filesModified.push(workflowFile);
+          }
+
           // Implements app-scaffolding: run summary requirement
           printSummary({
             type: "mfe",
@@ -71,11 +89,9 @@ export default function generator(plop) {
               `apps/mfes/${shortName}/src/App.test.tsx`,
               `apps/mfes/${shortName}/README.md`,
             ],
-            filesModified: [],
+            filesModified,
             manualSteps: [
               "Run `pnpm install` to install dependencies",
-              "Add the MFE to shell remote configs (automated in next task group)",
-              "Update cleanup-previews.yml fallback list (automated in next task group)",
             ],
             metadata: {
               port,
