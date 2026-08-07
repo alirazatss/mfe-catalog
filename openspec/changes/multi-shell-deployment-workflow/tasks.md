@@ -56,10 +56,10 @@ Owner skill: tester
 Owns files: `tests/e2e/playwright.config.ts`, `docs/PRODUCTION_DEPLOYMENT.md`, `README.md`, `GETTING_STARTED.md`
 Depends on: Group 4
 
-- [ ] 5.1 Resolve the Playwright `webServer` shell directory from `E2E_SHELL_DIR`, defaulting to `apps/shells/website` (E2E requirements, both scenarios)
-- [ ] 5.2 Run the E2E suite without `E2E_SHELL_DIR` and confirm identical behavior to before
-- [ ] 5.3 Document the "add a new shell" procedure (scaffold + caller workflow + inputs) and the new prefixed URLs in deployment docs
-- [ ] 5.4 Update README/GETTING_STARTED references to `dev-shell` root URLs with the `dev-shell/website/` prefix
+- [x] 5.1 Resolve the Playwright `webServer` shell directory from `E2E_SHELL_DIR`, defaulting to `apps/shells/website` (E2E requirements, both scenarios)
+- [x] 5.2 Run the E2E suite without `E2E_SHELL_DIR` and confirm identical behavior to before
+- [x] 5.3 Document the "add a new shell" procedure (scaffold + caller workflow + inputs) and the new prefixed URLs in deployment docs
+- [x] 5.4 Update README/GETTING_STARTED references to `dev-shell` root URLs with the `dev-shell/website/` prefix
 
 ## Execution waves
 

@@ -484,6 +484,91 @@ Use a version manifest to ensure compatibility:
 4. **Authentication**: Protect sensitive remotes behind authentication
 5. **Rate Limiting**: Prevent abuse of remote module endpoints
 
+## Adding a New Shell
+
+The deployment workflow supports multiple shell applications. To add a new shell:
+
+### 1. Scaffold the Shell Application
+
+Create a new shell directory under `apps/shells/`:
+
+```bash
+mkdir apps/shells/my-new-shell
+cd apps/shells/my-new-shell
+# Copy from existing shell (e.g., website) or scaffold from scratch
+```
+
+Ensure the shell has:
+
+- A `package.json` with `name`, `build`, and `preview` scripts
+- A build output directory (usually `dist/`)
+- A valid remote config (e.g., `public/remotes.config.dev.json`)
+
+### 2. Create Caller Workflow
+
+Create `.github/workflows/deploy-my-new-shell.yml`:
+
+```yaml
+name: Deploy My New Shell
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  deploy-my-new-shell:
+    uses: ./.github/workflows/deploy-shell.yml
+    with:
+      shell_name: my-new-shell
+      environment: ${{ inputs.environment || 'dev' }}
+    secrets: inherit
+```
+
+### 3. Update Blob Storage (if using Azure)
+
+Provision per-shell prefixes in Azure Blob Storage:
+
+- **Dev floating**: `dev-shell/my-new-shell/`
+- **Dev SHA**: `dev-shell/my-new-shell/sha-<hash>/`
+- **Prod floating**: `$web/my-new-shell/`
+- **Prod versioned**: `$web/my-new-shell/v<semver>/`
+
+See `docs/runbooks/azure-blob-provisioning.md` for lifecycle policies.
+
+### 4. Deployment URLs
+
+After deployment, your shell will be available at:
+
+**Development:**
+
+- Floating: `https://tssmfestorage.blob.core.windows.net/dev-shell/my-new-shell/index.html`
+- SHA-pinned: `https://tssmfestorage.blob.core.windows.net/dev-shell/my-new-shell/sha-abc1234/index.html`
+- PR preview: `https://tssmfestorage.blob.core.windows.net/dev-shell/my-new-shell/pr-42/index.html`
+
+**Production:**
+
+- Floating: `https://tssmfestorage.blob.core.windows.net/$web/my-new-shell/index.html`
+- Versioned: `https://tssmfestorage.blob.core.windows.net/$web/my-new-shell/v1.0.0/index.html`
+
+### 5. E2E Testing
+
+To run E2E tests against your new shell:
+
+```bash
+E2E_SHELL_DIR=apps/shells/my-new-shell pnpm test:e2e
+```
+
+The default shell for E2E tests remains `website`.
+
 ## Summary
 
 The microfrontend architecture now supports:

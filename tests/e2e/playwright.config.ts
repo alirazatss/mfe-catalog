@@ -16,6 +16,7 @@ import { defineConfig, devices } from "@playwright/test";
 const SHELL_PORT = process.env.E2E_SHELL_PORT || 4273;
 const MFE_PORT = process.env.E2E_MFE_PORT || 4274;
 const AUTH_STUB_PORT = process.env.E2E_AUTH_PORT || 4275;
+const SHELL_DIR = process.env.E2E_SHELL_DIR || "apps/shells/website";
 
 export default defineConfig({
   testDir: "./journeys",
@@ -63,7 +64,7 @@ export default defineConfig({
   // Web servers for shell + MFE
   webServer: [
     {
-      command: `cd ../../apps/shells/website && vp preview --port ${SHELL_PORT} --strictPort`,
+      command: `cd ../../${SHELL_DIR} && vp preview --port ${SHELL_PORT} --strictPort`,
       port: Number(SHELL_PORT),
       timeout: 30000,
       reuseExistingServer: !process.env.CI,
