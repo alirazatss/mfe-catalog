@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CCIS Shell</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!--
+      Thin Shell HTML template.
+      The shell mounts chrome MFEs (header, sidebar, footer) and feature MFEs (main)
+      into these named slots. Slots stay in the DOM even when their MFE fails.
+      See docs/adr/0004-chrome-mfe-pattern.md
+    -->
+    <div id="app">
+      <div id="header-slot" data-slot="header">
+        <!-- Pre-hydration fallback header: shown until the header MFE mounts.
+             Kept intentionally minimal (logo + reload). Full header comes from mfe-header. -->
+        <div class="shell-fallback-header" role="banner">
+          <a href="/" class="shell-fallback-header__logo" aria-label="Home">
+            <strong>MF Mono</strong>
+          </a>
+          <button
+            type="button"
+            class="shell-fallback-header__reload"
+            onclick="window.location.reload()"
+          >
+            Reload
+          </button>
+        </div>
+      </div>
+
+      <aside id="sidebar-slot" data-slot="sidebar"></aside>
+
+      <main id="main-slot" data-slot="main">
+        <!-- Feature MFE mounts here based on manifest route matching -->
+      </main>
+
+      <footer id="footer-slot" data-slot="footer"></footer>
+    </div>
+
+    <!--
+      Not-found template. The shell clones this into main-slot when the current URL
+      does not match any manifest.features entry.
+    -->
+    <template id="shell-template-not-found">
+      <div class="shell-not-found" role="status" aria-live="polite">
+        <h1>Page not found</h1>
+        <p>We couldn't find a feature for this URL.</p>
+        <p>
+          <a href="/">Go home</a>
+        </p>
+      </div>
+    </template>
+
+    <!--
+      Access-denied template. The shell clones this into main-slot when the current
+      user lacks a required role for the matched feature.
+    -->
+    <template id="shell-template-access-denied">
+      <div class="shell-access-denied" role="alert">
+        <h1>Access denied</h1>
+        <p>You don't have permission to view this page.</p>
+      </div>
+    </template>
+
+    <!--
+      Critical-error template. Rendered directly into #app innerHTML when bootstrap
+      cannot recover (manifest fetch failed, no cache, etc). See ADR-0006.
+    -->
+    <template id="shell-template-critical-error">
+      <div class="shell-critical-error" role="alert">
+        <h1>Something went wrong</h1>
+        <p>Please reload the page. If the problem persists, contact support.</p>
+        <button type="button" onclick="window.location.reload()">Reload</button>
+      </div>
+    </template>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

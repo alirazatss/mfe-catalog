@@ -1,0 +1,135 @@
+/*
+ * Thin Shell — LAYOUT ONLY.
+ *
+ * This file MUST NOT contain visual styling (colors, typography, spacing tokens,
+ * component-level styles). Chrome MFEs (mfe-header, mfe-sidebar, mfe-footer)
+ * and Feature MFEs bring their own styles.
+ *
+ * Constraints (from thin-shell-bootstrap capability + ADR-0004):
+ *   - CSS grid targets the slot IDs
+ *   - Minimal resets, no design tokens
+ *   - Pre-hydration fallbacks (fallback header, critical error) use utility
+ *     classes with the minimum styling needed to be usable, not designed.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+#app {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "footer footer";
+  grid-template-columns: 250px 1fr;
+  grid-template-rows: 60px 1fr 40px;
+  min-height: 100vh;
+}
+
+#header-slot {
+  grid-area: header;
+}
+
+#sidebar-slot {
+  grid-area: sidebar;
+}
+
+#main-slot {
+  grid-area: main;
+  overflow: auto;
+}
+
+#footer-slot {
+  grid-area: footer;
+}
+
+/*
+ * Pre-hydration fallback header shown until the chrome header MFE mounts.
+ * Kept intentionally plain — real header comes from mfe-header.
+ */
+.shell-fallback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.shell-fallback-header__logo {
+  text-decoration: none;
+  color: inherit;
+}
+
+.shell-fallback-header__reload {
+  border: 1px solid #d1d5db;
+  background: transparent;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+/*
+ * Not-found placeholder rendered into main-slot when no feature MFE matches
+ * the current URL.
+ */
+.shell-not-found,
+.shell-access-denied {
+  padding: 2rem;
+  text-align: center;
+}
+
+/*
+ * Critical error placeholder rendered into #app when bootstrap cannot recover.
+ */
+.shell-critical-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+  gap: 1rem;
+}
+
+.shell-critical-error button {
+  border: 1px solid #d1d5db;
+  background: transparent;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+/*
+ * Slot-level error placeholder rendered by the dynamic loader on MFE failure.
+ * See graceful-failure-boundaries change.
+ */
+.mfe-error {
+  padding: 1rem;
+  text-align: center;
+}
+
+.mfe-error__button {
+  border: 1px solid #d1d5db;
+  background: transparent;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  font: inherit;
+}
