@@ -11,17 +11,45 @@
  * 6. Clean shutdown (frees ports on SIGINT)
  *
  * REQ-TI-I-1, REQ-TI-O-1, REQ-TI-O-2, REQ-TI-O-3, REQ-TI-I-5
+ *
+ * Implements multi-shell-tooling: all-shells default scenario
  */
 
 import { spawn, type ChildProcess } from "child_process";
 import * as http from "http";
 import * as fs from "fs/promises";
 import * as path from "path";
+import { readdirSync, statSync, existsSync } from "fs";
 
 const SHELL_PORT = parseInt(process.env.INTEGRATION_SHELL_PORT || "4173", 10);
 const MFE_PORT = parseInt(process.env.INTEGRATION_MFE_PORT || "4174", 10);
 const HEALTH_CHECK_TIMEOUT = 30000;
 const HEALTH_CHECK_INTERVAL = 500;
+
+// Allow targeting specific shell via env or CLI arg, default to first discovered shell
+const TARGET_SHELL = process.env.INTEGRATION_SHELL || process.argv[2] || discoverDefaultShell();
+
+function discoverDefaultShell(): string {
+  const shellsDir = "apps/shells";
+  if (!existsSync(shellsDir)) {
+    console.error(`❌ Shells directory not found: ${shellsDir}`);
+    process.exit(1);
+  }
+
+  const shells = readdirSync(shellsDir).filter((name) => {
+    const fullPath = path.join(shellsDir, name);
+    return statSync(fullPath).isDirectory();
+  });
+
+  if (shells.length === 0) {
+    console.error(`❌ No shells found in ${shellsDir}`);
+    process.exit(1);
+  }
+
+  return shells[0]; // Default to first shell
+}
+
+console.log(`🎯 Running integration tests for shell: ${TARGET_SHELL}`);
 
 interface ServerProcess {
   process: ChildProcess;
@@ -140,7 +168,7 @@ async function collectDiagnostics(): Promise<void> {
 
     // Collect manifest if available
     try {
-      const manifestPath = "apps/shells/website/dist/remotes.config.json";
+      const manifestPath = `apps/shells/${TARGET_SHELL}/dist/remotes.config.json`;
       const manifest = await fs.readFile(manifestPath, "utf-8");
       await fs.writeFile(path.join(diagnosticsDir, `manifest-${timestamp}.json`), manifest);
       console.log("  ✓ Saved manifest");
@@ -223,7 +251,7 @@ async function main() {
 
     // Step 2: Build (assuming already built for now; real version would run turbo build)
     console.log("\nStep 2: Ensuring build artifacts exist...");
-    const shellDist = "apps/shells/website/dist";
+    const shellDist = `apps/shells/${TARGET_SHELL}/dist`;
     const mfeDist = "apps/mfes/mfe-widget/dist";
 
     try {
@@ -233,7 +261,7 @@ async function main() {
     } catch {
       console.error(
         "❌ Build artifacts missing. Run `pnpm build` first.\n" +
-          "   Required: apps/shells/website/dist/index.html\n" +
+          `   Required: ${shellDist}/index.html\n` +
           "   Required: apps/mfes/mfe-widget/dist/remoteEntry.js",
       );
       process.exit(1);

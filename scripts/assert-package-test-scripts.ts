@@ -2,15 +2,33 @@
 /**
  * Assert that all qualifying packages have a `test` script.
  * Exits non-zero with a diagnostic if any are missing.
+ *
+ * Implements multi-shell-tooling: all-shells default scenario
  */
 
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
 
-// Packages that must have a test script
-const REQUIRED_PACKAGES = [
+// Discover all shells in apps/shells/*
+function discoverShells(): string[] {
+  const shellsDir = join(ROOT, "apps/shells");
+  if (!existsSync(shellsDir)) {
+    console.warn(`⚠️  Shells directory not found: ${shellsDir}`);
+    return [];
+  }
+
+  return readdirSync(shellsDir)
+    .filter((name) => {
+      const fullPath = join(shellsDir, name);
+      return statSync(fullPath).isDirectory();
+    })
+    .map((name) => `apps/shells/${name}`);
+}
+
+// Base packages that must have a test script
+const BASE_PACKAGES = [
   "packages/auth",
   "packages/auth-ui",
   "packages/dynamic-loader",
@@ -19,9 +37,11 @@ const REQUIRED_PACKAGES = [
   "packages/remote-config",
   "packages/shell-runtime",
   "packages/utils",
-  "apps/shells/website",
   "apps/mfes/mfe-widget",
 ];
+
+// Packages that must have a test script (base + all discovered shells)
+const REQUIRED_PACKAGES = [...BASE_PACKAGES, ...discoverShells()];
 
 const missing: string[] = [];
 

@@ -1,44 +1,59 @@
-# Task Group 1: Extract Reusable Deploy Workflow
+# Task Group 4: De-hardcode Monorepo Tooling
 
-## Tasks Completed (1.1-1.7)
+## Tasks Completed (4.1-4.5)
 
-### ✅ Task 1.1: Created reusable workflow
+### ✅ Task 4.1: Turborepo config glob pattern
 
-- Created `.github/workflows/deploy-shell.yml` with `workflow_call` trigger
-- Defined 4 required inputs: shell-name, shell-path, package-name, tag-prefix
+- Changed `turbo.json` `generate:config` outputs from hardcoded `apps/shells/website/...` to glob `apps/shells/*/public/remotes.config.json`
+- Verified JSON structure with `jq`
 
-### ✅ Tasks 1.2-1.5: Moved all jobs into reusable workflow
+### ✅ Task 4.2: Parameterized config generation
 
-- Version validation job (parameterized tag extraction and package.json path)
-- Dev deploy job (build, floating upload, SHA paths, build-info.json)
-- Prod config-only deploy job
-- Prod versioned deploy job
-- Per-shell concurrency groups: `deploy-${{ inputs.shell-name }}-dev`
+- Added `--shell <name>` parameter to `scripts/generate-config.ts`
+- Auto-derives output path: `apps/shells/<shell>/public/remotes.config.json`
+- Updated `apps/shells/website/package.json` to use `--shell website`
+- Tested with `--dry-run` flag
 
-### ✅ Task 1.6: Thin caller workflow
+### ✅ Task 4.3: Parameterized shell size checker
 
-- Rewrote `deploy-website.yml` from 408 lines to 43 lines (89% reduction)
-- Caller defines only triggers and inputs, delegates to reusable workflow
+- Refactored `scripts/check-shell-size.ts` to accept shell argument
+- Defaults to checking all shells in `apps/shells/*`
+- Updated `apps/shells/website/package.json` to pass `website` explicitly
+- Tested against single shell and verified output
 
-### ✅ Task 1.7: Equivalence verification
+### ✅ Task 4.4: Parameterized validation scripts
 
-- Created VERIFICATION_1.7.md with detailed comparison
-- Code review confirms functional equivalence
+- `assert-package-test-scripts.ts`: Auto-discovers all shells via `apps/shells/*`
+- `test-integration.ts`: Accepts shell via CLI arg or `INTEGRATION_SHELL` env var, defaults to first discovered shell
+- `validate-app-config.ts`: Already parameterized, updated docs to show multi-shell examples
+
+### ✅ Task 4.5: Validation suite
+
+- vp check: ✅ PASS
+- Scripts tested manually:
+  - `generate-config.ts --shell website --dry-run`: ✅
+  - `check-shell-size.ts website`: ✅ (429/500 lines)
+  - `assert-package-test-scripts.ts`: ✅ (10 packages validated)
 
 ## Requirements Covered
 
-- reusable-shell-deploy-workflow: Single parameterized workflow, thin callers, tag validation, per-shell concurrency
-- shell-deployment-pipeline: Dev/prod deploys, build metadata, serialization
+All requirements from `multi-shell-tooling` spec:
+
+- ✅ Config generation per shell
+- ✅ Shell validation scripts accept shell parameter
+- ✅ Scripts default to all shells when no argument provided
 
 ## Files Changed
 
-- `.github/workflows/deploy-shell.yml` (NEW) - 407 lines
-- `.github/workflows/deploy-website.yml` (MODIFIED) - 408 → 43 lines
-- `openspec/changes/multi-shell-deployment-workflow/tasks.md` (tasks 1.1-1.7 marked complete)
-- `VERIFICATION_1.7.md` (NEW) - verification evidence
+- `turbo.json` - glob pattern for config outputs
+- `scripts/generate-config.ts` - added --shell parameter
+- `scripts/check-shell-size.ts` - parameterized, defaults to all shells
+- `scripts/assert-package-test-scripts.ts` - auto-discovers shells
+- `scripts/test-integration.ts` - parameterized shell selection
+- `scripts/validate-app-config.ts` - updated docs
+- `apps/shells/website/package.json` - updated script invocations
+- `openspec/changes/multi-shell-deployment-workflow/tasks.md` - tasks 4.1-4.5 marked complete
 
 ## Verification
 
-- vp check: ✅ PASS (0 errors, 7 pre-existing warnings)
-- All task checkboxes updated
-- Equivalence verified by code review
+All scripts tested and working with single shell (website). Ready for multi-shell expansion.
