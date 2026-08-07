@@ -4,10 +4,12 @@
  * Generate remotes.config.json from discovered micro-frontends
  *
  * Usage:
- *   tsx scripts/generate-config.ts
- *   tsx scripts/generate-config.ts --environment production --git-hash abc123
+ *   tsx scripts/generate-config.ts --shell website
+ *   tsx scripts/generate-config.ts --shell ccis --environment production --git-hash abc123
  *   tsx scripts/generate-config.ts --output apps/shells/website/public/remotes.config.json
  *   tsx scripts/generate-config.ts --dry-run
+ *
+ * Implements multi-shell-tooling: config-generation requirement
  */
 
 import { writeFile, mkdir } from "node:fs/promises";
@@ -21,6 +23,7 @@ const rootDir = join(__dirname, "..");
 
 interface CLIOptions {
   output: string;
+  shell?: string;
   environment: "development" | "production";
   gitHash?: string;
   baseUrl?: string;
@@ -38,7 +41,9 @@ function parseArgs(): CLIOptions {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    if (arg === "--output" || arg === "-o") {
+    if (arg === "--shell" || arg === "-s") {
+      options.shell = args[++i];
+    } else if (arg === "--output" || arg === "-o") {
       options.output = args[++i];
     } else if (arg === "--environment" || arg === "-e") {
       const env = args[++i];
@@ -58,12 +63,15 @@ function parseArgs(): CLIOptions {
 Usage: tsx scripts/generate-config.ts [options]
 
 Options:
+  -s, --shell <name>          Shell name (e.g., website, ccis). Derives output path automatically.
   -o, --output <path>         Output path for config file (default: apps/shells/website/public/remotes.config.json)
   -e, --environment <env>     Environment: development|production (default: development)
   -g, --git-hash <hash>       Git hash for production versioning
   -b, --base-url <url>        Base URL for production deployments
   -d, --dry-run               Print config without writing file
   -h, --help                  Show this help message
+
+Note: If --shell is provided, --output is auto-derived as apps/shells/<shell>/public/remotes.config.json
 `);
       process.exit(0);
     } else {
@@ -79,6 +87,12 @@ Options:
 async function main() {
   try {
     const options = parseArgs();
+
+    // Implements multi-shell-tooling: per-shell config scenario
+    // If --shell is provided, auto-derive output path
+    if (options.shell) {
+      options.output = `apps/shells/${options.shell}/public/remotes.config.json`;
+    }
 
     console.log("🔍 Discovering micro-frontends...");
     const microFrontends = await discoverMicroFrontends(rootDir);

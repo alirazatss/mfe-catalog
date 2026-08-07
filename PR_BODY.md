@@ -2,7 +2,7 @@
 
 ## Tasks Completed (2.1-2.5)
 
-### Task 2.1: Changed workflow destinations to per-shell prefixes
+### ✅ Task 2.1: Changed workflow destinations to per-shell prefixes
 
 - **Dev shell**: `dev-shell/<shell-name>/` (floating pointer)
 - **Dev SHA**: `dev-shell/<shell-name>/sha-<short8>/` (immutable)

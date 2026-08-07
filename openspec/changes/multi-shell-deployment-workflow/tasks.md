@@ -44,11 +44,11 @@ Owner skill: backend-developer
 Owns files: `turbo.json`, `scripts/generate-config.ts`, `scripts/check-shell-size.ts`, `scripts/assert-package-test-scripts.ts`, `scripts/test-integration.ts`, `scripts/validate-app-config.ts`, `apps/shells/website/package.json` (prebuild args)
 Depends on: —
 
-- [ ] 4.1 Change `turbo.json` `generate:config` outputs to the glob `apps/shells/*/public/remotes.config.json`; verify caching with `turbo build --dry-run=json` (config-generation requirement)
-- [ ] 4.2 Parameterize `scripts/generate-config.ts` to accept the target shell; update the website `prebuild` invocation (per-shell config scenario)
-- [ ] 4.3 Parameterize `scripts/check-shell-size.ts` with a shell argument defaulting to all `apps/shells/*` (size-check scenarios)
-- [ ] 4.4 Parameterize `scripts/assert-package-test-scripts.ts`, `scripts/test-integration.ts`, and `scripts/validate-app-config.ts` to iterate `apps/shells/*` by default (all-shells default scenario)
-- [ ] 4.5 Run the full validation suite (`vp check`, `vp test`, affected scripts) against the single existing shell to confirm no behavior change
+- [x] 4.1 Change `turbo.json` `generate:config` outputs to the glob `apps/shells/*/public/remotes.config.json`; verify caching with `turbo build --dry-run=json` (config-generation requirement)
+- [x] 4.2 Parameterize `scripts/generate-config.ts` to accept the target shell; update the website `prebuild` invocation (per-shell config scenario)
+- [x] 4.3 Parameterize `scripts/check-shell-size.ts` with a shell argument defaulting to all `apps/shells/*` (size-check scenarios)
+- [x] 4.4 Parameterize `scripts/assert-package-test-scripts.ts`, `scripts/test-integration.ts`, and `scripts/validate-app-config.ts` to iterate `apps/shells/*` by default (all-shells default scenario)
+- [x] 4.5 Run the full validation suite (`vp check`, `vp test`, affected scripts) against the single existing shell to confirm no behavior change
 
 ## 5. E2E parameterization and documentation
 
