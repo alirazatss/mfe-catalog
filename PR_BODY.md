@@ -1,70 +1,58 @@
-# Task Group 5: E2E Parameterization and Documentation
+# Task Group 1: Generator Foundation and MFE Generator
 
-## Tasks Completed (5.1-5.4)
+## Task 1.1: Add @turbo/gen and scaffold config
+**Status**: In Progress
+**Requirement**: app-scaffolding: MFE generator requirement
 
-### ✅ Task 5.1: Parameterized Playwright shell directory
 
-Modified `tests/e2e/playwright.config.ts` to:
+### Files Created
+- turbo/generators/config.ts
+- turbo/generators/lib/validation.ts
+- turbo/generators/lib/port-assignment.ts
+- turbo/generators/lib/summary.ts
+- turbo/generators/templates/mfe/package.json.hbs
+- turbo/generators/templates/mfe/vite.config.ts.hbs
+- turbo/generators/templates/mfe/vitest.config.ts.hbs
+- turbo/generators/templates/mfe/tsconfig.json.hbs
+- turbo/generators/templates/mfe/index.html.hbs
+- turbo/generators/templates/mfe/src/bootstrap.ts.hbs
+- turbo/generators/templates/mfe/src/main.ts.hbs
+- turbo/generators/templates/mfe/src/App.tsx.hbs
+- turbo/generators/templates/mfe/src/App.test.tsx.hbs
+- turbo/generators/templates/mfe/src/test/setup.ts.hbs
+- turbo/generators/templates/mfe/README.md.hbs
 
-- Read shell directory from `E2E_SHELL_DIR` environment variable
-- Default to `apps/shells/website` when unset (preserves existing behavior)
-- Updated `webServer` command to use parameterized `SHELL_DIR` variable
-- Enables testing any shell without config file edits
+### Files Modified
+- package.json (added gen script, @turbo/gen dependency)
+- pnpm-workspace.yaml (added @turbo/gen to catalog)
 
-**Usage:**
+### Verification
+Running: pnpm gen mfe (dry-run simulation - actual test in task 1.5)
 
-```bash
-# Test default shell (website)
-pnpm test:e2e
+**Status**: ✅ Complete
 
-# Test a different shell
-E2E_SHELL_DIR=apps/shells/ccis pnpm test:e2e
-```
+---
 
-### ✅ Task 5.2: Verified identical default behavior
+## Task 1.2-1.4: Template creation, port assignment, summary
+**Status**: ✅ Complete (implemented alongside 1.1)
+**Requirements**: 
+- app-scaffolding: MFE generator requirement (template)
+- app-scaffolding: port assignment requirement
+- app-scaffolding: run summary scenario
 
-- Default value `apps/shells/website` matches previous hardcoded path
-- No configuration file changes required for existing test runs
-- E2E tests continue to work exactly as before when `E2E_SHELL_DIR` is unset
-- Verified by inspection (E2E tests marked `continue-on-error` in CI baseline)
+All template files created with:
+- Lifecycle exports (bootstrap/mount/unmount)
+- Standalone dev entry (main.ts + index.html)
+- Minimal App.tsx with routing
+- Vite/vitest/tsconfig
+- Test setup with starter test
+- README
 
-### ✅ Task 5.3: Documented "add a new shell" procedure
+Port assignment implemented via discoverMicroFrontends() pattern.
+Summary action prints created/modified files and manual steps.
 
-Added comprehensive section to `docs/PRODUCTION_DEPLOYMENT.md` covering:
+---
 
-1. **Scaffold the shell application** - directory structure, required files
-2. **Create caller workflow** - example YAML with workflow_dispatch inputs
-3. **Update blob storage** - per-shell prefix provisioning (dev/prod paths)
-4. **Deployment URLs** - complete URL reference for all deployment types:
-   - Dev floating, SHA-pinned, and PR preview URLs
-   - Prod floating and versioned URLs
-5. **E2E testing** - how to run tests against the new shell
+## Task 1.5: Verification - Scaffold mfe-scratch
+**Status**: In Progress
 
-All documented procedures reference the new prefixed blob layout (`dev-shell/<shell-name>/`, `$web/<shell-name>/`).
-
-### ✅ Task 5.4: Updated README/GETTING_STARTED URL references
-
-**Finding**: No `dev-shell` or `tssmfestorage` URLs found in README.md or GETTING_STARTED.md
-**Action**: No changes needed (task complete by inspection)
-
-The deployment URLs are documented only in `PRODUCTION_DEPLOYMENT.md` and runbooks, which were updated in Task 5.3 and previous task groups.
-
-## Requirements Covered
-
-All requirements from `multi-shell-tooling` E2E spec:
-
-- ✅ E2E configuration selects shell via `E2E_SHELL_DIR` environment variable
-- ✅ Default shell remains `website` (backward compatible)
-- ✅ No configuration file edit required to test different shells
-
-## Files Changed
-
-- `tests/e2e/playwright.config.ts` - parameterized shell directory via `E2E_SHELL_DIR`
-- `docs/PRODUCTION_DEPLOYMENT.md` - added "Adding a New Shell" section
-- `openspec/changes/multi-shell-deployment-workflow/tasks.md` - tasks 5.1-5.4 marked complete
-
-## Notes
-
-- No breaking changes (default behavior preserved)
-- E2E suite verified by inspection (CI baseline has `continue-on-error: true`)
-- Documentation complete for multi-shell onboarding workflow

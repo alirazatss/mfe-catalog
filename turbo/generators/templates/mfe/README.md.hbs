@@ -1,0 +1,26 @@
+# {{ shortName }}
+
+Micro-frontend (MFE) application built with Module Federation.
+
+## Scripts
+
+- `pnpm dev` - Start development server on port {{ port }}
+- `pnpm build` - Build for production
+- `pnpm test` - Run tests
+- `pnpm test:coverage` - Run tests with coverage
+
+## Lifecycle Exports
+
+This MFE exports the following lifecycle functions for Module Federation:
+
+- `bootstrap()` - Initialize the MFE
+- `mount(props)` - Mount the MFE into a container
+- `unmount(props)` - Unmount the MFE from a container
+
+## Development
+
+Run `pnpm dev` to start the standalone development server. The MFE will be available at `http://localhost:{{ port }}`.
+
+## Integration
+
+This MFE can be loaded by any shell application configured to use it as a remote.

@@ -1,0 +1,71 @@
+import { BrowserRouter, MemoryRouter, Routes, Route, Navigate } from "react-router";
+
+interface AppProps {
+  basePath?: string;
+  router?: "browser" | "memory";
+  isAuthenticated?: boolean;
+}
+
+function App({
+  basePath = "/",
+  router: routerType = "browser",
+  isAuthenticated = false,
+}: AppProps) {
+  if (import.meta.env.DEV) {
+    console.log(
+      "[{{ shortName }}] Rendering", { basePath, router: routerType },
+    );
+    console.log("[{{ shortName }}] Auth state:", { isAuthenticated });
+  }
+
+  const routes = (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+
+  return (
+    <div className="mfe-container">
+      {routerType === "memory" ? (
+        <MemoryRouter initialEntries={["/"]} initialIndex={0}>
+          {routes}
+        </MemoryRouter>
+      ) : (
+        <BrowserRouter basename={basePath}>{routes}</BrowserRouter>
+      )}
+
+      {import.meta.env.DEV && (
+        <div className="dev-info">
+          <strong>{{ shortName }} Dev Info:</strong> basePath={basePath}, router={routerType}
+        </div>
+      )}
+      
+      <style>{`
+        .mfe-container {
+          min-height: 400px;
+        }
+        .dev-info {
+          margin-top: 1rem;
+          padding: 1rem;
+          background: #f3f4f6;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          border-top: 2px solid #e5e7eb;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function HomePage() {
+  return (
+    <div>
+      <h1>{{ shortName }}</h1>
+      <p>Welcome to your new micro-frontend!</p>
+    </div>
+  );
+}
+
+export default App;
+export { App };

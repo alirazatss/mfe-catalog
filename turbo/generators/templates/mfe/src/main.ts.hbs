@@ -1,0 +1,16 @@
+/**
+ * {{ shortName }} - Main Entry Point
+ *
+ * Standalone development entry point.
+ * The federated entry imports bootstrap.ts without executing this file.
+ */
+
+import { bootstrap, mount } from "./bootstrap.js";
+
+const container = document.getElementById("app");
+if (container) {
+  const props = { container, basePath: "/" };
+  bootstrap()
+    .then(() => mount(props))
+    .catch((error) => console.error("[{{ shortName }}] Bootstrap error:", error));
+}
