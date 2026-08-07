@@ -1,0 +1,158 @@
+# Backport Automation Workflow
+# Implements release-channel-deployments Tasks 5.2-5.3
+# Cherry-picks merged main PRs to release branches based on labels
+# See: openspec/changes/release-channel-deployments/specs/backport-automation/spec.md
+
+name: Backport to Release Branches
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write # Required to push cherry-picked commits
+  pull-requests: write # Required to create PRs and comment
+
+jobs:
+  backport:
+    name: Backport to Release Branches
+    # Only run for merged PRs (not closed without merge)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history for cherry-pick
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Implements Task 5.2: Extract backport labels from PR
+      - name: Extract backport target branches from labels
+        id: extract_targets
+        env:
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+        run: |
+          echo "PR labels: $PR_LABELS"
+          
+          # Extract release version from labels matching "backport release-X.Y"
+          TARGETS=$(echo "$PR_LABELS" | jq -r '.[] | select(startswith("backport release-")) | sub("backport "; "")')
+          
+          if [ -z "$TARGETS" ]; then
+            echo "No backport labels found"
+            echo "has_targets=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Backport targets found:"
+          echo "$TARGETS"
+          
+          # Convert to JSON array for matrix
+          TARGETS_JSON=$(echo "$TARGETS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "targets=$TARGETS_JSON" >> $GITHUB_OUTPUT
+          echo "has_targets=true" >> $GITHUB_OUTPUT
+
+      # Implements Task 5.2 & 5.3: Cherry-pick to each target branch
+      - name: Cherry-pick to target branches
+        if: steps.extract_targets.outputs.has_targets == 'true'
+        env:
+          TARGETS: ${{ steps.extract_targets.outputs.targets }}
+          MERGE_COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
+          SOURCE_PR: ${{ github.event.pull_request.number }}
+          SOURCE_PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Cherry-picking commit $MERGE_COMMIT to target branches"
+          
+          FAILED_TARGETS=""
+          SUCCESS_TARGETS=""
+          
+          for TARGET_BRANCH in $(echo "$TARGETS" | jq -r '.[]'); do
+            echo ""
+            echo "=== Processing target: $TARGET_BRANCH ==="
+            
+            # Verify target branch exists
+            if ! git rev-parse --verify "origin/$TARGET_BRANCH" >/dev/null 2>&1; then
+              echo "::warning::Target branch $TARGET_BRANCH does not exist, skipping"
+              continue
+            fi
+            
+            # Create backport branch from target
+            BACKPORT_BRANCH="backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH}"
+            
+            git checkout -b "$BACKPORT_BRANCH" "origin/$TARGET_BRANCH"
+            
+            # Attempt cherry-pick
+            if git cherry-pick "$MERGE_COMMIT"; then
+              echo "✓ Cherry-pick successful for $TARGET_BRANCH"
+              
+              # Push backport branch
+              git push -u origin "$BACKPORT_BRANCH"
+              
+              # Create PR
+              gh pr create \
+                --base "$TARGET_BRANCH" \
+                --head "$BACKPORT_BRANCH" \
+                --title "[Backport to $TARGET_BRANCH] $SOURCE_PR_TITLE" \
+                --body "Backport of #${SOURCE_PR} to \`$TARGET_BRANCH\`.
+
+**Original PR**: #${SOURCE_PR}
+**Merge commit**: $MERGE_COMMIT
+**Target branch**: $TARGET_BRANCH
+
+This PR was automatically created by the backport workflow." \
+                --label "backport"
+              
+              SUCCESS_TARGETS="$SUCCESS_TARGETS $TARGET_BRANCH"
+            else
+              # Implements Task 5.3: Comment on conflict instead of opening PR
+              echo "::error::Cherry-pick conflict for $TARGET_BRANCH"
+              
+              # Get conflicting files
+              CONFLICTING_FILES=$(git diff --name-only --diff-filter=U | tr '\n' ',' | sed 's/,$//')
+              
+              # Abort cherry-pick
+              git cherry-pick --abort
+              
+              # Record failure
+              FAILED_TARGETS="$FAILED_TARGETS $TARGET_BRANCH"
+              
+              # Comment on source PR about conflict
+              gh pr comment "$SOURCE_PR" --body "⚠️ **Backport to \`$TARGET_BRANCH\` failed due to conflicts**
+
+**Target branch**: \`$TARGET_BRANCH\`
+**Merge commit**: \`$MERGE_COMMIT\`
+**Conflicting files**: \`$CONFLICTING_FILES\`
+
+Manual backport required. To resolve:
+\`\`\`bash
+git fetch origin
+git checkout -b backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH} origin/$TARGET_BRANCH
+git cherry-pick $MERGE_COMMIT
+# Resolve conflicts manually
+git add .
+git cherry-pick --continue
+git push -u origin backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH}
+gh pr create --base $TARGET_BRANCH --head backport-pr-${SOURCE_PR}-to-${TARGET_BRANCH}
+\`\`\`"
+            fi
+            
+            # Clean up local branch
+            git checkout main
+            git branch -D "$BACKPORT_BRANCH" 2>/dev/null || true
+          done
+          
+          # Summary
+          echo ""
+          echo "=== Backport Summary ==="
+          if [ -n "$SUCCESS_TARGETS" ]; then
+            echo "✓ Successful:$SUCCESS_TARGETS"
+          fi
+          if [ -n "$FAILED_TARGETS" ]; then
+            echo "✗ Failed (conflicts):$FAILED_TARGETS"
+          fi

@@ -43,6 +43,24 @@
           ]
         }
       }
+    },
+    {
+      "enabled": true,
+      "name": "delete-release-channels-after-90-days",
+      "type": "Lifecycle",
+      "definition": {
+        "actions": {
+          "baseBlob": {
+            "delete": {
+              "daysAfterModificationGreaterThan": 90
+            }
+          }
+        },
+        "filters": {
+          "blobTypes": ["blockBlob"],
+          "prefixMatch": ["mfes-dev/*/release-", "dev-shell/*/release-"]
+        }
+      }
     }
   ]
 }
