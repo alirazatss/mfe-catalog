@@ -116,13 +116,14 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      # Implements azure-blob-storage-layout: Per-shell prefix requirement
       # Implements shell-deployment-pipeline: Dev shell floating prefix upload
-      # NOTE: Currently uploading to container root - will be changed to per-shell prefix in Task Group 2
-      - name: Upload to Azure Blob Storage (Dev Shell)
+      - name: Upload to Azure Blob Storage (Dev Shell - per-shell prefix)
         run: |
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination dev-shell \
+            --destination-path "${{ inputs.shell-name }}" \
             --source ${{ inputs.shell-path }}/dist \
             --overwrite true \
             --content-cache-control "no-cache, must-revalidate" \
@@ -145,30 +146,30 @@ jobs:
           echo "$BUILD_INFO" | tee build-info.json
           echo "Build metadata: $BUILD_INFO"
 
-      # Upload build metadata to dev-shell root
-      - name: Upload build-info.json to dev-shell root
+      # Upload build metadata to shell prefix
+      - name: Upload build-info.json to shell prefix
         run: |
           az storage blob upload \
             --account-name tssmfestorage \
             --container-name dev-shell \
-            --name build-info.json \
+            --name "${{ inputs.shell-name }}/build-info.json" \
             --file build-info.json \
             --overwrite true \
             --content-type "application/json" \
             --content-cache-control "no-cache, must-revalidate" \
             --auth-mode login
 
+      # Implements azure-blob-storage-layout: SHA path nested under shell prefix
       # Implements shell-deployment-pipeline: Immutable SHA-path requirement
-      - name: Upload to SHA path (immutable)
+      - name: Upload to SHA path (immutable, per-shell prefix)
         run: |
           SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
 
-          # Upload build artifacts to immutable SHA path
-          # NOTE: Currently uploading to container root sha-<short> - will be changed to per-shell prefix in Task Group 2
+          # Upload build artifacts to immutable SHA path under shell prefix
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination dev-shell \
-            --destination-path "sha-${SHORT_SHA}" \
+            --destination-path "${{ inputs.shell-name }}/sha-${SHORT_SHA}" \
             --source ${{ inputs.shell-path }}/dist \
             --if-none-match "*" \
             --content-cache-control "public, max-age=31536000, immutable" \
@@ -176,14 +177,14 @@ jobs:
             2>&1 | tee upload.log || {
               # Tolerate already-exists on re-run (conditional upload skips existing blobs)
               if grep -q "BlobAlreadyExists\|ConditionNotMet" upload.log; then
-                echo "SHA path sha-${SHORT_SHA} already exists (workflow re-run), skipping upload"
+                echo "SHA path ${{ inputs.shell-name }}/sha-${SHORT_SHA} already exists (workflow re-run), skipping upload"
                 exit 0
               else
                 exit 1
               fi
             }
 
-      # Upload build metadata to SHA path
+      # Upload build metadata to SHA path under shell prefix
       - name: Upload build-info.json to SHA path
         run: |
           SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
@@ -191,7 +192,7 @@ jobs:
           az storage blob upload \
             --account-name tssmfestorage \
             --container-name dev-shell \
-            --name "sha-${SHORT_SHA}/build-info.json" \
+            --name "${{ inputs.shell-name }}/sha-${SHORT_SHA}/build-info.json" \
             --file build-info.json \
             --if-none-match "*" \
             --content-type "application/json" \
@@ -210,13 +211,13 @@ jobs:
           echo "**Commit**: ${{ github.sha }} (short: ${SHORT_SHA})" >> $GITHUB_STEP_SUMMARY
           echo "**Config**: remotes.config.dev.json bundled" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Dev shell root (floating)**:" >> $GITHUB_STEP_SUMMARY
-          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/index.html" >> $GITHUB_STEP_SUMMARY
-          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/build-info.json" >> $GITHUB_STEP_SUMMARY
+          echo "**Shell prefix (floating)**:" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/${{ inputs.shell-name }}/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/${{ inputs.shell-name }}/build-info.json" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**SHA path (immutable)**:" >> $GITHUB_STEP_SUMMARY
-          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/sha-${SHORT_SHA}/index.html" >> $GITHUB_STEP_SUMMARY
-          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/sha-${SHORT_SHA}/build-info.json" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/${{ inputs.shell-name }}/sha-${SHORT_SHA}/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/${{ inputs.shell-name }}/sha-${SHORT_SHA}/build-info.json" >> $GITHUB_STEP_SUMMARY
 
   # Implements shell-deployment-pipeline: Config-only redeploy
   deploy-prod-config-only:
@@ -263,13 +264,14 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      # Upload to $web root only (no versioned path)
-      # NOTE: Currently uploading to $web root - will be changed to per-shell prefix in Task Group 2
-      - name: Upload to $web root (config-only redeploy)
+      # Implements azure-blob-storage-layout: Prod shell artifacts under per-shell prefixes
+      # Upload to $web/<shell-name>/ only (no versioned path)
+      - name: Upload to $web shell prefix (config-only redeploy)
         run: |
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination '$web' \
+            --destination-path "${{ inputs.shell-name }}" \
             --source ${{ inputs.shell-path }}/dist \
             --overwrite true \
             --content-cache-control "public, max-age=300" \
@@ -281,8 +283,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Shell**: ${{ inputs.shell-name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Type**: Config-only redeploy" >> $GITHUB_STEP_SUMMARY
-          echo "**Container**: \$web (root only)" >> $GITHUB_STEP_SUMMARY
-          echo "**Static Website**: https://tssmfestorage.z13.web.core.windows.net/" >> $GITHUB_STEP_SUMMARY
+          echo "**Container**: \$web/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
+          echo "**Static Website**: https://tssmfestorage.z13.web.core.windows.net/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
           echo "**Cache-Control**: public, max-age=300" >> $GITHUB_STEP_SUMMARY
           echo "**Config**: remotes.config.prod.json bundled (updated)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -332,11 +334,11 @@ jobs:
         id: version_check
         run: |
           VERSION="${{ needs.validate-version.outputs.version }}"
-          # NOTE: Currently checking $web root - will be changed to per-shell prefix in Task Group 2
+          # Implements azure-blob-storage-layout: Check under shell prefix
           CONTAINER='$web'
-          PREFIX="v${VERSION}/"
+          PREFIX="${{ inputs.shell-name }}/v${VERSION}/"
 
-          echo "Checking if version v${VERSION} already exists in \$web..."
+          echo "Checking if version v${VERSION} already exists in \$web/${{ inputs.shell-name }}/..."
 
           # Check if any blobs exist at this version path
           EXISTING=$(az storage blob list \
@@ -348,7 +350,7 @@ jobs:
             --output tsv)
 
           if [ "$EXISTING" -gt 0 ]; then
-            echo "::error::Version v${VERSION} already exists in \$web!"
+            echo "::error::Version v${VERSION} already exists in \$web/${{ inputs.shell-name }}/!"
             echo "::error::Found $EXISTING blob(s) at path $PREFIX"
             echo "::error::Refusing to overwrite existing versioned artifacts"
             echo "::error::If you need to republish, use a new version number"
@@ -357,30 +359,30 @@ jobs:
 
           echo "✓ Version v${VERSION} does not exist, proceeding with upload"
 
-      # Upload to versioned path
-      # NOTE: Currently uploading to $web/v<version> - will be changed to per-shell prefix in Task Group 2
-      - name: Upload to $web versioned path
+      # Implements azure-blob-storage-layout: Prod shell under per-shell prefix
+      # Upload to versioned path under shell prefix
+      - name: Upload to $web versioned path (per-shell prefix)
         run: |
           VERSION="${{ needs.validate-version.outputs.version }}"
 
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination '$web' \
-            --destination-path "v${VERSION}" \
+            --destination-path "${{ inputs.shell-name }}/v${VERSION}" \
             --source ${{ inputs.shell-path }}/dist \
             --overwrite false \
             --content-cache-control "public, max-age=31536000, immutable" \
             --auth-mode login
 
-      # Additionally copy to $web root
-      # NOTE: Currently uploading to $web root - will be changed to per-shell prefix in Task Group 2
-      - name: Upload to $web root (overwrite)
+      # Additionally copy to shell prefix root (floating pointer)
+      - name: Upload to $web shell prefix (overwrite floating)
         run: |
           VERSION="${{ needs.validate-version.outputs.version }}"
 
           az storage blob upload-batch \
             --account-name tssmfestorage \
             --destination '$web' \
+            --destination-path "${{ inputs.shell-name }}" \
             --source ${{ inputs.shell-path }}/dist \
             --overwrite true \
             --content-cache-control "public, max-age=300" \
@@ -393,15 +395,15 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Shell**: ${{ inputs.shell-name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Version**: v${VERSION}" >> $GITHUB_STEP_SUMMARY
-          echo "**Container**: \$web" >> $GITHUB_STEP_SUMMARY
+          echo "**Container**: \$web/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "#### Versioned Path (Immutable)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Path**: \$web/v${VERSION}/" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL**: https://tssmfestorage.blob.core.windows.net/\$web/v${VERSION}/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- **Path**: \$web/${{ inputs.shell-name }}/v${VERSION}/" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://tssmfestorage.blob.core.windows.net/\$web/${{ inputs.shell-name }}/v${VERSION}/index.html" >> $GITHUB_STEP_SUMMARY
           echo "- **Cache-Control**: public, max-age=31536000, immutable" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "#### Root Path (Static Website)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Path**: \$web/ (root)" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL**: https://tssmfestorage.z13.web.core.windows.net/" >> $GITHUB_STEP_SUMMARY
+          echo "#### Shell Prefix (Floating Pointer)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Path**: \$web/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://tssmfestorage.z13.web.core.windows.net/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
           echo "- **Cache-Control**: public, max-age=300" >> $GITHUB_STEP_SUMMARY
           echo "- **Config**: remotes.config.prod.json bundled" >> $GITHUB_STEP_SUMMARY

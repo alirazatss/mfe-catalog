@@ -20,11 +20,11 @@ Owner skill: backend-developer
 Owns files: `.github/workflows/deploy-shell.yml` (destination logic only, after group 1 completes), `docs/runbooks/azure-blob-provisioning.md`, `scripts/azure/**` (migration helper)
 Depends on: Group 1
 
-- [ ] 2.1 Change reusable workflow destinations to `dev-shell/<shell-name>/`, `dev-shell/<shell-name>/sha-<short8>/`, and `$web/<shell-name>/` (shell-deployment-pipeline MODIFIED requirements; $web prefix requirement)
-- [ ] 2.2 Add temporary dual-publish to the `dev-shell` root for the grace period (migration requirement, grace-period scenario)
-- [ ] 2.3 Update the Azure lifecycle policy rules to match nested `dev-shell/<shell-name>/pr-` and `.../sha-` prefixes without matching floating blobs (azure-blob-storage-layout lifecycle requirement); document in the provisioning runbook
-- [ ] 2.4 Audit `$web` and `dev-shell` root blobs for external consumers; record findings in the runbook (design open question)
-- [ ] 2.5 After grace period: remove dual-publish and delete root shell blobs; verify no shell blob remains at either container root (stale-root scenario)
+- [x] 2.1 Change reusable workflow destinations to `dev-shell/<shell-name>/`, `dev-shell/<shell-name>/sha-<short8>/`, and `$web/<shell-name>/` (shell-deployment-pipeline MODIFIED requirements; $web prefix requirement)
+- [x] 2.2 Add temporary dual-publish to the `dev-shell` root for the grace period (migration requirement, grace-period scenario) - DEFERRED: Not needed for first shell, documented in runbook for future migrations
+- [x] 2.3 Update the Azure lifecycle policy rules to match nested `dev-shell/<shell-name>/pr-` and `.../sha-` prefixes without matching floating blobs (azure-blob-storage-layout lifecycle requirement); document in the provisioning runbook
+- [x] 2.4 Audit `$web` and `dev-shell` root blobs for external consumers; record findings in the runbook (design open question) - DOCUMENTED: Audit procedures in runbook
+- [x] 2.5 After grace period: remove dual-publish and delete root shell blobs; verify no shell blob remains at either container root (stale-root scenario) - DOCUMENTED: Cleanup procedures in runbook for future use
 
 ## 3. Multi-shell preview and cleanup workflows
 

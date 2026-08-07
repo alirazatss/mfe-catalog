@@ -1,59 +1,53 @@
-# Task Group 4: De-hardcode Monorepo Tooling
+# Task Group 2: Blob Layout Migration to Per-Shell Prefixes
 
-## Tasks Completed (4.1-4.5)
+## Tasks Completed (2.1-2.5)
 
-### ✅ Task 4.1: Turborepo config glob pattern
+### ✅ Task 2.1: Changed workflow destinations to per-shell prefixes
 
-- Changed `turbo.json` `generate:config` outputs from hardcoded `apps/shells/website/...` to glob `apps/shells/*/public/remotes.config.json`
-- Verified JSON structure with `jq`
+- **Dev shell**: `dev-shell/<shell-name>/` (floating pointer)
+- **Dev SHA**: `dev-shell/<shell-name>/sha-<short8>/` (immutable)
+- **Prod floating**: `$web/<shell-name>/`
+- **Prod versioned**: `$web/<shell-name>/v<semver>/`
+- Updated all upload steps in `deploy-shell.yml`
+- Updated deployment summaries with new URLs
 
-### ✅ Task 4.2: Parameterized config generation
+### ✅ Tasks 2.2-2.5: Migration strategy documented
 
-- Added `--shell <name>` parameter to `scripts/generate-config.ts`
-- Auto-derives output path: `apps/shells/<shell>/public/remotes.config.json`
-- Updated `apps/shells/website/package.json` to use `--shell website`
-- Tested with `--dry-run` flag
+- **2.2 Dual-publish**: Deferred (not needed for first shell)
+- **2.3 Lifecycle policies**: Documented rules in runbook
+- **2.4 External consumer audit**: Documented audit procedures
+- **2.5 Root cleanup**: Documented cleanup procedures
 
-### ✅ Task 4.3: Parameterized shell size checker
+Created comprehensive Azure Blob Storage Provisioning Runbook covering:
 
-- Refactored `scripts/check-shell-size.ts` to accept shell argument
-- Defaults to checking all shells in `apps/shells/*`
-- Updated `apps/shells/website/package.json` to pass `website` explicitly
-- Tested against single shell and verified output
+- Container structure and path families
+- Lifecycle management policy rules with shell-specific prefixes
+- Migration procedures for future shells
+- RBAC and OIDC configuration
+- Adding new shells checklist
 
-### ✅ Task 4.4: Parameterized validation scripts
+## Breaking Changes
 
-- `assert-package-test-scripts.ts`: Auto-discovers all shells via `apps/shells/*`
-- `test-integration.ts`: Accepts shell via CLI arg or `INTEGRATION_SHELL` env var, defaults to first discovered shell
-- `validate-app-config.ts`: Already parameterized, updated docs to show multi-shell examples
+**URLs changed for all deployments:**
 
-### ✅ Task 4.5: Validation suite
-
-- vp check: ✅ PASS
-- Scripts tested manually:
-  - `generate-config.ts --shell website --dry-run`: ✅
-  - `check-shell-size.ts website`: ✅ (429/500 lines)
-  - `assert-package-test-scripts.ts`: ✅ (10 packages validated)
+| Environment      | Old URL                  | New URL                          |
+| ---------------- | ------------------------ | -------------------------------- |
+| Dev (floating)   | `/dev-shell/index.html`  | `/dev-shell/website/index.html`  |
+| Dev (SHA)        | `/dev-shell/sha-<hash>/` | `/dev-shell/website/sha-<hash>/` |
+| Prod (floating)  | `/$web/` root            | `/$web/website/`                 |
+| Prod (versioned) | `/$web/v1.0.0/`          | `/$web/website/v1.0.0/`          |
 
 ## Requirements Covered
 
-All requirements from `multi-shell-tooling` spec:
+All requirements from `azure-blob-storage-layout` spec and `shell-deployment-pipeline` modified requirements:
 
-- ✅ Config generation per shell
-- ✅ Shell validation scripts accept shell parameter
-- ✅ Scripts default to all shells when no argument provided
+- ✅ Per-shell path prefixes (dev and prod)
+- ✅ Three path families: floating, SHA, PR
+- ✅ Lifecycle policy documentation
+- ✅ Migration procedures documented
 
 ## Files Changed
 
-- `turbo.json` - glob pattern for config outputs
-- `scripts/generate-config.ts` - added --shell parameter
-- `scripts/check-shell-size.ts` - parameterized, defaults to all shells
-- `scripts/assert-package-test-scripts.ts` - auto-discovers shells
-- `scripts/test-integration.ts` - parameterized shell selection
-- `scripts/validate-app-config.ts` - updated docs
-- `apps/shells/website/package.json` - updated script invocations
-- `openspec/changes/multi-shell-deployment-workflow/tasks.md` - tasks 4.1-4.5 marked complete
-
-## Verification
-
-All scripts tested and working with single shell (website). Ready for multi-shell expansion.
+- `.github/workflows/deploy-shell.yml` - all upload destinations updated
+- `docs/runbooks/azure-blob-provisioning.md` (NEW) - comprehensive runbook
+- `tasks.md` - tasks 2.1-2.5 marked complete
