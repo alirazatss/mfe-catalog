@@ -32,20 +32,11 @@
               "minLength": 1
             }
           },
-          "required": [
-            "keycloakUrl",
-            "realm",
-            "clientId"
-          ],
+          "required": ["keycloakUrl", "realm", "clientId"],
           "additionalProperties": false
         }
       },
-      "required": [
-        "schemaVersion",
-        "apiBaseUrl",
-        "logoutUrl",
-        "auth"
-      ],
+      "required": ["schemaVersion", "apiBaseUrl", "logoutUrl", "auth"],
       "additionalProperties": false
     }
   },
