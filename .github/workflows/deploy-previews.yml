@@ -1,7 +1,9 @@
 # PR Preview Deployment Workflow
 # Implements PPD-1, PPD-2, PPD-3, PPD-4, PPD-6 from dev-preview-deployments change
+# Implements release-channel-deployments Task 4.1: release-target PR previews
 # Deploys changed MFEs and preview shell to pr-<number>/ paths for same-repo PRs only
 # See: openspec/changes/dev-preview-deployments/specs/pr-preview-deployments/spec.md
+# See: openspec/changes/release-channel-deployments/specs/pr-preview-deployments/spec.md
 
 name: Deploy PR Previews
 
@@ -10,6 +12,8 @@ on:
     types: [opened, synchronize]
     branches:
       - main
+      # Implements release-channel-deployments Task 4.1: release-* base branches
+      - "release-*"
 
 # PPD-3: Use pull_request (not pull_request_target) for security
 # PPD-6: Cancel in-progress preview runs when new push arrives
@@ -23,6 +27,30 @@ permissions:
   pull-requests: write # Required for sticky comment
 
 jobs:
+  # Implements release-channel-deployments Task 4.1: Extract base channel from base branch
+  compute-base-channel:
+    name: Compute Base Channel
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      base_channel: ${{ steps.extract.outputs.base_channel }}
+    steps:
+      - name: Extract base channel from base branch
+        id: extract
+        run: |
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+
+          if [ "$BASE_REF" = "main" ]; then
+            BASE_CHANNEL=""
+          elif [[ "$BASE_REF" =~ ^release-([0-9]+\.[0-9]+)$ ]]; then
+            BASE_CHANNEL="release-${BASH_REMATCH[1]}"
+          else
+            BASE_CHANNEL=""
+          fi
+
+          echo "base_channel=$BASE_CHANNEL" >> $GITHUB_OUTPUT
+          echo "Base branch '$BASE_REF' maps to channel: '$BASE_CHANNEL'"
+
   # PPD-1: Detect changed MFEs and shells using Turborepo
   detect-changed-mfes:
     name: Detect Changed MFEs and Shells
@@ -179,9 +207,10 @@ jobs:
             --auth-mode login
 
   # PPD-2: Deploy preview shell with generated per-PR config
+  # Implements release-channel-deployments Task 4.1: Pass base channel to preview config
   deploy-preview-shell:
     name: Deploy ${{ matrix.shell }} Preview Shell
-    needs: [detect-changed-mfes, deploy-preview-mfes]
+    needs: [detect-changed-mfes, deploy-preview-mfes, compute-base-channel]
     # Run only if this shell changed
     if: |
       always() &&
@@ -209,12 +238,14 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # PPD-2: Generate preview config with pr-<n> URLs for changed MFEs
+      # Implements release-channel-deployments Task 4.1: Pass base channel for release-target PRs
       - name: Generate preview remotes config
         id: preview_config
         env:
           CHANGED_MFES: ${{ needs.detect-changed-mfes.outputs.changed_mfes }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           SHELL_NAME: ${{ matrix.shell }}
+          BASE_CHANNEL: ${{ needs.compute-base-channel.outputs.base_channel }}
         run: |
           # Run the generator script via tsx (resolves .ts import directly)
           cat > generate-config.ts <<'SCRIPT'
@@ -225,10 +256,12 @@ jobs:
           const devConfig = JSON.parse(readFileSync(`apps/shells/${shellName}/public/remotes.config.dev.json`, 'utf-8'));
           const changedMfes = JSON.parse(process.env.CHANGED_MFES ?? '[]');
           const prNumber = parseInt(process.env.PR_NUMBER ?? '0', 10);
+          const baseChannel = process.env.BASE_CHANNEL || undefined;
 
-          const previewConfig = generatePreviewConfig(devConfig, changedMfes, prNumber);
+          const previewConfig = await generatePreviewConfig(devConfig, changedMfes, prNumber, baseChannel);
           writeFileSync(`apps/shells/${shellName}/public/remotes.config.json`, JSON.stringify(previewConfig, null, 2));
           console.log('Generated preview config:', JSON.stringify(previewConfig, null, 2));
+          console.log('Base channel:', baseChannel ?? '(none - main-target PR)');
           SCRIPT
 
           pnpm exec tsx generate-config.ts

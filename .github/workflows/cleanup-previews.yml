@@ -1,7 +1,10 @@
 # PR Preview Cleanup Workflow
 # Implements PPD-5 from dev-preview-deployments change
+# Implements release-channel-deployments Task 4.2: cleanup scenario verification
 # Deletes pr-<number>/ blobs when PR is closed (merged or not)
+# NEVER touches release-*/ channel blobs - prefix filter ensures this
 # See: openspec/changes/dev-preview-deployments/specs/pr-preview-deployments/spec.md
+# See: openspec/changes/release-channel-deployments/specs/pr-preview-deployments/spec.md
 
 name: Cleanup PR Previews
 
@@ -10,6 +13,8 @@ on:
     types: [closed]
     branches:
       - main
+      # Implements release-channel-deployments Task 4.2: cleanup for release-target PRs
+      - "release-*"
 
 permissions:
   id-token: write # Required for Azure OIDC
@@ -30,11 +35,13 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       # PPD-5: Delete preview shell blobs for all shells
+      # Implements release-channel-deployments Task 4.2: Prefix filter ensures release-*/ blobs are never touched
       - name: Delete preview shell blobs
         run: |
           PR_NUMBER="${{ github.event.pull_request.number }}"
 
           echo "Deleting preview shell blobs for PR $PR_NUMBER..."
+          echo "⚠️  Cleanup only targets pr-${PR_NUMBER}/ prefix - release-*/ channel blobs are never touched"
 
           # Find all shell directories under dev-shell/
           SHELLS=$(az storage blob list \
@@ -83,11 +90,13 @@ jobs:
           fi
 
       # PPD-5: Delete preview MFE blobs for all MFEs
+      # Implements release-channel-deployments Task 4.2: Prefix filter ensures release-*/ blobs are never touched
       - name: Delete preview MFE blobs
         run: |
           PR_NUMBER="${{ github.event.pull_request.number }}"
 
           echo "Deleting MFE preview blobs for PR $PR_NUMBER..."
+          echo "⚠️  Cleanup only targets pr-${PR_NUMBER}/ prefix - release-*/ channel blobs are never touched"
 
           # Find all MFE directories
           MFES=$(az storage blob directory list \
