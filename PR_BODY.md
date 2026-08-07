@@ -1,142 +1,44 @@
-# Task Group 1 Implementation: App-config Package
+# Task Group 1: Extract Reusable Deploy Workflow
 
-## Tasks Completed
+## Tasks Completed (1.1-1.7)
 
-### Task 1.1: ✅ Scaffold packages/app-config
+### ✅ Task 1.1: Created reusable workflow
 
-**Requirements**: ACS-1
+- Created `.github/workflows/deploy-shell.yml` with `workflow_call` trigger
+- Defined 4 required inputs: shell-name, shell-path, package-name, tag-prefix
 
-**Changes**:
+### ✅ Tasks 1.2-1.5: Moved all jobs into reusable workflow
 
-- Created `packages/app-config/` with package.json, tsconfig.json, vite.config.ts
-- Added exports map including `./schema.json`
-- Updated `pnpm-workspace.yaml` with zod and zod-to-json-schema catalog entries
-- Scripts: `build` (vp pack + schema generation), `dev`, `test`, `test:coverage`
+- Version validation job (parameterized tag extraction and package.json path)
+- Dev deploy job (build, floating upload, SHA paths, build-info.json)
+- Prod config-only deploy job
+- Prod versioned deploy job
+- Per-shell concurrency groups: `deploy-${{ inputs.shell-name }}-dev`
 
-**Verification**: Package structure created, dependencies installed successfully
+### ✅ Task 1.6: Thin caller workflow
 
-### Task 1.2: ✅ Write failing unit tests
+- Rewrote `deploy-website.yml` from 408 lines to 43 lines (89% reduction)
+- Caller defines only triggers and inputs, delegates to reusable workflow
 
-**Requirements**: ACS-1, ACS-2, ACS-3
+### ✅ Task 1.7: Equivalence verification
 
-**Changes**:
+- Created VERIFICATION_1.7.md with detailed comparison
+- Code review confirms functional equivalence
 
-- Created `src/index.test.ts` with comprehensive test suite
-- Tests for valid config parsing
-- Tests for multiple field error reporting (missing apiBaseUrl + malformed keycloakUrl)
-- Tests for schemaVersion mismatch rejection
-- All tests initially failing (TDD approach)
+## Requirements Covered
 
-**Verification**: Tests written and initially fail as expected
+- reusable-shell-deploy-workflow: Single parameterized workflow, thin callers, tag validation, per-shell concurrency
+- shell-deployment-pipeline: Dev/prod deploys, build metadata, serialization
 
-### Task 1.3: ✅ Implement Zod schema
+## Files Changed
 
-**Requirements**: ACS-1, ACS-2, ACS-3
+- `.github/workflows/deploy-shell.yml` (NEW) - 407 lines
+- `.github/workflows/deploy-website.yml` (MODIFIED) - 408 → 43 lines
+- `openspec/changes/multi-shell-deployment-workflow/tasks.md` (tasks 1.1-1.7 marked complete)
+- `VERIFICATION_1.7.md` (NEW) - verification evidence
 
-**Changes**:
+## Verification
 
-- Created `src/index.ts` with:
-  - `appConfigSchema`: Zod schema with schemaVersion literal, URLs, auth object
-  - `AppConfig`: Inferred TypeScript type
-  - `schemaVersion`: Constant (0.1.0)
-  - `parseAppConfig`: Returns result type with all issues
-- Test asserting schemaVersion matches package version
-
-**Verification**: All parsing tests pass (13 tests)
-
-### Task 1.4: ✅ Implement loadAppConfig
-
-**Requirements**: ACS-4
-
-**Changes**:
-
-- Implemented `loadAppConfig(url, options?)` in `src/index.ts`
-- `LoadError` class with category: fetch | parse | validation
-- Fetch failures, non-OK responses, JSON parse errors, validation errors all categorized
-- Tests for all error categories
-
-**Verification**: All loader tests pass
-
-### Task 1.5: ✅ JSON Schema generation script
-
-**Requirements**: AAR-1
-
-**Changes**:
-
-- Created `scripts/generate-schema.ts` using zod-to-json-schema
-- Generates `schema.json` with schemaVersion in metadata
-- Wired into package build script
-
-**Verification**:
-
-```bash
-$ pnpm --filter "@mfe-runtime/app-config" build
-✓ Generated schema.json (version 0.1.0)
-```
-
-Schema file created successfully at `packages/app-config/schema.json`
-
-### Task 1.6: ✅ Zod↔ajv parity test
-
-**Requirements**: AAR-1
-
-**Changes**:
-
-- Created `src/parity.test.ts`
-- Shared valid/invalid fixtures
-- Tests validate identical accept/reject outcomes between Zod and ajv
-- 1 valid fixture, 5 invalid fixtures
-- All 6 parity tests pass
-
-**Verification**:
-
-```bash
-$ pnpm --filter "@mfe-runtime/app-config" test
-Test Files  2 passed (2)
-Tests  19 passed (19)
-```
-
-## Requirements Coverage
-
-- ✅ **ACS-1**: Zod source of truth - Schema, AppConfig type, schemaVersion exported
-- ✅ **ACS-2**: semver schemaVersion - Literal match required, mismatches rejected
-- ✅ **ACS-3**: Parse helper reports all errors - Multiple field violations reported simultaneously
-- ✅ **ACS-4**: Async loader with error categories - fetch/parse/validation errors distinguishable
-- ✅ **AAR-1**: JSON Schema generation + parity - Generated from Zod, ajv/Zod agree on all fixtures
-
-## Files Created/Modified
-
-**Created**:
-
-- `packages/app-config/package.json`
-- `packages/app-config/tsconfig.json`
-- `packages/app-config/vite.config.ts`
-- `packages/app-config/src/index.ts`
-- `packages/app-config/src/index.test.ts`
-- `packages/app-config/src/parity.test.ts`
-- `packages/app-config/scripts/generate-schema.ts`
-- `packages/app-config/schema.json` (generated)
-
-**Modified**:
-
-- `pnpm-workspace.yaml` (added zod, zod-to-json-schema catalog entries)
-- `openspec/changes/app-config-contract/tasks.md` (marked tasks 1.1-1.6 complete)
-
-## Test Results
-
-```
-Test Files  2 passed (2)
-Tests  19 passed (19)
-Duration  145ms
-
-Coverage:
-- index.ts: 100% statements, branches, functions, lines
-- All scenarios verified
-```
-
-## Build Output
-
-```
-✓ Build complete in 363ms
-✓ Generated schema.json (version 0.1.0)
-```
+- vp check: ✅ PASS (0 errors, 7 pre-existing warnings)
+- All task checkboxes updated
+- Equivalence verified by code review

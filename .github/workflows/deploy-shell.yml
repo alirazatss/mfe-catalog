@@ -1,0 +1,407 @@
+# Reusable Shell Deployment Workflow
+# Implements reusable-shell-deploy-workflow requirements from multi-shell-deployment-workflow change
+# See: openspec/changes/multi-shell-deployment-workflow/specs/reusable-shell-deploy-workflow/spec.md
+# See: openspec/changes/multi-shell-deployment-workflow/specs/shell-deployment-pipeline/spec.md
+
+name: Deploy Shell (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      shell-name:
+        description: 'Shell identifier (blob path prefix, e.g., "website", "ccis")'
+        required: true
+        type: string
+      shell-path:
+        description: 'Workspace path to shell (e.g., "apps/shells/website")'
+        required: true
+        type: string
+      package-name:
+        description: 'pnpm filter target (e.g., "website")'
+        required: true
+        type: string
+      tag-prefix:
+        description: 'Git tag prefix for this shell (e.g., "website-v")'
+        required: true
+        type: string
+
+# Implements OIDC-Requirement-1: OIDC authentication requires id-token permission
+permissions:
+  id-token: write # Required for Azure OIDC authentication
+  contents: read # Required to checkout code
+
+jobs:
+  # Implements reusable-shell-deploy-workflow: Tag validation requirement
+  # Implements shell-deployment-pipeline: Tag version validation
+  validate-version:
+    name: Validate Version
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: extract
+        run: |
+          # Strip tag prefix from tag name
+          TAG_VERSION="${GITHUB_REF_NAME#${{ inputs.tag-prefix }}}"
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version from tag: $TAG_VERSION"
+
+      - name: Read package.json version
+        id: package
+        run: |
+          PKG_VERSION=$(jq -r '.version' ${{ inputs.shell-path }}/package.json)
+          echo "package_version=$PKG_VERSION" >> $GITHUB_OUTPUT
+          echo "Package.json version: $PKG_VERSION"
+
+      - name: Compare versions
+        run: |
+          TAG_VERSION="${{ steps.extract.outputs.version }}"
+          PKG_VERSION="${{ steps.package.outputs.package_version }}"
+
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Version mismatch! Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            echo "::error::Please update ${{ inputs.shell-path }}/package.json to version $TAG_VERSION before tagging"
+            exit 1
+          fi
+
+          echo "✓ Version validation passed: $TAG_VERSION"
+
+  # Implements shell-deployment-pipeline: Dev deploy requirements
+  # Implements reusable-shell-deploy-workflow: Concurrency per shell
+  deploy-dev:
+    name: Deploy to Dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: dev
+    # Implements shell-deployment-pipeline concurrency requirement
+    # Implements reusable-shell-deploy-workflow per-shell concurrency
+    concurrency:
+      group: deploy-${{ inputs.shell-name }}-dev
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Build shell with dev config
+      - name: Build shell (dev)
+        # "..." suffix builds workspace dependencies first (topological order)
+        run: pnpm --filter "${{ inputs.package-name }}..." build
+        env:
+          NODE_ENV: production
+          DEPLOY_ENV: dev
+
+      # Authenticate via OIDC
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_DEV }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Implements shell-deployment-pipeline: Dev shell floating prefix upload
+      # NOTE: Currently uploading to container root - will be changed to per-shell prefix in Task Group 2
+      - name: Upload to Azure Blob Storage (Dev Shell)
+        run: |
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination dev-shell \
+            --source ${{ inputs.shell-path }}/dist \
+            --overwrite true \
+            --content-cache-control "no-cache, must-revalidate" \
+            --auth-mode login
+
+      # Implements shell-deployment-pipeline: Build metadata requirement
+      - name: Generate build-info.json
+        id: build_info
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+          BUILD_INFO=$(jq -n \
+            --arg commitSha "${{ github.sha }}" \
+            --arg runId "${{ github.run_id }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{commitSha: $commitSha, runId: $runId, workflow: $workflow, timestamp: $timestamp}')
+
+          echo "$BUILD_INFO" | tee build-info.json
+          echo "Build metadata: $BUILD_INFO"
+
+      # Upload build metadata to dev-shell root
+      - name: Upload build-info.json to dev-shell root
+        run: |
+          az storage blob upload \
+            --account-name tssmfestorage \
+            --container-name dev-shell \
+            --name build-info.json \
+            --file build-info.json \
+            --overwrite true \
+            --content-type "application/json" \
+            --content-cache-control "no-cache, must-revalidate" \
+            --auth-mode login
+
+      # Implements shell-deployment-pipeline: Immutable SHA-path requirement
+      - name: Upload to SHA path (immutable)
+        run: |
+          SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
+
+          # Upload build artifacts to immutable SHA path
+          # NOTE: Currently uploading to container root sha-<short> - will be changed to per-shell prefix in Task Group 2
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination dev-shell \
+            --destination-path "sha-${SHORT_SHA}" \
+            --source ${{ inputs.shell-path }}/dist \
+            --if-none-match "*" \
+            --content-cache-control "public, max-age=31536000, immutable" \
+            --auth-mode login \
+            2>&1 | tee upload.log || {
+              # Tolerate already-exists on re-run (conditional upload skips existing blobs)
+              if grep -q "BlobAlreadyExists\|ConditionNotMet" upload.log; then
+                echo "SHA path sha-${SHORT_SHA} already exists (workflow re-run), skipping upload"
+                exit 0
+              else
+                exit 1
+              fi
+            }
+
+      # Upload build metadata to SHA path
+      - name: Upload build-info.json to SHA path
+        run: |
+          SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
+
+          az storage blob upload \
+            --account-name tssmfestorage \
+            --container-name dev-shell \
+            --name "sha-${SHORT_SHA}/build-info.json" \
+            --file build-info.json \
+            --if-none-match "*" \
+            --content-type "application/json" \
+            --content-cache-control "public, max-age=31536000, immutable" \
+            --auth-mode login \
+            2>&1 || echo "Build info already exists at SHA path (workflow re-run)"
+
+      - name: Dev deployment summary
+        run: |
+          SHORT_SHA="${{ steps.build_info.outputs.short_sha }}"
+          echo "### ✓ Dev Shell Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Shell**: ${{ inputs.shell-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Container**: dev-shell" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }} (short: ${SHORT_SHA})" >> $GITHUB_STEP_SUMMARY
+          echo "**Config**: remotes.config.dev.json bundled" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Dev shell root (floating)**:" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/build-info.json" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**SHA path (immutable)**:" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://tssmfestorage.blob.core.windows.net/dev-shell/sha-${SHORT_SHA}/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Build info: https://tssmfestorage.blob.core.windows.net/dev-shell/sha-${SHORT_SHA}/build-info.json" >> $GITHUB_STEP_SUMMARY
+
+  # Implements shell-deployment-pipeline: Config-only redeploy
+  deploy-prod-config-only:
+    name: Redeploy Prod (Config Only)
+    # Trigger only when:
+    # 1. Push to main (not a tag)
+    # 2. remotes.config.prod.json was modified
+    # 3. No shell source was modified (config-only change)
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      contains(github.event.head_commit.modified, format('{0}/public/remotes.config.prod.json', inputs.shell-path))
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Build shell with prod config
+      - name: Build shell (prod)
+        run: pnpm --filter "${{ inputs.package-name }}..." build
+        env:
+          NODE_ENV: production
+          DEPLOY_ENV: prod
+
+      # Authenticate via OIDC
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_PROD }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Upload to $web root only (no versioned path)
+      # NOTE: Currently uploading to $web root - will be changed to per-shell prefix in Task Group 2
+      - name: Upload to $web root (config-only redeploy)
+        run: |
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination '$web' \
+            --source ${{ inputs.shell-path }}/dist \
+            --overwrite true \
+            --content-cache-control "public, max-age=300" \
+            --auth-mode login
+
+      - name: Config-only redeploy summary
+        run: |
+          echo "### ✓ Prod Shell Config-Only Redeploy Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Shell**: ${{ inputs.shell-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Type**: Config-only redeploy" >> $GITHUB_STEP_SUMMARY
+          echo "**Container**: \$web (root only)" >> $GITHUB_STEP_SUMMARY
+          echo "**Static Website**: https://tssmfestorage.z13.web.core.windows.net/" >> $GITHUB_STEP_SUMMARY
+          echo "**Cache-Control**: public, max-age=300" >> $GITHUB_STEP_SUMMARY
+          echo "**Config**: remotes.config.prod.json bundled (updated)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "ℹ️ No new versioned path created. Existing versions remain unchanged." >> $GITHUB_STEP_SUMMARY
+
+  # Implements shell-deployment-pipeline: Versioned prod deploy
+  deploy-prod-versioned:
+    name: Deploy to Prod (Versioned)
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: validate-version
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Build shell with prod config
+      - name: Build shell (prod)
+        run: pnpm --filter "${{ inputs.package-name }}..." build
+        env:
+          NODE_ENV: production
+          DEPLOY_ENV: prod
+
+      # Authenticate via OIDC
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_PROD }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Check if version already exists (refuse to overwrite)
+      - name: Check if version already exists
+        id: version_check
+        run: |
+          VERSION="${{ needs.validate-version.outputs.version }}"
+          # NOTE: Currently checking $web root - will be changed to per-shell prefix in Task Group 2
+          CONTAINER='$web'
+          PREFIX="v${VERSION}/"
+
+          echo "Checking if version v${VERSION} already exists in \$web..."
+
+          # Check if any blobs exist at this version path
+          EXISTING=$(az storage blob list \
+            --account-name tssmfestorage \
+            --container-name '$web' \
+            --prefix "$PREFIX" \
+            --auth-mode login \
+            --query "length([?name])" \
+            --output tsv)
+
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "::error::Version v${VERSION} already exists in \$web!"
+            echo "::error::Found $EXISTING blob(s) at path $PREFIX"
+            echo "::error::Refusing to overwrite existing versioned artifacts"
+            echo "::error::If you need to republish, use a new version number"
+            exit 1
+          fi
+
+          echo "✓ Version v${VERSION} does not exist, proceeding with upload"
+
+      # Upload to versioned path
+      # NOTE: Currently uploading to $web/v<version> - will be changed to per-shell prefix in Task Group 2
+      - name: Upload to $web versioned path
+        run: |
+          VERSION="${{ needs.validate-version.outputs.version }}"
+
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination '$web' \
+            --destination-path "v${VERSION}" \
+            --source ${{ inputs.shell-path }}/dist \
+            --overwrite false \
+            --content-cache-control "public, max-age=31536000, immutable" \
+            --auth-mode login
+
+      # Additionally copy to $web root
+      # NOTE: Currently uploading to $web root - will be changed to per-shell prefix in Task Group 2
+      - name: Upload to $web root (overwrite)
+        run: |
+          VERSION="${{ needs.validate-version.outputs.version }}"
+
+          az storage blob upload-batch \
+            --account-name tssmfestorage \
+            --destination '$web' \
+            --source ${{ inputs.shell-path }}/dist \
+            --overwrite true \
+            --content-cache-control "public, max-age=300" \
+            --auth-mode login
+
+      - name: Prod deployment summary
+        run: |
+          VERSION="${{ needs.validate-version.outputs.version }}"
+          echo "### ✓ Prod Shell Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Shell**: ${{ inputs.shell-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "**Container**: \$web" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Versioned Path (Immutable)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Path**: \$web/v${VERSION}/" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://tssmfestorage.blob.core.windows.net/\$web/v${VERSION}/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cache-Control**: public, max-age=31536000, immutable" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Root Path (Static Website)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Path**: \$web/ (root)" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://tssmfestorage.z13.web.core.windows.net/" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cache-Control**: public, max-age=300" >> $GITHUB_STEP_SUMMARY
+          echo "- **Config**: remotes.config.prod.json bundled" >> $GITHUB_STEP_SUMMARY
