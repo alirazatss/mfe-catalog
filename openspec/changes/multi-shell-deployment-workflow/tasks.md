@@ -32,10 +32,10 @@ Owner skill: backend-developer
 Owns files: `.github/workflows/deploy-previews.yml`, `.github/workflows/cleanup-previews.yml`, `scripts/azure/generate-preview-config.ts`
 Depends on: Group 2 (prefixed destinations must exist)
 
-- [ ] 3.1 Extend change detection in `deploy-previews.yml` to detect affected shells across `apps/shells/*` via the Turborepo filter, producing a shell matrix (multi-shell preview requirement)
-- [ ] 3.2 Parameterize the preview-shell job by shell: build the affected shell and upload to `dev-shell/<shell-name>/pr-<n>/`; skip unaffected shells
-- [ ] 3.3 Update sticky-comment generation to list every deployed preview shell URL with its shell prefix (metadata/comment requirement)
-- [ ] 3.4 Update `cleanup-previews.yml` to delete `dev-shell/<shell-name>/pr-<n>/` for every shell directory found, tolerating shells with no preview (cleanup requirements)
+- [x] 3.1 Extend change detection in `deploy-previews.yml` to detect affected shells across `apps/shells/*` via the Turborepo filter, producing a shell matrix (multi-shell preview requirement)
+- [x] 3.2 Parameterize the preview-shell job by shell: build the affected shell and upload to `dev-shell/<shell-name>/pr-<n>/`; skip unaffected shells
+- [x] 3.3 Update sticky-comment generation to list every deployed preview shell URL with its shell prefix (metadata/comment requirement)
+- [x] 3.4 Update `cleanup-previews.yml` to delete `dev-shell/<shell-name>/pr-<n>/` for every shell directory found, tolerating shells with no preview (cleanup requirements)
 - [ ] 3.5 Verify with a test PR: preview lands under the shell prefix, comment URL resolves, close deletes only that PR's prefixed blobs
 
 ## 4. De-hardcode monorepo tooling
