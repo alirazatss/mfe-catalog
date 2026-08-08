@@ -1,0 +1,44 @@
+{
+  "name": "@mfe-runtime/test-utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./vitest": {
+      "types": "./dist/vitest.d.mts",
+      "default": "./dist/vitest.mjs"
+    },
+    "./setup": {
+      "types": "./dist/setup.d.mts",
+      "default": "./dist/setup.mjs"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vitest run",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@testing-library/react": "catalog:",
+    "react-router": "catalog:",
+    "vitest": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "happy-dom": "catalog:",
+    "react": "catalog:",
+    "typescript": "~6.0.2",
+    "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  }
+}
