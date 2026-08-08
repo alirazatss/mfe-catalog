@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { createRuntimeConfig } from "../runtime-config";
 import type { AppConfig } from "@mfe-runtime/app-config";
 import type { RemoteConfig } from "@mfe-runtime/remote-config";
