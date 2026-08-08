@@ -210,4 +210,64 @@ describe("createRuntimeConfig", () => {
     expect(customFactory).toHaveBeenCalled();
     expect(props).toEqual({ customProp: "value" });
   });
+
+  it("navigation.currentUrl() returns current URL", () => {
+    const config = createRuntimeConfig(mockAppConfig, {
+      tokenManager: mockTokenManager,
+      fallbackManifest: mockFallbackManifest,
+    });
+
+    const url = config.navigation.currentUrl();
+    expect(url).toBeInstanceOf(URL);
+  });
+
+  it("navigation.navigate() updates history and triggers listener", () => {
+    const config = createRuntimeConfig(mockAppConfig, {
+      tokenManager: mockTokenManager,
+      fallbackManifest: mockFallbackManifest,
+    });
+
+    const listener = vi.fn();
+    const unsubscribe = config.navigation.subscribe(listener);
+
+    config.navigation.navigate("/test-path");
+
+    // The listener should be called after navigation
+    expect(listener).toHaveBeenCalled();
+    expect(window.location.pathname).toBe("/test-path");
+
+    unsubscribe();
+  });
+
+  it("navigation.navigate() with replace option uses replaceState", () => {
+    const config = createRuntimeConfig(mockAppConfig, {
+      tokenManager: mockTokenManager,
+      fallbackManifest: mockFallbackManifest,
+    });
+
+    const replaceStateSpy = vi.spyOn(window.history, "replaceState");
+
+    config.navigation.navigate("/replace-path", { replace: true });
+
+    expect(replaceStateSpy).toHaveBeenCalled();
+    replaceStateSpy.mockRestore();
+  });
+
+  it("navigation.subscribe() cleanup function removes listeners", () => {
+    const config = createRuntimeConfig(mockAppConfig, {
+      tokenManager: mockTokenManager,
+      fallbackManifest: mockFallbackManifest,
+    });
+
+    const listener = vi.fn();
+    const unsubscribe = config.navigation.subscribe(listener);
+
+    unsubscribe();
+
+    // After unsubscribe, navigation should not trigger listener
+    config.navigation.navigate("/after-unsubscribe");
+
+    // Listener should only be called once from initial subscription, not from navigate
+    expect(listener).toHaveBeenCalledTimes(0);
+  });
 });
