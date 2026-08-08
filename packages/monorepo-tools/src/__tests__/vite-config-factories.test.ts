@@ -163,24 +163,28 @@ describe("createShellViteConfig", () => {
 });
 
 describe("createShellViteConfig plugin behavior", () => {
-  let existsSyncSpy: ReturnType<typeof vi.spyOn>;
-  let copyFileSyncSpy: ReturnType<typeof vi.spyOn>;
-  let unlinkSyncSpy: ReturnType<typeof vi.spyOn>;
+  let existsSyncMock: ReturnType<typeof vi.fn>;
+  let copyFileSyncMock: ReturnType<typeof vi.fn>;
+  let unlinkSyncMock: ReturnType<typeof vi.fn>;
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
 
-  beforeEach(() => {
-    existsSyncSpy = vi.spyOn(fs, "existsSync");
-    copyFileSyncSpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => undefined);
-    unlinkSyncSpy = vi.spyOn(fs, "unlinkSync").mockImplementation(() => undefined);
+  beforeEach(async () => {
+    const fs = await import("node:fs");
+    existsSyncMock = fs.existsSync as any;
+    copyFileSyncMock = fs.copyFileSync as any;
+    unlinkSyncMock = fs.unlinkSync as any;
+    existsSyncMock.mockReset();
+    copyFileSyncMock.mockReset();
+    unlinkSyncMock.mockReset();
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    consoleLogSpy.mockRestore();
   });
 
   it("copy-app-config-schema throws when schema is missing", () => {
-    existsSyncSpy.mockReturnValue(false);
+    existsSyncMock.mockReturnValue(false);
     const config = createShellViteConfig({ shell: "website", deployEnv: "dev" });
     const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-app-config-schema");
 
@@ -188,17 +192,17 @@ describe("createShellViteConfig plugin behavior", () => {
   });
 
   it("copy-app-config-schema copies schema when present", () => {
-    existsSyncSpy.mockReturnValue(true);
+    existsSyncMock.mockReturnValue(true);
     const config = createShellViteConfig({ shell: "website", deployEnv: "dev" });
     const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-app-config-schema");
 
     plugin.closeBundle();
-    expect(copyFileSyncSpy).toHaveBeenCalled();
+    expect(copyFileSyncMock).toHaveBeenCalled();
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Copied app-config schema"));
   });
 
   it("copy-env-remote-config throws when env config is missing", () => {
-    existsSyncSpy.mockReturnValue(false);
+    existsSyncMock.mockReturnValue(false);
     const config = createShellViteConfig({ shell: "website", deployEnv: "prod" });
     const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-env-remote-config");
 
@@ -206,32 +210,29 @@ describe("createShellViteConfig plugin behavior", () => {
   });
 
   it("copy-env-remote-config copies config and removes env variants", () => {
-    // source exists, and both env variant files exist in dist
-    existsSyncSpy.mockReturnValue(true);
+    existsSyncMock.mockReturnValue(true);
     const config = createShellViteConfig({ shell: "website", deployEnv: "dev" });
     const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-env-remote-config");
 
     plugin.closeBundle();
-    expect(copyFileSyncSpy).toHaveBeenCalled();
-    expect(unlinkSyncSpy).toHaveBeenCalled();
+    expect(copyFileSyncMock).toHaveBeenCalled();
+    expect(unlinkSyncMock).toHaveBeenCalled();
     expect(consoleLogSpy).toHaveBeenCalledWith(
       expect.stringContaining("Copied remotes.config.dev.json"),
     );
   });
 
   it("copy-env-remote-config skips unlink when env variant doesn't exist in dist", () => {
-    // source exists but env variants in dist don't
     let callCount = 0;
-    existsSyncSpy.mockImplementation(() => {
+    existsSyncMock.mockImplementation(() => {
       callCount++;
-      // First call: source file check (true), subsequent: env variant checks (false)
       return callCount === 1;
     });
     const config = createShellViteConfig({ shell: "website", deployEnv: "dev" });
     const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-env-remote-config");
 
     plugin.closeBundle();
-    expect(copyFileSyncSpy).toHaveBeenCalled();
-    expect(unlinkSyncSpy).not.toHaveBeenCalled();
+    expect(copyFileSyncMock).toHaveBeenCalled();
+    expect(unlinkSyncMock).not.toHaveBeenCalled();
   });
 });
