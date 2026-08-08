@@ -4,7 +4,7 @@
 #
 # Purpose: Ensures generator templates remain scaffoldable (no regressions)
 # Triggers: Changes to turbo/generators/** or this workflow
-# Process: Scaffold throwaway MFE + shell → install → typecheck → build → test
+# Process: Scaffold throwaway MFE + shell → install → build (includes tsc) → test
 # All artifacts are throwaway (not committed or deployed)
 
 name: Scaffold Drift Guard
