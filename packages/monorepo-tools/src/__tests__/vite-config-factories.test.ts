@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vite-plus/test";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { createMFEViteConfig, createShellViteConfig } from "../vite-config-factories";
+import * as fs from "node:fs";
 
 describe("createMFEViteConfig", () => {
   it("returns valid Vite config with federation setup", () => {
@@ -153,5 +154,79 @@ describe("createShellViteConfig", () => {
 
     expect(config.plugins).toBeDefined();
     expect(config.plugins?.length).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe("createShellViteConfig plugin behavior", () => {
+  let existsSyncSpy: ReturnType<typeof vi.spyOn>;
+  let copyFileSyncSpy: ReturnType<typeof vi.spyOn>;
+  let unlinkSyncSpy: ReturnType<typeof vi.spyOn>;
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    existsSyncSpy = vi.spyOn(fs, "existsSync");
+    copyFileSyncSpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => undefined);
+    unlinkSyncSpy = vi.spyOn(fs, "unlinkSync").mockImplementation(() => undefined);
+    consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("copy-app-config-schema throws when schema is missing", () => {
+    existsSyncSpy.mockReturnValue(false);
+    const config = createShellViteConfig({ shell: "website", deployEnv: "dev" });
+    const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-app-config-schema");
+
+    expect(() => plugin.closeBundle()).toThrow(/App config schema not found/);
+  });
+
+  it("copy-app-config-schema copies schema when present", () => {
+    existsSyncSpy.mockReturnValue(true);
+    const config = createShellViteConfig({ shell: "website", deployEnv: "dev" });
+    const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-app-config-schema");
+
+    plugin.closeBundle();
+    expect(copyFileSyncSpy).toHaveBeenCalled();
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Copied app-config schema"));
+  });
+
+  it("copy-env-remote-config throws when env config is missing", () => {
+    existsSyncSpy.mockReturnValue(false);
+    const config = createShellViteConfig({ shell: "website", deployEnv: "prod" });
+    const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-env-remote-config");
+
+    expect(() => plugin.closeBundle()).toThrow(/Environment-specific remote config not found/);
+  });
+
+  it("copy-env-remote-config copies config and removes env variants", () => {
+    // source exists, and both env variant files exist in dist
+    existsSyncSpy.mockReturnValue(true);
+    const config = createShellViteConfig({ shell: "website", deployEnv: "dev" });
+    const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-env-remote-config");
+
+    plugin.closeBundle();
+    expect(copyFileSyncSpy).toHaveBeenCalled();
+    expect(unlinkSyncSpy).toHaveBeenCalled();
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Copied remotes.config.dev.json"),
+    );
+  });
+
+  it("copy-env-remote-config skips unlink when env variant doesn't exist in dist", () => {
+    // source exists but env variants in dist don't
+    let callCount = 0;
+    existsSyncSpy.mockImplementation(() => {
+      callCount++;
+      // First call: source file check (true), subsequent: env variant checks (false)
+      return callCount === 1;
+    });
+    const config = createShellViteConfig({ shell: "website", deployEnv: "dev" });
+    const plugin = (config.plugins as any[]).find((p) => p?.name === "copy-env-remote-config");
+
+    plugin.closeBundle();
+    expect(copyFileSyncSpy).toHaveBeenCalled();
+    expect(unlinkSyncSpy).not.toHaveBeenCalled();
   });
 });
