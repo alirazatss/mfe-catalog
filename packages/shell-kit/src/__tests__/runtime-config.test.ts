@@ -270,4 +270,45 @@ describe("createRuntimeConfig", () => {
     // Listener should only be called once from initial subscription, not from navigate
     expect(listener).toHaveBeenCalledTimes(0);
   });
+
+  it("navigation NAVIGATE event ignores invalid payload", async () => {
+    const { emitMFEEvent, MFE_EVENTS } = await import("@mfe-runtime/events");
+    const config = createRuntimeConfig(mockAppConfig, {
+      tokenManager: mockTokenManager,
+      fallbackManifest: mockFallbackManifest,
+    });
+
+    const listener = vi.fn();
+    const unsubscribe = config.navigation.subscribe(listener);
+
+    // Invalid payloads: null, missing path, non-string path, non-absolute path
+    emitMFEEvent(MFE_EVENTS.NAVIGATE, null as any);
+    emitMFEEvent(MFE_EVENTS.NAVIGATE, {} as any);
+    emitMFEEvent(MFE_EVENTS.NAVIGATE, { path: 123 } as any);
+    emitMFEEvent(MFE_EVENTS.NAVIGATE, { path: "relative-path" } as any);
+
+    expect(listener).not.toHaveBeenCalled();
+    unsubscribe();
+  });
+
+  it("navigation NAVIGATE event with valid payload triggers listener", async () => {
+    const { emitMFEEvent, MFE_EVENTS } = await import("@mfe-runtime/events");
+    const config = createRuntimeConfig(mockAppConfig, {
+      tokenManager: mockTokenManager,
+      fallbackManifest: mockFallbackManifest,
+    });
+
+    const listener = vi.fn();
+    const unsubscribe = config.navigation.subscribe(listener);
+
+    emitMFEEvent(MFE_EVENTS.NAVIGATE, { path: "/valid-path" });
+    expect(listener).toHaveBeenCalled();
+
+    // Also test replace variant
+    listener.mockClear();
+    emitMFEEvent(MFE_EVENTS.NAVIGATE, { path: "/replace-path", replace: true });
+    expect(listener).toHaveBeenCalled();
+
+    unsubscribe();
+  });
 });

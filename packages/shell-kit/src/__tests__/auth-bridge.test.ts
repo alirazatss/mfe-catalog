@@ -59,6 +59,35 @@ describe("setupAuthBridge", () => {
     expect(mockTokenManager.clear).toHaveBeenCalled();
   });
 
+  it("bridge.onTokenChange() fires callback with new token on AUTH_REFRESH event", async () => {
+    const { emitMFEEvent, MFE_EVENTS } = await import("@mfe-runtime/events");
+    const bridge = setupAuthBridge(mockTokenManager);
+    const callback = vi.fn();
+    const cleanup = bridge.onTokenChange(callback);
+
+    emitMFEEvent(MFE_EVENTS.AUTH_REFRESH, { newToken: "new-token-abc" });
+    expect(callback).toHaveBeenCalledWith("new-token-abc");
+
+    // Also test fallback to tokenManager when no newToken provided
+    callback.mockClear();
+    emitMFEEvent(MFE_EVENTS.AUTH_REFRESH, {} as any);
+    expect(callback).toHaveBeenCalledWith("test-token");
+
+    cleanup();
+  });
+
+  it("bridge.onTokenChange() fires callback with null on AUTH_LOGOUT event", async () => {
+    const { emitMFEEvent, MFE_EVENTS } = await import("@mfe-runtime/events");
+    const bridge = setupAuthBridge(mockTokenManager);
+    const callback = vi.fn();
+    const cleanup = bridge.onTokenChange(callback);
+
+    emitMFEEvent(MFE_EVENTS.AUTH_LOGOUT, undefined);
+    expect(callback).toHaveBeenCalledWith(null);
+
+    cleanup();
+  });
+
   it("bridge.onTokenChange() sets up event listeners", () => {
     const bridge = setupAuthBridge(mockTokenManager);
     const callback = vi.fn();
