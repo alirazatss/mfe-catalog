@@ -38,12 +38,12 @@ describe("setupAuthBridge", () => {
   });
 
   it("bridge.logout() calls backend and clears tokenManager", async () => {
-    global.fetch = vi.fn(() => Promise.resolve({ ok: true } as Response)) as any;
+    globalThis.fetch = vi.fn(() => Promise.resolve({ ok: true } as Response)) as any;
 
     const bridge = setupAuthBridge(mockTokenManager);
     await bridge.logout();
 
-    expect(global.fetch).toHaveBeenCalledWith("/api/auth/logout", {
+    expect(globalThis.fetch).toHaveBeenCalledWith("/api/auth/logout", {
       method: "POST",
       credentials: "include",
     });
@@ -51,7 +51,7 @@ describe("setupAuthBridge", () => {
   });
 
   it("bridge.logout() clears tokenManager even if backend call fails", async () => {
-    global.fetch = vi.fn(() => Promise.reject(new Error("Network error"))) as any;
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error("Network error"))) as any;
 
     const bridge = setupAuthBridge(mockTokenManager);
     await bridge.logout();

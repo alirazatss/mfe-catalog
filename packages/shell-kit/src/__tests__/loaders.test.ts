@@ -24,12 +24,12 @@ describe("loadManifest", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    global.fetch = vi.fn();
+    globalThis.fetch = vi.fn();
   });
 
   it("returns manifest on successful fetch", async () => {
-    const manifest: RemoteConfig = { remotes: [{ name: "mfe1", url: "http://example.com" }] };
-    global.fetch = vi.fn(() =>
+    const manifest: RemoteConfig = { remotes: [{ name: "mfe1", entry: "http://example.com" }] };
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve(manifest),
@@ -41,18 +41,18 @@ describe("loadManifest", () => {
   });
 
   it("retries on fetch failure and returns fallback after exhausting retries", async () => {
-    global.fetch = vi.fn(() => Promise.resolve({ ok: false, status: 500 } as Response)) as any;
+    globalThis.fetch = vi.fn(() => Promise.resolve({ ok: false, status: 500 } as Response)) as any;
 
     const result = await loadManifest("/test.json", fallbackManifest);
     expect(result).toEqual(fallbackManifest);
-    expect(global.fetch).toHaveBeenCalledTimes(4); // 1 initial + 3 retries
+    expect(globalThis.fetch).toHaveBeenCalledTimes(4); // 1 initial + 3 retries
   }, 10000);
 
   it("returns fallback when validation fails", async () => {
     const { safeValidateRemoteConfig } = await import("@mfe-runtime/remote-config");
     (safeValidateRemoteConfig as any).mockReturnValueOnce(null);
 
-    global.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ invalid: "data" }),
