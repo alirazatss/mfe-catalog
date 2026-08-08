@@ -52,7 +52,7 @@ describe("loadManifest", () => {
 
   it("returns fallback when validation fails", async () => {
     const { safeValidateRemoteConfig } = await import("@mfe-runtime/remote-config");
-    (safeValidateRemoteConfig as any).mockReturnValueOnce(null);
+    (safeValidateRemoteConfig as any).mockReturnValue(null);
 
     globalThis.fetch = vi.fn(() =>
       Promise.resolve({
