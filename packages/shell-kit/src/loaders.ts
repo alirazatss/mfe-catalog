@@ -105,7 +105,7 @@ export async function loadShellAppConfig(
     if (error.category === "fetch") {
       if (devFallback) {
         console.warn(
-          `[shell-kit] Failed to load ${url} in dev mode: ${(error as Error).message}. Using built-in fallback.`,
+          `[shell-kit] Failed to load ${url} in dev mode: ${error.message}. Using built-in fallback.`,
         );
         return { config: devFallback, source: "fallback" };
       }
