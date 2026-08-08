@@ -5,7 +5,7 @@
  * See openspec/changes/shared-boilerplate-packages/specs/shared-test-utils/spec.md
  */
 
-import { render, type RenderOptions } from "@testing-library/react";
+import { render, type RenderOptions, type RenderResult } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import type { ReactElement, ReactNode } from "react";
 
@@ -37,7 +37,7 @@ interface WrapperProps {
 export function renderWithRouter(
   ui: ReactElement,
   options?: Omit<RenderOptions, "wrapper"> & { initialEntries?: string[] },
-) {
+): RenderResult {
   const { initialEntries = ["/"], ...renderOptions } = options || {};
 
   function Wrapper({ children }: WrapperProps) {
