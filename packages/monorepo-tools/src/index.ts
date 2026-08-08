@@ -8,3 +8,4 @@
 export * from "./types.js";
 export * from "./discovery.js";
 export * from "./config-generator.js";
+export * from "./vite-config-factories.js";
