@@ -17,6 +17,7 @@ export type {
   ShellRuntimeState,
   ShellRuntimeStateKind,
   SlotResolver,
+  SharedPropsFactory,
 } from "./contracts.js";
 export { createShellRuntime } from "./runtime.js";
 export { createUrlManifestProvider } from "./url-manifest-provider.js";

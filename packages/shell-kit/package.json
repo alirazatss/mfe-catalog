@@ -1,0 +1,38 @@
+{
+  "name": "@mfe-runtime/shell-kit",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@mfe-runtime/app-config": "workspace:*",
+    "@mfe-runtime/auth": "workspace:*",
+    "@mfe-runtime/events": "workspace:*",
+    "@mfe-runtime/remote-config": "workspace:*",
+    "@mfe-runtime/shell-runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "happy-dom": "catalog:",
+    "typescript": "~6.0.2",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  }
+}
