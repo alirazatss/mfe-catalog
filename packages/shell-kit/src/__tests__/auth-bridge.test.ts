@@ -82,7 +82,7 @@ describe("setupAuthBridge", () => {
     const callback = vi.fn();
     const cleanup = bridge.onTokenChange(callback);
 
-    emitMFEEvent(MFE_EVENTS.AUTH_LOGOUT, undefined);
+    emitMFEEvent(MFE_EVENTS.AUTH_LOGOUT, { reason: "test" });
     expect(callback).toHaveBeenCalledWith(null);
 
     cleanup();
