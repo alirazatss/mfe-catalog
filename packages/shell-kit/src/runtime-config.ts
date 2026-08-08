@@ -15,6 +15,7 @@ import type {
   NavigationAdapter,
   SlotResolver,
   SharedPropsFactory,
+  ShellRuntimeFailure,
 } from "@mfe-runtime/shell-runtime";
 import { userFromToken, type DecodedUser } from "@mfe-runtime/auth";
 import { MFE_EVENTS, onMFEEvent } from "@mfe-runtime/events";
@@ -83,7 +84,7 @@ function createDefaultSlotResolver(): SlotResolver {
 function createDefaultNavigationAdapter(): NavigationAdapter {
   return {
     currentUrl: () => new URL(window.location.href),
-    subscribe(listener: () => void) {
+    subscribe(listener: (url: URL) => void) {
       const handlePopState = () => {
         listener(new URL(window.location.href));
       };

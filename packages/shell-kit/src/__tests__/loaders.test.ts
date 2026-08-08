@@ -11,7 +11,7 @@ vi.mock("@mfe-runtime/app-config", () => ({
   loadAppConfig: vi.fn(),
   LoadError: class LoadError extends Error {
     category: string;
-    constructor(message: string, category: string) {
+    constructor(category: string, message: string) {
       super(message);
       this.category = category;
       this.name = "LoadError";
@@ -28,7 +28,9 @@ describe("loadManifest", () => {
   });
 
   it("returns manifest on successful fetch", async () => {
-    const manifest: RemoteConfig = { remotes: [{ name: "mfe1", entry: "http://example.com" }] };
+    const manifest: RemoteConfig = {
+      remotes: [{ name: "mfe1", entryUrl: "http://example.com", scope: "mfe1", version: "1.0.0" }],
+    };
     globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
@@ -91,7 +93,7 @@ describe("loadShellAppConfig", () => {
 
   it("throws in production on fetch error", async () => {
     const { loadAppConfig, LoadError } = await import("@mfe-runtime/app-config");
-    (loadAppConfig as any).mockRejectedValueOnce(new LoadError("Fetch failed", "fetch"));
+    (loadAppConfig as any).mockRejectedValueOnce(new LoadError("fetch", "Fetch failed"));
 
     await expect(loadShellAppConfig("/app-config.json", devFallback, "production")).rejects.toThrow(
       "Fetch failed",
@@ -100,7 +102,7 @@ describe("loadShellAppConfig", () => {
 
   it("returns fallback in dev on fetch error", async () => {
     const { loadAppConfig, LoadError } = await import("@mfe-runtime/app-config");
-    (loadAppConfig as any).mockRejectedValueOnce(new LoadError("Fetch failed", "fetch"));
+    (loadAppConfig as any).mockRejectedValueOnce(new LoadError("fetch", "Fetch failed"));
 
     const result = await loadShellAppConfig("/app-config.json", devFallback, "development");
     expect(result).toEqual({ config: devFallback, source: "fallback" });
@@ -108,7 +110,7 @@ describe("loadShellAppConfig", () => {
 
   it("throws in dev on validation error", async () => {
     const { loadAppConfig, LoadError } = await import("@mfe-runtime/app-config");
-    (loadAppConfig as any).mockRejectedValueOnce(new LoadError("Validation failed", "validation"));
+    (loadAppConfig as any).mockRejectedValueOnce(new LoadError("validation", "Validation failed"));
 
     await expect(
       loadShellAppConfig("/app-config.json", devFallback, "development"),
@@ -117,7 +119,7 @@ describe("loadShellAppConfig", () => {
 
   it("throws in dev when fetch fails but no fallback provided", async () => {
     const { loadAppConfig, LoadError } = await import("@mfe-runtime/app-config");
-    (loadAppConfig as any).mockRejectedValueOnce(new LoadError("Fetch failed", "fetch"));
+    (loadAppConfig as any).mockRejectedValueOnce(new LoadError("fetch", "Fetch failed"));
 
     await expect(loadShellAppConfig("/app-config.json", undefined, "development")).rejects.toThrow(
       "Fetch failed",
