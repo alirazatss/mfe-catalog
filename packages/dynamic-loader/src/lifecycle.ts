@@ -69,7 +69,11 @@ export function createMFELifecycle<TProps = Record<string, unknown>>(
       roots.set(props.container, root);
 
       root.render(
-        createElement(StrictMode, null, createElement(Component, props as unknown as TProps)),
+        createElement(
+          StrictMode,
+          null,
+          createElement(Component as ComponentType<any>, props as unknown as TProps),
+        ),
       );
     },
 
