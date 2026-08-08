@@ -1,0 +1,73 @@
+# Shell {{ titleName }} Deployment Workflow (Thin Caller)
+# Implements reusable-shell-deploy-workflow: Thin caller requirement
+# Implements release-channel-deployments: Caller mapping requirement
+# See: openspec/changes/multi-shell-deployment-workflow/specs/reusable-shell-deploy-workflow/spec.md
+# See: openspec/changes/release-channel-deployments/specs/reusable-shell-deploy-workflow/spec.md
+
+name: Deploy {{ titleName }} Shell
+
+on:
+  push:
+    branches:
+      - main
+      # Implements release-channel-deployments: release-* branch triggers
+      - "release-*"
+    tags:
+      # Trigger on shell version tags
+      - "{{ name }}-v*"
+    paths:
+      # Trigger on shell source changes
+      - "apps/shells/{{ name }}/**"
+      # Trigger on shared packages the shell depends on
+      - "packages/auth/**"
+      - "packages/dynamic-loader/**"
+      - "packages/events/**"
+      - "packages/remote-config/**"
+      - "packages/shell-runtime/**"
+      - "packages/monorepo-tools/**"
+      # Trigger on config changes (for config-only redeploys)
+      - "apps/shells/{{ name }}/public/remotes.config.prod.json"
+      - "apps/shells/{{ name }}/public/remotes.config.dev.json"
+      # Trigger on this workflow itself
+      - ".github/workflows/deploy-{{ name }}.yml"
+      # Trigger on the reusable workflow
+      - ".github/workflows/deploy-shell.yml"
+
+# Implements reusable-shell-deploy-workflow: Thin caller delegates to reusable workflow
+jobs:
+  # Implements release-channel-deployments: Channel extraction from branch
+  compute-channel:
+    name: Compute Deploy Channel
+    runs-on: ubuntu-latest
+    outputs:
+      channel: ${{ steps.extract.outputs.channel }}
+    steps:
+      - name: Extract channel from branch
+        id: extract
+        run: |
+          REF_NAME="${{ github.ref_name }}"
+
+          if [ "$REF_NAME" = "main" ]; then
+            CHANNEL="dev"
+          elif [[ "$REF_NAME" =~ ^release-([0-9]+\.[0-9]+)$ ]]; then
+            CHANNEL="release-${BASH_REMATCH[1]}"
+          else
+            CHANNEL="dev"
+          fi
+
+          echo "channel=$CHANNEL" >> $GITHUB_OUTPUT
+          echo "Branch '$REF_NAME' maps to channel: $CHANNEL"
+
+  deploy:
+    name: Deploy {{ titleName }} Shell
+    needs: compute-channel
+    # Implements reusable-shell-deploy-workflow requirement: thin caller with inputs and secrets
+    # Implements release-channel-deployments: Pass channel to reusable workflow
+    uses: ./.github/workflows/deploy-shell.yml
+    with:
+      shell-name: {{ name }}
+      shell-path: apps/shells/{{ name }}
+      package-name: {{ name }}
+      tag-prefix: {{ name }}-v
+      channel: ${{ needs.compute-channel.outputs.channel }}
+    secrets: inherit

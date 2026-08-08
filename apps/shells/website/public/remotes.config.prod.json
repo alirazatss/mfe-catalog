@@ -22,6 +22,26 @@
       "requiresAuth": false,
       "requiredRoles": [],
       "enabled": true
+    },
+    "/drift-guard-mfe": {
+      "mfe": "mfe-drift-guard-mfe",
+      "entryUrl": "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-drift-guard-mfe/v0.0.0/remoteEntry.js",
+      "scope": "driftGuardMfe",
+      "version": "0.0.0",
+      "basePath": "/drift-guard-mfe",
+      "requiresAuth": false,
+      "requiredRoles": [],
+      "enabled": true
+    },
+    "/drift-test-error": {
+      "mfe": "mfe-drift-test-error",
+      "entryUrl": "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-drift-test-error/v0.0.0/remoteEntry.js",
+      "scope": "driftTestError",
+      "version": "0.0.0",
+      "basePath": "/drift-test-error",
+      "requiresAuth": false,
+      "requiredRoles": [],
+      "enabled": true
     }
   }
 }

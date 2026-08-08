@@ -1,0 +1,42 @@
+{
+  "name": "{{ name }}",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vp dev",
+    "build": "tsc && vp build",
+    "prebuild": "pnpm run generate:config && pnpm run check:size",
+    "generate:config": "tsx ../../../scripts/generate-config.ts --shell {{ name }}",
+    "check:size": "tsx ../../../scripts/check-shell-size.ts {{ name }}",
+    "preview": "vp preview",
+    "test": "vitest run",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@mfe-runtime/app-config": "workspace:*",
+    "@mfe-runtime/auth": "workspace:*",
+    "@mfe-runtime/dynamic-loader": "workspace:*",
+    "@mfe-runtime/events": "workspace:*",
+    "@mfe-runtime/monorepo-tools": "workspace:*",
+    "@mfe-runtime/remote-config": "workspace:*",
+    "@mfe-runtime/shell-runtime": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "happy-dom": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "~6.0.2",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  }
+}

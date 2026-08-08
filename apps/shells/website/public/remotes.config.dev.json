@@ -22,6 +22,26 @@
       "requiresAuth": false,
       "requiredRoles": [],
       "enabled": true
+    },
+    "/drift-guard-mfe": {
+      "mfe": "mfe-drift-guard-mfe",
+      "entryUrl": "http://localhost:5176/remoteEntry.js",
+      "scope": "driftGuardMfe",
+      "version": "0.0.0",
+      "basePath": "/drift-guard-mfe",
+      "requiresAuth": false,
+      "requiredRoles": [],
+      "enabled": true
+    },
+    "/drift-test-error": {
+      "mfe": "mfe-drift-test-error",
+      "entryUrl": "http://localhost:5177/remoteEntry.js",
+      "scope": "driftTestError",
+      "version": "0.0.0",
+      "basePath": "/drift-test-error",
+      "requiresAuth": false,
+      "requiredRoles": [],
+      "enabled": true
     }
   }
 }
