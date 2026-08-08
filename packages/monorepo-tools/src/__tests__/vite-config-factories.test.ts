@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { createMFEViteConfig, createShellViteConfig } from "../vite-config-factories";
-import * as fs from "node:fs";
+
+vi.mock("node:fs", () => ({
+  existsSync: vi.fn(),
+  copyFileSync: vi.fn(),
+  unlinkSync: vi.fn(),
+}));
 
 describe("createMFEViteConfig", () => {
   it("returns valid Vite config with federation setup", () => {
