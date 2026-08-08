@@ -54,7 +54,7 @@ jobs:
           if [ -z "$SHELLS" ]; then
             echo "No shell directories found in dev-shell/ container"
             # scaffold:shell-list:start
-            SHELLS="website"  # Fallback to known shell
+            SHELLS="ccis website"  # Fallback to known shell
             # scaffold:shell-list:end
           fi
 
