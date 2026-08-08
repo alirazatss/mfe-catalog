@@ -1,10 +1,18 @@
-// Implements app-scaffolding: MFE generator requirement
+// Implements app-scaffolding: MFE and shell generator requirements
 // See openspec/changes/mfe-shell-scaffolding/specs/app-scaffolding/spec.md
 
 import { validateName, checkCollision } from "./lib/validation.mjs";
 import { assignPort } from "./lib/port-assignment.mjs";
 import { printSummary } from "./lib/summary.mjs";
 import { wireToShellConfigs, wireToCleanupWorkflow } from "./lib/wire-mfe.mjs";
+import {
+  discoverMFEsForShell,
+  generateDevRemotesConfig,
+  generateProdRemotesConfig,
+  wireShellToCleanupWorkflow,
+} from "./lib/wire-shell.mjs";
+import { writeFileSync, mkdirSync } from "node:fs";
+import { resolve, join } from "node:path";
 
 export default function generator(plop) {
   // MFE Generator
@@ -58,13 +66,13 @@ export default function generator(plop) {
         () => {
           // Implements app-scaffolding: auto-wire requirement
           const basePath = `/${name}`;
-          
+
           // Wire to all shell configs
           const configFiles = wireToShellConfigs(shortName, scope, basePath, port);
-          
+
           // Wire to cleanup workflow
           const workflowFile = wireToCleanupWorkflow(shortName);
-          
+
           const filesModified = [];
           if (configFiles.length > 0) {
             filesModified.push(...configFiles);
@@ -90,9 +98,7 @@ export default function generator(plop) {
               `apps/mfes/${shortName}/README.md`,
             ],
             filesModified,
-            manualSteps: [
-              "Run `pnpm install` to install dependencies",
-            ],
+            manualSteps: ["Run `pnpm install` to install dependencies"],
             metadata: {
               port,
               scope,
@@ -100,6 +106,93 @@ export default function generator(plop) {
             },
           });
           return "MFE scaffolded successfully!";
+        },
+      ];
+    },
+  });
+
+  // Shell Generator
+  plop.setGenerator("shell", {
+    description: "Scaffold a new shell (host application)",
+    prompts: [
+      {
+        type: "input",
+        name: "name",
+        message: "Shell name (lowercase, alphanumeric with hyphens, e.g., 'ccis'):",
+        validate: (input) => {
+          const nameValidation = validateName(input);
+          if (!nameValidation.valid) return nameValidation.error || "Invalid name";
+          const collisionCheck = checkCollision(input);
+          if (!collisionCheck.valid) return collisionCheck.error || "Name already exists";
+          return true;
+        },
+      },
+    ],
+    actions: (data) => {
+      const name = data?.name;
+
+      return [
+        // Scaffold shell files from template
+        {
+          type: "addMany",
+          destination: `apps/shells/{{name}}`,
+          base: "templates/shell",
+          templateFiles: "templates/shell/**/*",
+          data: { name },
+        },
+        // Scaffold the thin caller workflow
+        {
+          type: "add",
+          path: `.github/workflows/deploy-{{name}}.yml`,
+          templateFile: "templates/shell-workflow/deploy-shell.yml.hbs",
+          data: { name },
+        },
+        () => {
+          const workspaceRoot = process.cwd();
+          const shellDir = resolve(workspaceRoot, `apps/shells/${name}`);
+          const publicDir = join(shellDir, "public");
+
+          // Pre-populate remotes configs with all discovered MFEs
+          mkdirSync(publicDir, { recursive: true });
+          const mfes = discoverMFEsForShell();
+          writeFileSync(
+            join(publicDir, "remotes.config.dev.json"),
+            JSON.stringify(generateDevRemotesConfig(mfes), null, 2) + "\n",
+            "utf-8",
+          );
+          writeFileSync(
+            join(publicDir, "remotes.config.prod.json"),
+            JSON.stringify(generateProdRemotesConfig(mfes), null, 2) + "\n",
+            "utf-8",
+          );
+
+          // Wire into cleanup-previews.yml shell fallback list
+          const workflowFile = wireShellToCleanupWorkflow(name);
+
+          printSummary({
+            type: "shell",
+            name,
+            filesCreated: [
+              `apps/shells/${name}/package.json`,
+              `apps/shells/${name}/vite.config.ts`,
+              `apps/shells/${name}/vitest.config.ts`,
+              `apps/shells/${name}/tsconfig.json`,
+              `apps/shells/${name}/index.html`,
+              `apps/shells/${name}/src/main.ts`,
+              `apps/shells/${name}/public/app-config.json`,
+              `apps/shells/${name}/public/remotes.config.dev.json`,
+              `apps/shells/${name}/public/remotes.config.prod.json`,
+              `.github/workflows/deploy-${name}.yml`,
+            ],
+            filesModified: workflowFile ? [workflowFile] : [],
+            manualSteps: [
+              "Run `pnpm install` to install dependencies",
+              `Add AZURE vars for shell '${name}' to GitHub Actions environment 'dev'`,
+              `Cut first prod tag '${name}-v0.1.0' from main once the shell is ready`,
+            ],
+            metadata: { name },
+          });
+          return "Shell scaffolded successfully!";
         },
       ];
     },
