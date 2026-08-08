@@ -629,9 +629,21 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.4
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.17)
       jsdom:
         specifier: ^26.0.0
         version: 26.1.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.7
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.7(react@19.2.7)
       tsdown:
         specifier: 'catalog:'
         version: 0.22.4(@typescript/native-preview@7.0.0-dev.20260509.2)(tsx@4.23.0)(typescript@6.0.3)
