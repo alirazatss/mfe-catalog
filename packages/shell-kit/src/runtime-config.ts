@@ -59,7 +59,7 @@ export interface RuntimeConfigOptions {
  */
 function createDefaultFailureRenderer(): FailureRenderer {
   return {
-    render(failure) {
+    render(failure: ShellRuntimeFailure) {
       console.error("[shell-kit] Runtime failure:", failure);
     },
     clear() {
@@ -83,7 +83,7 @@ function createDefaultSlotResolver(): SlotResolver {
 function createDefaultNavigationAdapter(): NavigationAdapter {
   return {
     currentUrl: () => new URL(window.location.href),
-    subscribe(listener) {
+    subscribe(listener: () => void) {
       const handlePopState = () => {
         listener(new URL(window.location.href));
       };
@@ -109,7 +109,7 @@ function createDefaultNavigationAdapter(): NavigationAdapter {
         cleanupNavigate();
       };
     },
-    navigate(path, options) {
+    navigate(path: string, options?: { replace?: boolean; state?: unknown }) {
       if (options?.replace) {
         window.history.replaceState(options.state ?? null, "", path);
       } else {
