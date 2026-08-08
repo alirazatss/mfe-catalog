@@ -10,12 +10,6 @@
 name: Scaffold Drift Guard
 
 on:
-  pull_request:
-    paths:
-      # Trigger on generator changes
-      - "turbo/generators/**"
-      # Trigger on this workflow itself
-      - ".github/workflows/scaffold-check.yml"
   push:
     branches:
       - main
