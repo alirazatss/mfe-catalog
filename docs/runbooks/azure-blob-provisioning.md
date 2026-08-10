@@ -54,7 +54,7 @@ This runbook covers Azure Blob Storage configuration for the MF Mono deployment 
 - `$web/website/index.html` - Latest prod release
 - `$web/website/v1.2.0/index.html` - Immutable versioned release
 
-**Static Website URL**: `https://tssmfestorage.z13.web.core.windows.net/<shell-name>/`
+**Static Website URL**: `https://tssmfestorage.z16.web.core.windows.net/<shell-name>/`
 
 ## Lifecycle Management Policy
 
@@ -240,7 +240,8 @@ az storage blob list \
 
 3. **Verify deployment**:
    - Dev: `https://tssmfestorage.blob.core.windows.net/dev-shell/<shell>/index.html`
-   - Prod: `https://tssmfestorage.z13.web.core.windows.net/<shell>/`
+
+- Prod: `https://tssmfestorage.z16.web.core.windows.net/<shell>/`
 
 ## RBAC & OIDC
 
