@@ -375,7 +375,7 @@ jobs:
           echo "**Shell**: ${{ inputs.shell-name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Type**: Config-only redeploy" >> $GITHUB_STEP_SUMMARY
           echo "**Container**: \$web/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
-          echo "**Static Website**: https://tssmfestorage.z13.web.core.windows.net/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
+          echo "**Static Website**: https://tssmfestorage.z16.web.core.windows.net/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
           echo "**Cache-Control**: public, max-age=300" >> $GITHUB_STEP_SUMMARY
           echo "**Config**: remotes.config.prod.json bundled (updated)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -495,6 +495,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "#### Shell Prefix (Floating Pointer)" >> $GITHUB_STEP_SUMMARY
           echo "- **Path**: \$web/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL**: https://tssmfestorage.z13.web.core.windows.net/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://tssmfestorage.z16.web.core.windows.net/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
           echo "- **Cache-Control**: public, max-age=300" >> $GITHUB_STEP_SUMMARY
           echo "- **Config**: remotes.config.prod.json bundled" >> $GITHUB_STEP_SUMMARY

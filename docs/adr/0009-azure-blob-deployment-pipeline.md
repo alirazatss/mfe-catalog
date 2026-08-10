@@ -135,7 +135,7 @@ mfes-dev/
 **Prod shell**:
 
 - Container: `$web` (special Azure container for static websites)
-- URL: `https://tssmfestorage.z13.web.core.windows.net/` (static website endpoint)
+- URL: `https://tssmfestorage.z16.web.core.windows.net/` (static website endpoint)
 - Behavior: Serves `index.html` for `/` requests, handles SPA routing
 
 **Dev shell**:
@@ -190,7 +190,7 @@ mfes-dev/
 **Current MVP URLs**:
 
 - MFE (prod): `https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-widget/v1.2.0/remoteEntry.js`
-- Shell (prod): `https://tssmfestorage.z13.web.core.windows.net/` (static website)
+- Shell (prod): `https://tssmfestorage.z16.web.core.windows.net/` (static website)
 
 **Future CDN URLs** (deferred):
 
