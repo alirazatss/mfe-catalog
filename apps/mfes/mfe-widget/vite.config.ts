@@ -37,9 +37,6 @@ export default defineConfig({
     port: PORT,
     origin: `http://localhost:${PORT}`,
   },
-  optimizeDeps: {
-    include: ["react", "react-dom", "react-dom/client"],
-  },
   preview: {
     port: PORT,
   },
