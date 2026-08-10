@@ -27,7 +27,7 @@ name: Deploy MFEs (Turborepo-Optimized)
 
 permissions:
   id-token: write # Required for Azure OIDC authentication
-  contents: read # Required to checkout code
+  contents: write # Required to checkout code and push config updates
   pull-requests: write # Required to open PR for config updates
 
 jobs:
