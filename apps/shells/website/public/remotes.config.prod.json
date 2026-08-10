@@ -5,7 +5,7 @@
   "features": {
     "/": {
       "mfe": "mfe-landing-page",
-      "entryUrl": "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-landing-page/v0.0.0/remoteEntry.js",
+      "entryUrl": "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-landing-page/v0.0.1/remoteEntry.js",
       "scope": "landingPage",
       "version": "0.0.0",
       "basePath": "/",
@@ -15,7 +15,7 @@
     },
     "/widget": {
       "mfe": "mfe-widget",
-      "entryUrl": "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-widget/v0.0.0/remoteEntry.js",
+      "entryUrl": "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-widget/v0.0.1/remoteEntry.js",
       "scope": "widget",
       "version": "0.0.0",
       "basePath": "/widget",
