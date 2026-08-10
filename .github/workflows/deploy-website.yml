@@ -33,6 +33,12 @@ on:
       # Trigger on the reusable workflow
       - ".github/workflows/deploy-shell.yml"
 
+# Grant permissions that the reusable workflow needs
+# Reusable workflows cannot escalate permissions beyond what the caller grants
+permissions:
+  id-token: write # Required for Azure OIDC authentication in deploy-shell.yml
+  contents: read # Required for checkout
+
 # Implements reusable-shell-deploy-workflow: Thin caller delegates to reusable workflow
 jobs:
   # Implements release-channel-deployments: Channel extraction from branch (Task 1.4)
