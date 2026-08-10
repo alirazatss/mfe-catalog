@@ -211,6 +211,31 @@ A **deployment path** that always points to the latest dev build via overwriting
 
 ---
 
+### Local Port Map
+
+A **canonical development port assignment table** that maps each shell or MFE to a fixed local port.
+
+**Properties:**
+
+- Single source of truth for local dev port allocation
+- Prevents manual edits when a preferred dev port is already taken
+- Used by local dev server startup and manifest/config generation
+- Records the resolved port for each app so the manifest stays in sync with reality
+
+**Examples:**
+
+- `website` - shell on `5173`
+- `mfe-widget` - MFE on `5174`
+- `mfe-landing-page` - MFE on `5175`
+
+**Purpose:**
+
+- Keep local manifest URLs stable across runs
+- Make dev server ports predictable for shell-to-MFE linking
+- Allow dev tooling to resolve and persist an alternate free port when the preferred port is occupied
+
+---
+
 ### Immutable Dev Artifact
 
 A **commit-addressable dev build** deployed to `sha-<short>/` paths for reproducibility.
