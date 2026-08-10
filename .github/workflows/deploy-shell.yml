@@ -137,7 +137,12 @@ jobs:
   # Implements release-channel-deployments: Channel concurrency requirement (Task 1.2)
   deploy-dev:
     name: Deploy to Dev
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release-'))
+    # Run if push to main/release branch AND validate-release-channel either passed or was skipped
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release-')) &&
+      (needs.validate-release-channel.result == 'success' || needs.validate-release-channel.result == 'skipped')
     runs-on: ubuntu-latest
     environment: dev
     # Implements shell-deployment-pipeline concurrency requirement
