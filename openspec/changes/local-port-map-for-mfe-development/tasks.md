@@ -12,27 +12,27 @@
 
 **Depends on:** none
 
-- [ ] 1.1 Add the canonical local port map data source and resolution helpers.
+- [x] 1.1 Add the canonical local port map data source and resolution helpers.
   - Requirements: REQ-001, REQ-002, REQ-003
   - Owner skill(s): backend-developer
   - Verification: unit tests cover reuse, preferred-port resolution, and alternate-port assignment when the preferred port is occupied.
 
-- [ ] 1.2 Update discovery to read and persist resolved local ports from the map instead of relying on alphabetical assignment.
+- [x] 1.2 Update discovery to read and persist resolved local ports from the map instead of relying on alphabetical assignment.
   - Requirements: REQ-004, REQ-005
   - Owner skill(s): backend-developer
   - Verification: discovery tests show mapped ports are returned and new apps receive a resolved port.
 
-- [ ] 1.3 Wire shell and MFE Vite startup to the same resolution source and enable strict local dev behavior where relevant.
+- [x] 1.3 Wire shell and MFE Vite startup to the same resolution source and enable strict local dev behavior where relevant.
   - Requirements: REQ-001, REQ-003, REQ-004
   - Owner skill(s): frontend-developer
   - Verification: local dev startup uses the resolved port values and no longer requires manual manifest edits when a port changes.
 
-- [ ] 1.4 Update local manifest/config generation to emit localhost URLs from the resolved port map.
+- [x] 1.4 Update local manifest/config generation to emit localhost URLs from the resolved port map.
   - Requirements: REQ-005
   - Owner skill(s): backend-developer
   - Verification: generated local manifest contains the resolved localhost URLs for each MFE.
 
-- [ ] 1.5 Update package.json defaults or metadata so preferred dev ports are represented consistently in the repo.
+- [x] 1.5 Update package.json defaults or metadata so preferred dev ports are represented consistently in the repo.
   - Requirements: REQ-001, REQ-002
   - Owner skill(s): backend-developer
   - Verification: package metadata and runtime resolution stay aligned for the shell and MFEs.
