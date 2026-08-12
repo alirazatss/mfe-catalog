@@ -2,6 +2,11 @@ import { defineConfig } from "vite-plus";
 import { federation } from "@module-federation/vite";
 import { copyFileSync, existsSync, unlinkSync } from "node:fs";
 import { resolve } from "node:path";
+import { getResolvedPort } from "@mfe-runtime/monorepo-tools";
+
+// Implements REQ-001, REQ-003, REQ-004: Use resolved port from canonical map
+// See openspec/changes/local-port-map-for-mfe-development/specs/local-port-mapping/spec.md
+const PORT = getResolvedPort("website", 5173);
 
 // Implements SDP-Requirement-5 (env-correct config bundled)
 // Select environment-specific remote config at build time.
@@ -90,10 +95,10 @@ export default defineConfig({
     }),
   ],
   server: {
-    port: 5173,
-    origin: "http://localhost:5173",
+    port: PORT,
+    origin: `http://localhost:${PORT}`,
   },
   preview: {
-    port: 5173,
+    port: PORT,
   },
 });

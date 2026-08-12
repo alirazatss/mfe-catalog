@@ -1,5 +1,10 @@
 import { defineConfig } from "vite-plus";
 import { federation } from "@module-federation/vite";
+import { getResolvedPortFromPackage } from "@mfe-runtime/monorepo-tools";
+
+// Implements REQ-001, REQ-002, REQ-003, REQ-004: Use resolved port from canonical map
+// See openspec/changes/local-port-map-for-mfe-development/specs/local-port-mapping/spec.md
+const PORT = getResolvedPortFromPackage(import.meta.url, 5174);
 
 export default defineConfig({
   optimizeDeps: {
@@ -29,14 +34,11 @@ export default defineConfig({
     }),
   ],
   server: {
-    port: 5174,
-    origin: "http://localhost:5174",
-  },
-  optimizeDeps: {
-    include: ["react", "react-dom", "react-dom/client"],
+    port: PORT,
+    origin: `http://localhost:${PORT}`,
   },
   preview: {
-    port: 5174,
+    port: PORT,
   },
   build: {
     target: "esnext",
