@@ -52,17 +52,17 @@
 
 **Depends on:** task group 1 (canonical resolution behavior must exist before docs and regression updates are finalized)
 
-- [ ] 2.1 Update docs and glossary references so local port map terminology matches the new canonical behavior.
+- [x] 2.1 Update docs and glossary references so local port map terminology matches the new canonical behavior.
   - Requirements: REQ-001, REQ-005
   - Owner skill(s): humanizer
   - Verification: docs and glossary use the same local-port-map vocabulary and no longer describe alphabetical-only allocation.
 
-- [ ] 2.2 Update or add spec tests for the changed discovery and manifest-generation behavior.
+- [x] 2.2 Update or add spec tests for the changed discovery and manifest-generation behavior.
   - Requirements: REQ-001, REQ-002, REQ-003, REQ-004, REQ-005
   - Owner skill(s): tester
   - Verification: tests assert stable reuse, alternate-port assignment, and manifest regeneration from the resolved map.
 
-- [ ] 2.3 Validate the shell still boots with the resolved local port map and loads MFEs from the generated localhost URLs.
+- [x] 2.3 Validate the shell still boots with the resolved local port map and loads MFEs from the generated localhost URLs.
   - Requirements: REQ-001, REQ-005
   - Owner skill(s): tester, frontend-developer
   - Verification: local integration or E2E smoke flow starts the shell and confirms remote entry URLs match the resolved map.

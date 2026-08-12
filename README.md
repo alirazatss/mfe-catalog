@@ -8,7 +8,7 @@ A modern **Vite+ monorepo** demonstrating **auto-discovered Module Federation** 
 
 - **Zero-config micro-frontends** - Just create `apps/mfes/mfe-*` and it's automatically discovered
 - **Convention-based naming** - Package names like `@mfe-runtine/mfe-widget` auto-generate config
-- **Automatic port allocation** - Alphabetically sorted, starting at 5174, with conflict detection
+- **Canonical local port map** - Stable port assignments with preferred-port resolution and conflict detection
 - **Generated configuration** - `remotes.config.json` created at build time (gitignored)
 
 ### Dynamic Runtime Loader
@@ -64,8 +64,8 @@ A modern **Vite+ monorepo** demonstrating **auto-discovered Module Federation** 
 │                  Auto-Discovery Pipeline                         │
 │                                                                   │
 │  1. Scan apps/mfes/mfe-* directories                                 │
-│  2. Read package.json for name and port                         │
-│  3. Detect port conflicts (alphabetical fallback)               │
+│  2. Read package.json for name and preferred port               │
+│  3. Resolve port from canonical local port map                  │
 │  4. Derive scope from package name (mfe-widget → widget)        │
 │  5. Generate environment-specific URLs                           │
 │  6. Write remotes.config.json to host public/                   │
