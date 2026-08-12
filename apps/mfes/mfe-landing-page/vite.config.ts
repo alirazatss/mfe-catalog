@@ -2,6 +2,11 @@ import { defineConfig } from "vite-plus";
 import { federation } from "@module-federation/vite";
 import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
+import { getResolvedPortFromPackage } from "@mfe-runtime/monorepo-tools";
+
+// Implements REQ-001, REQ-002, REQ-003, REQ-004: Use resolved port from canonical map
+// See openspec/changes/local-port-map-for-mfe-development/specs/local-port-mapping/spec.md
+const PORT = getResolvedPortFromPackage(import.meta.url, 5175);
 
 export default defineConfig({
   // Relative base so built asset URLs work when hosted under a nested blob path.
@@ -41,11 +46,11 @@ export default defineConfig({
     }),
   ],
   server: {
-    port: 5175,
-    origin: "http://localhost:5175",
+    port: PORT,
+    origin: `http://localhost:${PORT}`,
   },
   preview: {
-    port: 5175,
+    port: PORT,
   },
   build: {
     target: "esnext",

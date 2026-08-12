@@ -8,3 +8,5 @@
 export * from "./types.js";
 export * from "./discovery.js";
 export * from "./config-generator.js";
+export * from "./port-map.js";
+export * from "./vite-port-helper.js";

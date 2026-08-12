@@ -59,3 +59,6 @@ presentation/
 
 # Local-only preview helpers
 local-pr-preview-server.mjs
+
+# Canonical local port map (local development state)
+.local-port-map.json
