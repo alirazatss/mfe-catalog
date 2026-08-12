@@ -2,13 +2,13 @@
 
 ## Purpose
 
-This specification defines the structure and exports of the @mfe-runtine/monorepo-tools package. This package provides utilities for discovering micro-frontends in the monorepo and generating runtime configuration files. The package exports TypeScript types, placeholder discovery functions, and config generation utilities that will be fully implemented in Phase 2.
+This specification defines the structure and exports of the @mfe-runtime/monorepo-tools package. This package provides utilities for discovering micro-frontends in the monorepo and generating runtime configuration files. The package exports TypeScript types, placeholder discovery functions, and config generation utilities that will be fully implemented in Phase 2.
 
 ## Requirements
 
 ### Requirement: Package structure exists
 
-The system SHALL include a @mfe-runtine/monorepo-tools package with proper TypeScript configuration.
+The system SHALL include a @mfe-runtime/monorepo-tools package with proper TypeScript configuration.
 
 #### Scenario: Package directory exists
 
@@ -18,9 +18,9 @@ The system SHALL include a @mfe-runtine/monorepo-tools package with proper TypeS
 #### Scenario: Package.json configured correctly
 
 - **WHEN** `packages/monorepo-tools/package.json` is read
-- **THEN** name is `@mfe-runtine/monorepo-tools`
+- **THEN** name is `@mfe-runtime/monorepo-tools`
 - **AND** version is `0.1.0`
-- **AND** dependencies include `glob` and `@mfe-runtine/remote-config`
+- **AND** dependencies include `glob` and `@mfe-runtime/remote-config`
 
 #### Scenario: TypeScript configured correctly
 
@@ -80,7 +80,7 @@ The system SHALL build the monorepo-tools package using vite-plus.
 
 #### Scenario: Build produces output
 
-- **WHEN** `pnpm build --filter @mfe-runtine/monorepo-tools` is run
+- **WHEN** `pnpm build --filter @mfe-runtime/monorepo-tools` is run
 - **THEN** the command exits with code 0
 - **AND** `dist/index.mjs` is created
 - **AND** `dist/index.d.mts` is created

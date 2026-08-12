@@ -17,7 +17,7 @@ We have multiple shells sharing a single Keycloak authentication system. MFEs ne
 - Global API: `window.__MFE_AUTH__`
 - Custom events: `mfe:auth:token-updated`
 
-Auth logic is packaged as `@mfe-runtine/auth` (npm) - contains TokenManager class only, no UI.
+Auth logic is packaged as `@mfe-runtime/auth` (npm) - contains TokenManager class only, no UI.
 
 ## Alternatives Considered
 
@@ -35,7 +35,7 @@ Each MFE handles its own auth, has own tokenManager.
 
 ### Alternative 2: Shared Singleton via Module Federation
 
-Use MF's `shared: { singleton: true }` for `@mfe-runtine/auth`.
+Use MF's `shared: { singleton: true }` for `@mfe-runtime/auth`.
 
 **Rejected because:**
 
@@ -118,8 +118,8 @@ window.dispatchEvent(
 
 ### Package Split
 
-- `@mfe-runtine/auth` - TokenManager logic, JWT utils, types (no UI)
-- `@mfe-runtine/auth-ui` - LoginPage, LogoutPage React components (corporate branding)
+- `@mfe-runtime/auth` - TokenManager logic, JWT utils, types (no UI)
+- `@mfe-runtime/auth-ui` - LoginPage, LogoutPage React components (corporate branding)
 
 ## Trade-offs
 

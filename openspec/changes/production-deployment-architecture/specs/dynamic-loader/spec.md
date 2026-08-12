@@ -15,10 +15,10 @@ The system SHALL fetch and validate remote configuration (either static `remotes
 - **AND** caches validated config in memory
 - **AND** emits `config:fetch:success` event
 
-#### Scenario: Manifest fetched successfully from CDN
+#### Scenario: Manifest fetched successfully from Azure Blob Storage
 
 - **GIVEN** environment is production
-- **WHEN** loader.init({manifestUrl: "https://cdn.example.com/manifest.json"}) is called
+- **WHEN** loader.init({manifestUrl: "https://tssmfestorage.blob.core.windows.net/mfes-prod/manifest.json"}) is called
 - **THEN** system fetches manifest from provided URL
 - **AND** transforms manifest structure to internal config format
 - **AND** validates transformed config
@@ -49,7 +49,7 @@ The system SHALL fetch and validate remote configuration (either static `remotes
 
 #### Scenario: Manifest-to-config transformation
 
-- **WHEN** manifest is fetched from CDN
+- **WHEN** manifest is fetched from Azure Blob Storage
 - **THEN** system SHALL transform manifest.microfrontends object to remotes array
 - **AND** SHALL map manifest url field to entryUrl in config
 - **AND** SHALL map manifest scope and module fields
@@ -65,7 +65,7 @@ The system SHALL allow configuring manifest URL via init options.
 
 #### Scenario: Initialize with manifest URL
 
-- **WHEN** loader.init({manifestUrl: "https://cdn.example.com/manifest.json"}) is called
+- **WHEN** loader.init({manifestUrl: "https://tssmfestorage.blob.core.windows.net/mfes-prod/manifest.json"}) is called
 - **THEN** system SHALL fetch from provided manifest URL
 - **AND** SHALL NOT attempt to fetch /remotes.config.json
 
@@ -91,7 +91,7 @@ The system SHALL validate fetched manifest against manifest JSON schema before t
 
 #### Scenario: Valid manifest passes validation
 
-- **WHEN** manifest is fetched from CDN
+- **WHEN** manifest is fetched from Azure Blob Storage
 - **THEN** system SHALL validate it against manifest.schema.json
 - **AND** SHALL proceed with transformation if valid
 

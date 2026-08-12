@@ -1,6 +1,10 @@
-# multi-shell-tooling Delta
+# multi-shell-tooling Specification
 
-## ADDED Requirements
+## Purpose
+
+This specification defines shell-agnostic monorepo tooling: config generation, size checks, script assertions, and E2E configuration that operate on any shell under `apps/shells/*` instead of hardcoding the `website` shell. It complements `reusable-shell-deploy-workflow` by ensuring build/dev tooling (not just CI/CD) scales to multiple shells.
+
+## Requirements
 
 ### Requirement: Config generation SHALL operate per shell
 

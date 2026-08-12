@@ -1,5 +1,7 @@
 # Micro-Frontend System - Context
 
+> **Current state vs target architecture**: this glossary describes the target pattern the platform is converging on. Today there is one shell in the repo, `apps/shells/website` (the reference/pilot shell — not yet split by domain), one monorepo (no separate `mf-platform`/`mf-catalog`/shell repos per ADR-0001's future split), and MFEs are served from Azure Blob Storage per environment (see ADR-0009/ADR-0010), not a generic CDN. Where an entry below states a fact about the current implementation, it has been corrected to match the codebase; illustrative names like `customer-shell`/`admin-shell`/`cdn.example.com` remain as pattern examples for future shells.
+
 ## Glossary
 
 ### Shell
@@ -20,7 +22,7 @@ The **thin host container** that owns a domain and orchestrates MFE loading.
 
 - Bootstrap authentication (`tokenManager.initialize()`)
 - Setup `window.__MFE_AUTH__` global
-- Fetch manifest from CDN
+- Fetch and validate the remote config (currently `/remotes.config.json`, served by the shell's own build output; a versioned, CDN-hosted manifest is proposed by the in-progress `production-deployment-architecture` change but not yet consumed at runtime)
 - Load Chrome MFEs into slots (header, sidebar, footer)
 - Load Feature MFEs based on route
 - Basic CSS grid layout (no styling)
@@ -28,15 +30,16 @@ The **thin host container** that owns a domain and orchestrates MFE loading.
 **What shell DOES NOT do:**
 
 - No React components (except optional error boundary)
-- No auth UI (that's in `@mfe-runtine/auth-ui`)
+- No auth UI (that's in `@mfe-runtime/auth-ui`)
 - No navigation logic (that's in `mfe-header`)
 - No feature logic (that's in feature MFEs)
 
 **Examples:**
 
-- `customer-shell` - Customer-facing portal
-- `admin-shell` - Internal admin dashboard
-- `marketing-shell` - Public marketing website
+- `website` - The current reference shell in this repo (`apps/shells/website`); implements the thin-shell pattern below today
+- `customer-shell` - Future customer-facing portal (illustrative name, not yet created)
+- `admin-shell` - Future internal admin dashboard (illustrative name, not yet created)
+- `marketing-shell` - Future public marketing website (illustrative name, not yet created)
 
 ---
 
@@ -99,10 +102,10 @@ Used by both shells and MFEs, must be npm.
 
 **Examples:**
 
-- `@mfe-runtine/auth` - TokenManager logic (no UI)
-- `@mfe-runtine/auth-ui` - LoginPage, LogoutPage components
-- `@mfe-runtine/dynamic-loader` - MFE loader utility
-- `@mfe-runtine/events` - EventBus for cross-MFE communication
+- `@mfe-runtime/auth` - TokenManager logic (no UI)
+- `@mfe-runtime/auth-ui` - LoginPage, LogoutPage components
+- `@mfe-runtime/dynamic-loader` - MFE loader utility
+- `@mfe-runtime/events` - EventBus for cross-MFE communication
 
 #### MFE-Only Shared (workspace dependency)
 
@@ -388,10 +391,10 @@ A **global API** exposed by the shell for cross-MFE navigation.
 │      └── deploy-changed-to-cdn.yml                          │
 │                                                             │
 │  Also publishes to npm (used by shells):                    │
-│  ├── @mfe-runtine/auth         (TokenManager)                  │
-│  ├── @mfe-runtine/auth-ui      (LoginPage)                     │
-│  ├── @mfe-runtine/dynamic-loader (MFE loader)                  │
-│  └── @mfe-runtine/events       (EventBus)                      │
+│  ├── @mfe-runtime/auth         (TokenManager)                  │
+│  ├── @mfe-runtime/auth-ui      (LoginPage)                     │
+│  ├── @mfe-runtime/dynamic-loader (MFE loader)                  │
+│  └── @mfe-runtime/events       (EventBus)                      │
 └────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────┐
@@ -412,9 +415,9 @@ A **global API** exposed by the shell for cross-MFE navigation.
 │  ├── manifest-prod.json                                     │
 │  ├── package.json                                           │
 │  │   dependencies:                                          │
-│  │     "@mfe-runtine/auth": "^1.0.0"                           │
-│  │     "@mfe-runtine/auth-ui": "^1.0.0"                        │
-│  │     "@mfe-runtine/dynamic-loader": "^1.0.0"                 │
+│  │     "@mfe-runtime/auth": "^1.0.0"                           │
+│  │     "@mfe-runtime/auth-ui": "^1.0.0"                        │
+│  │     "@mfe-runtime/dynamic-loader": "^1.0.0"                 │
 │  └── .github/workflows/deploy-k8s.yml                       │
 └────────────────────────────────────────────────────────────┘
 
@@ -439,7 +442,7 @@ A **global API** exposed by the shell for cross-MFE navigation.
 3. Shell.ts bootstrap begins:
    ├── tokenManager.initialize() → checks HttpOnly cookie
    ├── If cookie: refreshes and gets access token
-   ├── If no cookie: renders <LoginPage /> from @mfe-runtine/auth-ui
+   ├── If no cookie: renders <LoginPage /> from @mfe-runtime/auth-ui
    └── Sets up window.__MFE_AUTH__ global
    ↓
 4. Fetch manifest-prod.json
@@ -490,12 +493,12 @@ A **global API** exposed by the shell for cross-MFE navigation.
 
 **Package split:**
 
-- `@mfe-runtine/auth` - TokenManager class only (no UI)
-- `@mfe-runtine/auth-ui` - LoginPage/LogoutPage components (corporate branded)
+- `@mfe-runtime/auth` - TokenManager class only (no UI)
+- `@mfe-runtime/auth-ui` - LoginPage/LogoutPage components (corporate branded)
 
 ### 3. Login Location (ADR-0003)
 
-**Login is NOT an MFE.** It's a React component in `@mfe-runtine/auth-ui` npm package.
+**Login is NOT an MFE.** It's a React component in `@mfe-runtime/auth-ui` npm package.
 
 **Why:**
 
@@ -687,7 +690,7 @@ federation({
 **Coordination mechanisms:**
 
 - **PNPM catalog** - Source of truth for versions in mf-catalog
-- **`@mfe-runtine/versions`** - npm package publishes required/supported versions
+- **`@mfe-runtime/versions`** - npm package publishes required/supported versions
 - **Runtime validation** - Shell checks MFE versions on load
 - **Compatibility matrix** - Documented per-MFE version status
 
@@ -757,7 +760,7 @@ shared: {
 ### Phase 0: Thin-Shell Refactor (in-progress)
 
 - [x] `refactor-to-thin-shell` — vanilla shell bootstrap, slot-based mounting, manifest v2 (chrome+features), route guards
-- [ ] `extract-auth-ui-package` — LoginPage / AuthProvider live in `@mfe-runtine/auth-ui`
+- [ ] `extract-auth-ui-package` — LoginPage / AuthProvider live in `@mfe-runtime/auth-ui`
 - [ ] `mfe-lifecycle-contract` — MFEs export `bootstrap`/`mount`/`unmount`/`update`
 - [ ] `navigation-bridge` — `window.__MFE_NAVIGATION__` global
 - [ ] `chrome-mfe-header` — first chrome MFE
@@ -765,9 +768,9 @@ shared: {
 
 ### Phase 1: Package Preparation
 
-- [ ] Extract auth logic to `@mfe-runtine/auth` (no UI)
-- [ ] Create `@mfe-runtine/auth-ui` with LoginPage component
-- [ ] Enhance `@mfe-runtine/dynamic-loader` for slot-based mounting
+- [ ] Extract auth logic to `@mfe-runtime/auth` (no UI)
+- [ ] Create `@mfe-runtime/auth-ui` with LoginPage component
+- [ ] Enhance `@mfe-runtime/dynamic-loader` for slot-based mounting
 - [ ] Publish packages to npm registry
 - [ ] Document package APIs
 

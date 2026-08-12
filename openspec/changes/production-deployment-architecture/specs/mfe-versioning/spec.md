@@ -34,7 +34,7 @@ The system SHALL derive micro-frontend versions from package.json.
 
 - **WHEN** the build system processes a micro-frontend
 - **THEN** it SHALL read the version field from the MFE's package.json
-- **AND** use that version for CDN path and manifest entry
+- **AND** use that version for the Azure Blob Storage path and manifest entry
 
 #### Scenario: Missing version handling
 
@@ -50,7 +50,7 @@ The system SHALL allow pinning specific MFE versions in the manifest.
 #### Scenario: Pin specific version
 
 - **WHEN** manifest specifies mfe-widget version 1.2.3
-- **THEN** the shell SHALL load exactly version 1.2.3 from CDN
+- **THEN** the shell SHALL load exactly version 1.2.3 from Azure Blob Storage
 - **AND** SHALL NOT automatically upgrade to newer versions
 
 #### Scenario: Rollback via version change

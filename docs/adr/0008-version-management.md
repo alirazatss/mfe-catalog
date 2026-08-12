@@ -218,10 +218,10 @@ catalog:
 
 ### 2. Version Manifest Package
 
-**`@mfe-runtine/versions` npm package publishes current version requirements:**
+**`@mfe-runtime/versions` npm package publishes current version requirements:**
 
 ```typescript
-// @mfe-runtine/versions/src/index.ts
+// @mfe-runtime/versions/src/index.ts
 export const REQUIRED_VERSIONS = {
   react: "19.1.0",
   reactDom: "19.1.0",
@@ -253,8 +253,8 @@ export function checkCompatibility(
 // customer-shell/package.json
 {
   "dependencies": {
-    "@mfe-runtine/versions": "^1.0.0",
-    "react": "19.1.0",  // From @mfe-runtine/versions REQUIRED_VERSIONS
+    "@mfe-runtime/versions": "^1.0.0",
+    "react": "19.1.0",  // From @mfe-runtime/versions REQUIRED_VERSIONS
   }
 }
 ```
@@ -265,7 +265,7 @@ export function checkCompatibility(
 
 ```typescript
 // packages/dynamic-loader/src/version-check.ts
-import { checkCompatibility } from "@mfe-runtine/versions";
+import { checkCompatibility } from "@mfe-runtime/versions";
 
 async function loadMFE(mfeConfig: MFEConfig) {
   const module = await loadRemoteModule(mfeConfig);
@@ -379,7 +379,7 @@ Progress:
 2. Enable "multiple version" mode in Module Federation
 3. Deploy shells (customer-shell, admin-shell)
 4. Verify existing MFEs still work
-5. Publish new @mfe-runtine/versions with dual support
+5. Publish new @mfe-runtime/versions with dual support
 ```
 
 **Week 2-24: MFE Migrations**
@@ -401,7 +401,7 @@ Each MFE team, on their own timeline:
 2. Update catalog to require React 20
 3. Return to singleton mode in Module Federation
 4. Deprecate React 19 support
-5. Publish @mfe-runtine/versions with only React 20
+5. Publish @mfe-runtime/versions with only React 20
 ```
 
 ## Vite + Module Federation Configuration Examples
@@ -424,7 +424,7 @@ shared: {
     singleton: true,
     requiredVersion: '8.2.0'
   },
-  '@mfe-runtine/dynamic-loader': {
+  '@mfe-runtime/dynamic-loader': {
     singleton: true,
     requiredVersion: '^1'
   },
