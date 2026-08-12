@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-07-14)
+Accepted (2026-07-14) — **Superseded in practice (2026-08-12)**: the four-repo split described below was never implemented. The single monorepo (Alternative 1, "rejected" below) is the codebase and platform proposal's actual and intended repository model — the shared foundation, cross-team development, and AI-assisted development goals in the Technical Project Plan and executive summary explicitly depend on keeping one repository. Revisit this ADR only if a concrete trigger (e.g. CI/CD scale problems tracked as a real risk, not team-count growth alone) makes the split necessary again.
 
 ## Context
 

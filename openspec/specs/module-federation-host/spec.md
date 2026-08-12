@@ -4,89 +4,89 @@
 
 This specification defines how the host application dynamically loads and integrates remote micro-frontends using Module Federation and the dynamic loader system. It covers configuration discovery, runtime loading, error handling, and development experience.
 
+**Note on "manifest" terminology**: throughout this spec, "manifest" refers to the `remotes.config.json` artifact (`RemoteConfig` type from `@mfe-runtime/remote-config`), which is the config format currently fetched and served by the shell. This is distinct from the versioned `manifest.json` catalogue proposed by the `production-deployment-architecture` change, which is still in progress and not yet consumed at runtime.
+
 ## Requirements
 
 ### Requirement: Host application SHALL load federated modules
 
-The host application SHALL dynamically load remote federated modules via routing system using the dynamic loader and generated configuration.
+The host application SHALL dynamically load remote federated modules and mount them into named DOM slots via a vanilla JavaScript bootstrap sequence. The host SHALL NOT render React components directly; it only orchestrates slot-based MFE mounting.
 
-**(Previously: Loaded on component mount, now loads based on route access)**
+**(Previously: Loaded via React Router lazy routes and React `Suspense` boundaries)**
 
-**Reason for change**: Enable lazy loading of MFEs only when their routes are accessed, improving initial load performance and supporting route-based architecture.
+**Reason for change**: The Chrome MFE pattern (ADR-0004) requires the shell to be a thin, framework-agnostic coordinator that mounts MFEs into fixed DOM slots. React Router and Suspense stay inside the MFEs; the shell uses vanilla JS to fetch manifest, match routes, and mount MFEs.
 
-#### Scenario: Host initializes router and loader at startup
+#### Scenario: Host initializes bootstrap and loader at startup
 
 - **GIVEN** the host application is starting
-- **WHEN** the app initialization runs
-- **THEN** the dynamic loader SHALL fetch `/remotes.config.json`
-- **AND** the config SHALL be validated against JSON Schema
-- **AND** the loader SHALL cache the config in memory
-- **AND** the router SHALL be initialized with route configuration
-- **AND** initialization success SHALL be logged to console
+- **WHEN** the entry module `apps/shells/website/src/main.ts` executes
+- **THEN** the shell SHALL fetch `/remotes.config.json` (env-specific build copies it from `remotes.config.<env>.json`)
+- **AND** the manifest SHALL be validated against the `@mfe-runtime/remote-config` JSON Schema
+- **AND** the loader SHALL cache the manifest in memory
+- **AND** `tokenManager.initialize()` SHALL run before any MFE is mounted
+- **AND** chrome MFEs listed in `manifest.chrome` SHALL be mounted in parallel into their named slots
 
-#### Scenario: Host loads remote via route access
+#### Scenario: Host loads feature MFE via URL prefix match
 
-- **GIVEN** the dynamic loader is initialized
-- **AND** router has route `/products/*` configured for "mfe-products"
-- **WHEN** user navigates to `/products/list`
-- **THEN** the router SHALL match `/products/*` route
-- **AND** the route loader SHALL call `loader.loadRemote("mfe-products")`
+- **GIVEN** the shell has cached the manifest
+- **AND** `manifest.features["/widget"]` maps to `mfe-widget` with an `entryUrl`
+- **WHEN** the user's initial URL is `/widget/dashboard`
+- **THEN** the shell SHALL match `/widget` (longest-prefix wins)
+- **AND** the shell SHALL call `loader.loadRemote("mfe-widget")` targeting `main-slot`
 - **AND** the loader SHALL inject the remote's script tag
 - **AND** the loader SHALL initialize Module Federation sharing
-- **AND** the remote container SHALL be returned to router
-- **AND** router SHALL render mfe-products with `basePath="/products"`
-- **AND** remote load success SHALL be logged to console
+- **AND** the remote SHALL mount into `main-slot`
+- **AND** remote load success SHALL be logged in development mode
 
 #### Scenario: Host lazy-loads MFE on first route access
 
-- **GIVEN** user has not yet accessed `/products/*` routes
-- **AND** mfe-products is not loaded
-- **WHEN** user navigates to `/products/123`
-- **THEN** router loader SHALL initiate loading of mfe-products
-- **AND** Suspense boundary SHALL show loading indicator
-- **AND** mfe-products SHALL be fetched via dynamic loader
-- **AND** once loaded, mfe-products SHALL render with route `/123` (relative to basePath)
+- **GIVEN** the user has not accessed `/widget` yet
+- **AND** `mfe-widget` has not been loaded
+- **WHEN** the user navigates to `/widget/list`
+- **THEN** the shell SHALL match `/widget` from the manifest
+- **AND** the shell SHALL initiate loading of `mfe-widget`
+- **AND** the shell SHALL show a static loading placeholder in `main-slot` while loading
+- **AND** once loaded, `mfe-widget` SHALL mount into `main-slot`
 
 #### Scenario: MFE not loaded until route accessed
 
-- **GIVEN** shell has routes for `/products/*`, `/checkout/*`, `/analytics/*`
-- **WHEN** user navigates to `/checkout/cart`
-- **THEN** shell SHALL load ONLY mfe-checkout
-- **AND** SHALL NOT load mfe-products or mfe-analytics
-- **AND** network SHALL only fetch checkout remoteEntry.js
+- **GIVEN** the manifest defines features for `/widget`, `/checkout`, `/analytics`
+- **WHEN** the user navigates to `/checkout/cart`
+- **THEN** the shell SHALL load ONLY `mfe-checkout`
+- **AND** the shell SHALL NOT load `mfe-widget` or `mfe-analytics`
+- **AND** the network SHALL only fetch `mfe-checkout`'s `remoteEntry.js`
 
 #### Scenario: Config fetch fails with retry
 
 - **GIVEN** the host application is starting
-- **WHEN** config fetch returns HTTP 500
-- **THEN** the loader SHALL retry after 1 second
-- **AND** SHALL retry again after 2 seconds
-- **AND** SHALL fail after 3 total attempts
-- **AND** error SHALL be logged to console
-- **AND** app SHALL continue (graceful degradation)
+- **WHEN** manifest fetch returns HTTP 500
+- **THEN** the shell SHALL retry with exponential backoff (1s, 2s, 4s)
+- **AND** the shell SHALL fail after 3 total attempts
+- **AND** the shell SHALL render the critical-error template into `#app`
+- **AND** the error SHALL be logged to `console.error`
 
-#### Scenario: Remote not found in config
+#### Scenario: Remote not found in manifest
 
-- **GIVEN** the dynamic loader is initialized with valid config
-- **WHEN** the host navigates to route configured for "unknown-remote"
-- **THEN** the loader SHALL throw error "Remote 'unknown-remote' not found in config"
-- **AND** error boundary SHALL catch the error
-- **AND** user SHALL see fallback UI with helpful message
+- **GIVEN** the shell is initialized with a valid manifest
+- **WHEN** a route matches a feature entry whose `mfe` name is missing from the loader registry
+- **THEN** the loader SHALL throw an error `Remote '<name>' not found in manifest`
+- **AND** the shell SHALL render a slot-level error placeholder in `main-slot`
+- **AND** chrome MFEs SHALL remain functional
 
-#### Scenario: Remote is disabled in config
+#### Scenario: Remote is disabled in manifest
 
-- **GIVEN** config contains "mfe-analytics" with enabled: false
-- **WHEN** the host navigates to route configured for "mfe-analytics"
-- **THEN** the loader SHALL throw error "Remote 'mfe-analytics' is disabled"
-- **AND** error boundary SHALL display "Remote is currently disabled"
-- **AND** error SHALL be logged to console
+- **GIVEN** manifest entry for `mfe-analytics` has `enabled: false`
+- **WHEN** the user navigates to a route mapped to `mfe-analytics`
+- **THEN** the loader SHALL NOT load the remote
+- **AND** the shell SHALL render a `Feature disabled` placeholder in `main-slot`
+- **AND** the event SHALL be logged in development mode
 
 #### Scenario: Remote module fails to load
 
-- **WHEN** a federated remote module fails to load (network error or module not found)
-- **THEN** the system SHALL display an error boundary fallback UI
-- **AND** the error SHALL be logged to the console
-- **AND** the rest of the host application SHALL continue to function
+- **WHEN** a federated remote module fails to load (network error, script 404, initialization failure)
+- **THEN** the shell SHALL render a slot-level error placeholder with a `Try again` button in the target slot
+- **AND** the error SHALL be logged to `console.error`
+- **AND** other slots SHALL remain unaffected
 
 ---
 
@@ -96,7 +96,7 @@ The host application SHALL reference remotes using the `mfe-*` naming convention
 
 #### Scenario: Host references remote by mfe-\* name
 
-- **GIVEN** a micro-frontend package named `@mfe-runtine/mfe-widget`
+- **GIVEN** a micro-frontend package named `@mfe-runtime/mfe-widget`
 - **WHEN** the host loads the remote
 - **THEN** the remote SHALL be referenced as "mfe-widget"
 - **AND** the loader SHALL find it in config by that name
@@ -196,25 +196,32 @@ The host application SHALL maintain static Module Federation configuration (comm
 
 ### Requirement: Remote initialization SHALL happen before app render
 
-The host application SHALL initialize the dynamic loader before rendering React components.
+The host bootstrap SHALL initialize the manifest loader and authentication before any MFE is mounted. There SHALL NOT be a "React render" step in the shell; MFE mount replaces the previous React root rendering.
 
-#### Scenario: Loader initialized before render
+**(Previously: React root render followed loader initialization)**
 
-- **GIVEN** app is starting
-- **WHEN** initialization sequence runs
-- **THEN** loader.init() SHALL complete
-- **AND** config SHALL be cached
-- **THEN** React root SHALL render
-- **AND** components can safely call loader.loadRemote()
+**Reason for change**: The shell no longer renders React. MFE mount is the first UI operation after bootstrap completes.
+
+#### Scenario: Loader initialized before mount
+
+- **GIVEN** the shell entry module is executing
+- **WHEN** the bootstrap sequence runs
+- **THEN** `loader.init()` SHALL complete
+- **AND** the manifest SHALL be cached
+- **AND** `tokenManager.initialize()` SHALL complete (success or failure recorded)
+- **AND** `window.__MFE_AUTH__` SHALL be populated
+- **THEN** MFE mount calls SHALL proceed
 
 #### Scenario: Initialization error handled
 
-- **GIVEN** loader.init() throws error
-- **WHEN** initialization sequence runs
-- **THEN** error SHALL be caught
-- **AND** SHALL be logged to console
-- **AND** app SHALL render anyway (graceful degradation)
-- **AND** remote loads will fail with helpful error
+- **GIVEN** `loader.init()` throws an error
+- **WHEN** the bootstrap sequence runs
+- **THEN** the error SHALL be caught
+- **AND** the error SHALL be logged to `console.error`
+- **AND** the shell SHALL render the critical-error template
+- **AND** no MFE mounts SHALL be attempted
+
+---
 
 ### Requirement: Loader instance SHALL be exported for component use
 
@@ -486,71 +493,37 @@ The host application SHALL pass the basePath prop to each loaded micro-frontend.
 
 ---
 
-### Requirement: Host SHALL integrate router with Suspense boundaries
-
-The host SHALL show loading states while MFEs are being fetched.
-
-#### Scenario: Loading indicator shown during MFE fetch
-
-- **GIVEN** user navigates to `/products/list` for first time
-- **AND** mfe-products is not loaded yet
-- **WHEN** route loader initiates fetch
-- **THEN** Suspense boundary SHALL render loading indicator
-- **AND** indicator SHALL remain visible until mfe-products loads
-- **AND** SHALL hide once MFE renders
-
-#### Scenario: Suspense boundary uses custom loading component
-
-- **GIVEN** host defines custom LoadingSpinner component
-- **WHEN** MFE is loading
-- **THEN** Suspense SHALL render LoadingSpinner
-- **AND** SHALL match application's design system
-
----
-
-### Requirement: Host SHALL support route-based code splitting
-
-The host SHALL leverage React Router's lazy loading for automatic code splitting.
-
-#### Scenario: Each MFE loaded as separate chunk
-
-- **GIVEN** host uses React.lazy() with dynamic loader
-- **WHEN** building for production
-- **THEN** each MFE SHALL be in separate JavaScript chunk
-- **AND** browser SHALL only download MFE when route accessed
-- **AND** initial bundle SHALL NOT include MFE code
-
-#### Scenario: Shared dependencies not duplicated
-
-- **GIVEN** multiple MFEs loaded
-- **WHEN** MFEs share dependencies (e.g., React)
-- **THEN** shared dependencies SHALL be loaded once
-- **AND** Module Federation sharing SHALL prevent duplication
-
----
-
 ### Requirement: Host SHALL register navigation event listeners
 
-The host SHALL listen for cross-MFE navigation events and handle routing.
+The host SHALL listen for browser history changes and cross-MFE navigation events, then swap the feature MFE in `main-slot` accordingly. Chrome MFEs SHALL NOT be unmounted on route changes.
 
-#### Scenario: Host registers listener on mount
+**(Previously: `NavigationEventListener` React component used React Router's `useNavigate`)**
 
-- **GIVEN** host root component is mounting
-- **WHEN** useEffect hook runs
-- **THEN** host SHALL register listener for `mfe:navigate` events
-- **AND** listener SHALL be active before MFEs load
+**Reason for change**: React Router is removed from the shell. Route changes are handled by a vanilla bootstrap-level listener that maps URLs to MFEs via the manifest.
 
-#### Scenario: Host handles navigation event
+#### Scenario: Shell registers listener during bootstrap
 
-- **GIVEN** host is listening for navigation events
-- **WHEN** MFE dispatches `mfe:navigate` event with `{ path: "/checkout/cart" }`
-- **THEN** host SHALL call router.navigate("/checkout/cart")
-- **AND** SHALL load mfe-checkout
-- **AND** browser URL SHALL change to `/checkout/cart`
+- **GIVEN** the shell bootstrap sequence is running
+- **WHEN** initial mount completes
+- **THEN** the shell SHALL register a `popstate` listener on `window`
+- **AND** the shell SHALL register a listener for the `mfe:navigate` custom event on the event bus
 
-#### Scenario: Host cleans up listener on unmount
+#### Scenario: Shell handles navigation event
 
-- **GIVEN** host component is unmounting
-- **WHEN** cleanup function runs
-- **THEN** host SHALL remove `mfe:navigate` event listener
-- **AND** SHALL prevent memory leaks
+- **GIVEN** the shell has registered its listeners
+- **WHEN** an MFE dispatches `mfe:navigate` with `{ path: "/checkout/cart" }`
+- **THEN** the shell SHALL call `history.pushState({}, '', '/checkout/cart')`
+- **AND** the shell SHALL match `/checkout` from the manifest
+- **AND** the shell SHALL unmount the previous feature MFE in `main-slot`
+- **AND** the shell SHALL mount `mfe-checkout` into `main-slot`
+- **AND** chrome MFEs SHALL remain mounted
+
+#### Scenario: Shell handles browser back/forward
+
+- **GIVEN** the user has navigated between `/widget` and `/dashboard`
+- **WHEN** the browser fires a `popstate` event (back or forward button)
+- **THEN** the shell SHALL re-match the current URL against the manifest
+- **AND** the shell SHALL swap the feature MFE in `main-slot` if the match changed
+- **AND** the shell SHALL leave chrome slots untouched
+
+---

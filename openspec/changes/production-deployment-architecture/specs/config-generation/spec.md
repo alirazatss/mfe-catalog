@@ -12,11 +12,11 @@ The system SHALL generate different entry URLs and output formats based on envir
 - **THEN** entryUrl is `http://localhost:5174/remoteEntry.js`
 - **AND** output file is remotes.config.json
 
-#### Scenario: Production URLs use CDN with versioning
+#### Scenario: Production URLs use Azure Blob Storage with versioning
 
-- **WHEN** environment is "production" with baseUrl "https://cdn.example.com"
+- **WHEN** environment is "production" with baseUrl "https://tssmfestorage.blob.core.windows.net/mfes-prod"
 - **AND** MicroFrontend has version "1.2.3"
-- **THEN** entryUrl is `https://cdn.example.com/mfe-{name}/1.2.3/remoteEntry.js`
+- **THEN** entryUrl is `https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-{name}/v1.2.3/remoteEntry.js`
 - **AND** output file is manifest.json
 
 #### Scenario: Production includes semver version in path
@@ -46,7 +46,7 @@ The system SHALL generate manifest.json format for production environment.
 - **WHEN** adding mfe-widget version 1.2.3 to manifest
 - **THEN** manifest.microfrontends["mfe-widget"] SHALL include:
   - version: "1.2.3"
-  - url: "https://cdn.example.com/mfe-widget/1.2.3/remoteEntry.js"
+  - url: "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-widget/v1.2.3/remoteEntry.js"
   - scope: "widget"
   - module: "./App"
   - integrity: "sha384-..."

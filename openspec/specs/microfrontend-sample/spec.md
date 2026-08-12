@@ -99,18 +99,18 @@ The system SHALL use `apps/mfes/mfe-*` naming pattern for all micro-frontends.
 #### Scenario: Package name is scoped
 
 - **WHEN** `apps/mfes/mfe-widget/package.json` is read
-- **THEN** name is `@mfe-runtine/mfe-widget`
+- **THEN** name is `@mfe-runtime/mfe-widget`
 
 #### Scenario: Root scripts reference correct package
 
 - **WHEN** root `package.json` scripts are inspected
-- **THEN** `dev:remote` uses filter `@mfe-runtine/mfe-widget`
-- **AND** `build:remote` uses filter `@mfe-runtine/mfe-widget`
+- **THEN** `dev:remote` uses filter `@mfe-runtime/mfe-widget`
+- **AND** `build:remote` uses filter `@mfe-runtime/mfe-widget`
 
 #### Scenario: Build works with new name
 
 - **WHEN** `pnpm build` is run
-- **THEN** `@mfe-runtine/mfe-widget` builds successfully
+- **THEN** `@mfe-runtime/mfe-widget` builds successfully
 - **AND** Turborepo cache works for subsequent builds
 
 #### Scenario: Module Federation scope unchanged

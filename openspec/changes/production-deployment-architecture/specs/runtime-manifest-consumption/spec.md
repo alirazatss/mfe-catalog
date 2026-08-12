@@ -144,12 +144,12 @@ The shell application SHALL use different manifest URLs per environment.
 #### Scenario: Production manifest URL
 
 - **WHEN** shell is running in production
-- **THEN** it SHALL fetch manifest from "https://cdn.example.com/manifest.json"
+- **THEN** it SHALL fetch manifest from "https://tssmfestorage.blob.core.windows.net/mfes-prod/manifest.json"
 
 #### Scenario: Staging manifest URL
 
 - **WHEN** shell is running in staging
-- **THEN** it SHALL fetch manifest from "https://staging-cdn.example.com/manifest.json"
+- **THEN** it SHALL fetch manifest from a staging-designated container/path on the same `tssmfestorage` account (no separate staging CDN subdomain exists)
 
 #### Scenario: Development local config
 

@@ -27,15 +27,15 @@ The system SHALL include complete configuration for each micro-frontend in the m
 - **WHEN** a micro-frontend is included in the manifest
 - **THEN** its entry SHALL contain:
   - version (semver string)
-  - url (HTTPS CDN URL to remoteEntry.js)
+  - url (HTTPS Azure Blob Storage URL to remoteEntry.js, e.g. `https://tssmfestorage.blob.core.windows.net/mfes-prod/<mfe-name>/v<version>/remoteEntry.js`)
   - scope (Module Federation scope name)
   - module (exposed module path like "./App")
   - integrity (SRI hash for security)
 
-#### Scenario: CDN URL format
+#### Scenario: Azure Blob Storage URL format
 
 - **WHEN** manifest includes an MFE URL
-- **THEN** URL SHALL follow pattern "https://cdn.example.com/<mfe-name>/<version>/remoteEntry.js"
+- **THEN** URL SHALL follow pattern "https://tssmfestorage.blob.core.windows.net/mfes-<env>/<mfe-name>/v<version>/remoteEntry.js"
 - **AND** SHALL use HTTPS protocol
 
 #### Scenario: Missing required fields rejected
@@ -55,17 +55,17 @@ The system SHALL support different manifests per environment.
 - **THEN** MFE URLs SHALL point to localhost:PORT
 - **AND** environment field SHALL be "development"
 
-#### Scenario: Production manifest uses CDN
+#### Scenario: Production manifest uses Azure Blob Storage
 
 - **WHEN** generating manifest for production environment
-- **THEN** MFE URLs SHALL point to CDN domain
+- **THEN** MFE URLs SHALL point to the `mfes-prod` container on `tssmfestorage.blob.core.windows.net`
 - **AND** environment field SHALL be "production"
 
 #### Scenario: Staging manifest validation
 
 - **WHEN** generating manifest for staging environment
 - **THEN** environment field SHALL be "staging"
-- **AND** MFE URLs SHALL point to staging CDN subdomain
+- **AND** MFE URLs SHALL point to a staging-designated container or path prefix (no separate staging CDN subdomain exists)
 
 ---
 
@@ -87,10 +87,10 @@ The system SHALL include metadata about the manifest and build.
   - buildDate (ISO 8601 timestamp)
   - changelog (URL to release notes or git tag)
 
-#### Scenario: CDN configuration
+#### Scenario: Storage account metadata
 
 - **WHEN** manifest is generated for production
-- **THEN** it SHALL include "cdn" object with baseUrl and region
+- **THEN** it SHALL include a "storage" object with account name (`tssmfestorage`) and container (`mfes-prod`), replacing any generic "cdn" object concept
 
 ---
 
@@ -143,11 +143,11 @@ The system SHALL deploy manifests to a well-known location accessible to shell a
 #### Scenario: Production manifest URL
 
 - **WHEN** shell application starts in production
-- **THEN** it SHALL fetch manifest from "https://cdn.example.com/manifest.json"
+- **THEN** it SHALL fetch manifest from "https://tssmfestorage.blob.core.windows.net/mfes-prod/manifest.json"
 
 #### Scenario: Manifest caching headers
 
-- **WHEN** manifest is served from CDN
+- **WHEN** manifest is served from Azure Blob Storage
 - **THEN** it SHALL include Cache-Control headers with max-age of 60 seconds
 - **AND** SHALL include ETag for conditional requests
 

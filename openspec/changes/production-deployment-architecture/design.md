@@ -1,34 +1,30 @@
 ## Context
 
-The current monorepo architecture supports local development with auto-discovery and dynamic loading, but lacks production deployment capabilities. All micro-frontends live in a single GitHub repository managed by Turborepo, enabling efficient incremental builds. However, there's no mechanism to:
+The current monorepo architecture supports local development with auto-discovery and dynamic loading. Production deployment infrastructure now exists via `azure-blob-deployment-pipeline`: MFEs and (once its task group 4 lands) the shell deploy to Azure Blob Storage account `tssmfestorage` with OIDC auth, per-environment containers, and immutable versioned paths for prod. What's still missing is a way for the shell to discover MFE versions **without** a `remotes.config.prod.json` PR + shell rebuild for every MFE release.
 
-- Version MFEs independently
-- Deploy only changed MFEs
-- Serve MFEs from CDN with immutable URLs
-- Allow shell to discover available MFE versions at runtime
-
-The shell currently uses compile-time configuration (`remotes.config.json`) which couples deployment timing between shell and MFEs, defeating the purpose of micro-frontends.
+The shell currently uses compile-time configuration (`remotes.config.json`) which couples deployment timing between shell and MFEs for anything beyond the two MFEs already pinned via PR. This change adds a runtime-fetched `manifest.json`, layered on the same Azure Blob Storage account, so MFE releases can update shell-visible routing without a shell redeploy.
 
 **Current State:**
 
 - Turborepo monorepo with `apps/mfes/mfe-*` pattern
 - Dynamic loader fetches static config at runtime
-- Config generation script discovers MFEs and generates localhost URLs
-- No versioning, no CDN, no independent deployment
+- Config generation script discovers MFEs and generates localhost URLs (dev) or `tssmfestorage.blob.core.windows.net` URLs (prod, via `azure-blob-deployment-pipeline`)
+- `azure-blob-deployment-pipeline` already provides: Azure Blob Storage infra, OIDC-authenticated CI/CD, immutable versioned MFE asset paths, and PR-based `remotes.config.prod.json` pinning
+- No independent-of-shell-rebuild MFE version discovery yet — that's this change's actual scope
 
 **Constraints:**
 
 - Must maintain monorepo structure (no splitting into separate repos)
 - Cannot introduce coordination requirements between teams
 - Shell must remain backward-compatible with development workflow
-- CDN must support CORS for cross-origin script loading
-- Build artifacts must be immutable (versioned URLs)
+- MUST reuse the existing `tssmfestorage` Azure Blob Storage account, its containers, CORS configuration, and OIDC identities — no second cloud provider or parallel CDN
+- Build artifacts must be immutable (versioned URLs), matching `azure-blob-deployment-pipeline`'s existing guarantee
 
 **Stakeholders:**
 
 - Frontend teams shipping MFE features
 - Platform team maintaining shell and infrastructure
-- DevOps managing CI/CD and CDN
+- DevOps extending the existing Azure Blob Storage CI/CD pipeline
 - End users requiring zero-downtime deployments
 
 ---
@@ -37,13 +33,12 @@ The shell currently uses compile-time configuration (`remotes.config.json`) whic
 
 **Goals:**
 
-- Enable independent MFE deployment without redeploying shell
+- Enable independent MFE deployment without redeploying shell or opening a config PR per release
 - Implement semantic versioning for each MFE
-- Create GitHub Actions pipeline detecting changed MFEs via Turborepo
-- Deploy MFE bundles to CDN with versioned, immutable URLs
-- Generate production manifest mapping MFE names to CDN URLs and versions
+- Extend the existing `deploy-mfes.yml` Turborepo-based change detection with an atomic manifest-update job
+- Generate a production manifest mapping MFE names to `tssmfestorage.blob.core.windows.net` URLs and versions
 - Update shell to fetch manifest at runtime and resolve MFE URLs dynamically
-- Support instant rollbacks by updating manifest without rebuilding
+- Support instant rollbacks by updating manifest without rebuilding, reusing already-immutable per-version blobs
 - Preserve development workflow (localhost, no manifest required)
 
 **Non-Goals:**
@@ -51,7 +46,7 @@ The shell currently uses compile-time configuration (`remotes.config.json`) whic
 - Splitting monorepo into separate repositories
 - Real-time manifest updates (polling/websocket)
 - A/B testing or gradual rollouts (future enhancement)
-- Custom CDN implementation (use existing providers)
+- Introducing a second cloud provider or a CDN layer in front of Azure Blob Storage (Azure Front Door/Azure CDN fronting is a separate future enhancement, tracked as debt item A7 in ADR-0009)
 - MFE-level authentication or API gateways
 - Server-side rendering for MFEs (client-side only)
 
@@ -101,7 +96,7 @@ The shell currently uses compile-time configuration (`remotes.config.json`) whic
   "microfrontends": {
     "mfe-widget": {
       "version": "1.2.3",
-      "url": "https://cdn.example.com/mfe-widget/1.2.3/remoteEntry.js",
+      "url": "https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-widget/v1.2.3/remoteEntry.js",
       "integrity": "sha384-...",
       "scope": "widget",
       "module": "./App"
@@ -132,48 +127,50 @@ The shell currently uses compile-time configuration (`remotes.config.json`) whic
 **How it works:**
 
 ```bash
-# In GitHub Actions
+# In GitHub Actions (extending the existing deploy-mfes.yml from azure-blob-deployment-pipeline)
 git fetch origin main
 turbo run build --filter='[origin/main...HEAD]'
 # Only rebuilds changed MFEs and their dependents
 ```
 
+Note: `azure-blob-deployment-pipeline`'s current `detect-changed-mfes` job uses git-diff based detection; migrating it to this Turborepo-filter approach is tracked separately in that change's task group 7 ("Turborepo deployment optimization") and is not duplicated here.
+
 **Alternatives Considered:**
 
-- **Git diff + manual parsing:** Error-prone, doesn't handle shared deps
+- **Git diff + manual parsing:** Error-prone, doesn't handle shared deps (this is what's shipped today, pending the optimization above)
 - **Lerna changed:** Another tool to maintain, Turborepo already present
 - **Always deploy all MFEs:** Wasteful, defeats purpose of independent deployment
 
 ---
 
-### Decision 4: CDN Path Structure
+### Decision 4: Azure Blob Storage Path Structure
 
-**Choice:** Versioned paths with immutable content: `/<mfe-name>/<version>/remoteEntry.js`
+**Choice:** Versioned paths with immutable content: `mfes-<env>/<mfe-name>/v<version>/remoteEntry.js`, matching the layout `azure-blob-deployment-pipeline` already established
 
 **Rationale:**
 
-- Immutable URLs enable aggressive CDN caching (1 year max-age)
-- Version in path (not query param) works better with CDN edge caching
-- Rollback = change manifest, no CDN invalidation needed
-- Follows best practices (e.g., Webpack's chunkhash pattern)
+- Immutable blob paths enable aggressive `Cache-Control: public, max-age=31536000, immutable` caching, already applied by the existing `deploy-mfes.yml` prod job
+- Version in path (not query param) avoids any client-side cache-busting complexity
+- Rollback = change manifest to point at an already-uploaded, never-deleted version — no blob invalidation needed
+- Follows the same convention already used for `remotes.config.prod.json` pinning
 
 **Example:**
 
 ```
-https://cdn.example.com/mfe-widget/1.2.3/remoteEntry.js
-https://cdn.example.com/mfe-widget/1.2.3/assets/chunk-abc123.js
+https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-widget/v1.2.3/remoteEntry.js
+https://tssmfestorage.blob.core.windows.net/mfes-prod/mfe-widget/v1.2.3/assets/chunk-abc123.js
 ```
 
 **Alternatives Considered:**
 
-- **Latest alias:** Requires CDN purging, cache invalidation complexity
-- **Query param version:** CDN edge caching less effective
+- **Latest alias:** Requires cache purging or complex ETag negotiation on a mutable blob
+- **Query param version:** Blob-level caching less effective than a distinct immutable path
 - **Git hash in path:** Less human-readable, harder to track releases
 
-**Cache headers:**
+**Cache headers** (already established by `azure-blob-deployment-pipeline`, reused unchanged here):
 
-- Versioned assets: `Cache-Control: public, max-age=31536000, immutable`
-- Manifest: `Cache-Control: public, max-age=60` (1 minute, allows updates)
+- Versioned MFE assets: `Cache-Control: public, max-age=31536000, immutable`
+- Manifest (`manifest.json`, mutable): `Cache-Control: public, max-age=60` (1 minute, allows updates)
 
 ---
 
@@ -183,7 +180,7 @@ https://cdn.example.com/mfe-widget/1.2.3/assets/chunk-abc123.js
 
 **Rationale:**
 
-- Security: Prevents CDN compromise or MITM tampering
+- Security: Prevents storage account compromise or MITM tampering from altering script content undetected
 - Standard browser feature (`<script integrity="...">`)
 - Minimal overhead (compute once at build time)
 
@@ -199,73 +196,46 @@ const integrity = `sha384-${hash.digest("base64")}`;
 
 **Alternatives Considered:**
 
-- **No integrity checks:** Security risk, especially for public CDN
+- **No integrity checks:** Security risk for publicly readable blob storage
 - **SHA-256:** Less secure, SHA-384 is recommended standard
 - **Runtime verification:** Too late, browser handles it natively
 
 ---
 
-### Decision 6: GitHub Actions Workflow Structure
+### Decision 6: Extend the Existing GitHub Actions Workflow
 
-**Choice:** Single workflow file with matrix strategy for parallel MFE deployment
+**Choice:** Add a manifest-update job to the existing `.github/workflows/deploy-mfes.yml` (shipped by `azure-blob-deployment-pipeline`) rather than authoring a new, competing workflow file
 
-**Workflow:**
+**Workflow (illustrative excerpt of the addition):**
 
 ```yaml
-name: Deploy MFEs
-
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+# .github/workflows/deploy-mfes.yml (existing file, azure-blob-deployment-pipeline)
+# ...existing detect-changed-mfes / deploy-dev / deploy-prod jobs unchanged...
 
 jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      changed-mfes: ${{ steps.detect.outputs.mfes }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - run: pnpm install
-      - id: detect
-        run: |
-          CHANGED=$(pnpm turbo run build --filter='[HEAD^1]' --dry-run=json | jq -r '.packages[]')
-          echo "mfes=$CHANGED" >> $GITHUB_OUTPUT
-
-  deploy-mfes:
-    needs: detect-changes
-    strategy:
-      matrix:
-        mfe: ${{ fromJson(needs.detect-changes.outputs.changed-mfes) }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: pnpm install
-      - run: pnpm turbo build --filter=${{ matrix.mfe }}
-      - run: pnpm deploy:cdn --mfe=${{ matrix.mfe }}
-      - run: git tag "${{ matrix.mfe }}-v$(cat apps/${{ matrix.mfe }}/package.json | jq -r '.version')"
+  # ...existing jobs...
 
   update-manifest:
-    needs: deploy-mfes
+    needs: [deploy-dev] # or deploy-prod, depending on trigger
+    if: success()
     runs-on: ubuntu-latest
     steps:
-      - run: pnpm generate:manifest --env=production
-      - run: pnpm upload:manifest
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2 # reuses existing gha-mfe-dev / gha-mfe-prod OIDC federated credential
+      - run: pnpm generate:manifest --env=${{ env.TARGET_ENV }}
+      - run: az storage blob upload --account-name tssmfestorage --container-name mfes-${{ env.TARGET_ENV }} --name manifest.json --file manifest.${{ env.TARGET_ENV }}.json --overwrite --content-cache-control "public, max-age=60"
 ```
 
 **Rationale:**
 
-- Matrix parallelizes MFE deployments (faster)
-- Detect stage prevents unnecessary builds
-- Separate manifest update ensures atomic consistency
-- Workflow dispatch allows manual deployments
+- Reuses the existing matrix deploy, OIDC auth, and change-detection logic instead of duplicating it
+- `update-manifest` only runs after **all** matrix MFEs in that run succeed, giving atomic consistency
+- No new workflow file, no new triggers, no new secrets
 
 **Alternatives Considered:**
 
 - **Separate workflow per MFE:** Too many workflows, hard to coordinate
-- **Sequential deployment:** Slow for multiple MFEs
+- **A brand-new `deploy-mfes.yml`:** Would collide with and duplicate the already-shipped workflow from `azure-blob-deployment-pipeline`
 - **Monolithic script:** Less visible, harder to debug failures
 
 ---
@@ -280,7 +250,7 @@ jobs:
 // apps/shells/website/src/config/remotes.ts
 export async function initializeRemotes() {
   const manifestUrl = import.meta.env.PROD
-    ? "https://cdn.example.com/manifest.json"
+    ? "https://tssmfestorage.blob.core.windows.net/mfes-prod/manifest.json"
     : "/remotes.config.json";
 
   const manifest = await fetchWithCache(manifestUrl, {
@@ -298,6 +268,7 @@ export async function initializeRemotes() {
 - localStorage cache enables offline operation and reduces network calls
 - 24h TTL balances freshness with offline UX
 - Environment variable switch keeps dev workflow unchanged
+- Cross-origin fetch works because the account-level CORS `azure-blob-deployment-pipeline` already configured (`GET`/`OPTIONS` from `*`) covers this blob too
 
 **Alternatives Considered:**
 
@@ -362,16 +333,16 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 
 ---
 
-### Risk 2: CDN Outage Prevents MFE Loading
+### Risk 2: Azure Storage Outage Prevents MFE Loading
 
 **Mitigation:**
 
-- Use CDN with 99.99% SLA (CloudFront, Cloudflare)
-- Deploy to multiple CDN regions for redundancy
-- Monitor CDN health and auto-failover if available
-- Keep cached manifest for offline operation
+- Azure Storage carries its own published SLA (99.9%+ for LRS, higher for GRS/ZRS); confirm the storage account's redundancy tier (per ADR-0009) is adequate before production rollout
+- Keep cached manifest in localStorage for offline/degraded operation
+- Monitor `tssmfestorage` availability via Azure Monitor and Azure Service Health alerts
+- Treat a CDN/Front Door fronting layer as a future enhancement (ADR-0009 debt item A7), not a blocker for this change
 
-**Trade-off:** Increased infrastructure cost for multi-region CDN
+**Trade-off:** Without a fronting CDN, there is no independent multi-region edge cache; acceptable for current MVP scale, revisit if global latency becomes an issue
 
 ---
 
@@ -394,10 +365,10 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 
 **Mitigation:**
 
-- Queue manifest updates (one at a time)
-- Use atomic S3 upload with ETag conditional writes
-- Implement manifest merge strategy (combine both changes)
-- Monitor for manifest overwrites in CI logs
+- Queue manifest updates (one at a time) via the single `update-manifest` job gated on all matrix deploys succeeding
+- Use Azure Blob conditional headers (`If-Match`/`If-None-Match` on the blob's ETag) for the manifest upload to avoid a lost-update race
+- Implement manifest merge strategy (combine both changes) if conditional-write conflicts are detected
+- Monitor for manifest overwrite conflicts in CI logs
 
 **Trade-off:** Slows down parallel deployments slightly
 
@@ -408,9 +379,9 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 **Mitigation:**
 
 - Create `pnpm rollback:mfe --name=mfe-widget --version=1.2.2` script
-- Store previous manifest versions in S3 with timestamps
-- Provide GitHub Action for one-click rollback
-- Document rollback procedure in runbook
+- Rely on the immutable, never-deleted per-version blob paths `azure-blob-deployment-pipeline` already guarantees — no separate manifest version history store needed, since any previously deployed version's blob still exists at its versioned path
+- Provide a GitHub Action for one-click rollback
+- Document rollback procedure in a runbook alongside `docs/runbooks/azure-blob-provisioning.md`
 
 **Trade-off:** Not instant (requires pipeline run, ~2-3 minutes)
 
@@ -418,11 +389,11 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 
 ### Risk 6: SRI Hash Mismatch Blocks MFE Loading
 
-**Scenario:** CDN corrupts file or deploy uploads wrong version
+**Scenario:** Upload is interrupted or a deploy step uploads the wrong version's build output
 
 **Mitigation:**
 
-- Validate uploaded files by fetching and comparing hashes
+- Validate uploaded files by fetching and comparing hashes (reusing the same verification pattern as `azure-blob-deployment-pipeline`'s existing upload step)
 - Fail deployment if validation fails
 - Retry upload up to 3 times before failing
 - Alert on SRI mismatches in production
@@ -433,14 +404,13 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 
 ## Migration Plan
 
-### Phase 1: Infrastructure Setup (Week 1)
+### Phase 1: Azure Infrastructure Verification (Week 1)
 
-1. Provision CDN bucket (S3 + CloudFront or Cloudflare R2)
-2. Configure CORS headers on CDN
-3. Create GitHub Actions secrets for CDN credentials
-4. Test manual upload/download from CDN
+1. Confirm `azure-blob-deployment-pipeline`'s Azure Blob Storage account (`tssmfestorage`), containers (`mfes-dev`, `mfes-prod`), and CORS configuration are provisioned and merged
+2. Confirm the `gha-mfe-dev`/`gha-mfe-prod` OIDC identities have sufficient RBAC to write a new `manifest.json` blob (same containers, no new role assignment expected)
+3. No new CDN bucket, custom domain, or credentials are provisioned in this phase — this change reuses existing infrastructure entirely
 
-**Validation:** Upload test file, verify HTTPS + CORS headers work
+**Validation:** `az storage blob upload` a test `manifest.json` to `mfes-dev` using the existing OIDC identity locally (via `az login --federated-token` or a scratch service principal) and confirm HTTPS + CORS headers work
 
 ---
 
@@ -468,49 +438,49 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 
 ---
 
-### Phase 4: GitHub Actions CI/CD Pipeline (Week 2-3)
+### Phase 4: Extend Existing GitHub Actions Pipeline (Week 2-3)
 
-1. Create `.github/workflows/deploy-mfes.yml`
-2. Implement Turborepo change detection step
-3. Implement CDN upload script (`scripts/deploy-to-cdn.ts`)
-4. Add manifest update step
-5. Test pipeline on staging branch first
+1. Add an `update-manifest` job to the existing `.github/workflows/deploy-mfes.yml` (from `azure-blob-deployment-pipeline`) — do not create a new workflow file
+2. Reuse the workflow's existing Turborepo/git-diff change detection (migrating it to Turborepo filters is tracked separately in that change's task group 7)
+3. Implement manifest upload via `az storage blob upload` (reusing the existing OIDC identities), not a new upload script or provider abstraction
+4. Gate the manifest update on all matrix MFE deploys succeeding
+5. Test the extended workflow on a scratch branch/tag before merging
 
-**Validation:** Push to staging triggers deployment, manifest updates
+**Validation:** Push to a scratch branch triggers the extended workflow; `mfes-dev/manifest.json` updates correctly
 
 ---
 
 ### Phase 5: Shell Bootstrap Update (Week 3)
 
 1. Update `apps/shells/website/src/config/remotes.ts` to fetch manifest
-2. Add environment-based URL selection (dev vs prod)
+2. Add environment-based URL selection (dev vs prod, pointing at `tssmfestorage.blob.core.windows.net/mfes-<env>/manifest.json`)
 3. Add error handling and retry logic
-4. Test locally with production manifest
-5. Deploy shell to staging
+4. Test locally with a production manifest fetched from `mfes-prod`
+5. Deploy shell to the `dev-shell` container behind a feature flag
 
-**Validation:** Staging shell loads MFEs from CDN manifest
+**Validation:** Shell in the `dev-shell` container loads MFEs from the Azure Blob Storage manifest
 
 ---
 
 ### Phase 6: Production Rollout (Week 4)
 
-1. Deploy pipeline to main branch
-2. Deploy first MFE (mfe-widget) to production CDN
-3. Verify manifest updates correctly
-4. Deploy shell to production
-5. Monitor for errors, rollback if needed
+1. Merge the extended `deploy-mfes.yml` to main
+2. Deploy first MFE (mfe-widget) and confirm `mfes-prod/manifest.json` updates correctly
+3. Verify manifest updates correctly and matches the deployed SRI hash
+4. Deploy shell to production (`$web` container) with manifest fetching enabled
+5. Monitor for errors, roll back via manifest edit if needed
 
-**Validation:** Production users see MFEs loaded from CDN
+**Validation:** Production users see MFEs loaded from `tssmfestorage.blob.core.windows.net`
 
 ---
 
 ### Phase 7: Cleanup & Documentation (Week 4)
 
-1. Document deployment process in README.md
-2. Create runbook for rollbacks
-3. Add monitoring dashboards for manifest fetch success rate
-4. Remove old static config fallbacks (if any)
-5. Team training on new deployment workflow
+1. Document the manifest system in README.md, cross-linking `azure-blob-deployment-pipeline`'s existing docs rather than duplicating them
+2. Create runbook for rollbacks alongside `docs/runbooks/azure-blob-provisioning.md`
+3. Add monitoring dashboards for manifest fetch success rate (Azure Monitor)
+4. Remove the `remotes.config.prod.json` static fallback only after manifest-based loading is stable
+5. Team training on the new manifest-based deployment workflow
 
 ---
 
@@ -525,7 +495,7 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 3. Deploy manifest (users see old version immediately)
 4. Fix MFE, bump version, redeploy
 
-**Downtime:** ~30-60 seconds (manifest CDN cache TTL)
+**Downtime:** ~30-60 seconds (manifest cache max-age of 60s)
 
 ---
 
@@ -533,8 +503,8 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 
 **Steps:**
 
-1. Fetch previous manifest version from S3 bucket history
-2. Re-upload previous manifest
+1. Regenerate the manifest from the current state of the `mfes-prod` container (each MFE's immutable versioned blob is still present) via `scripts/generate-manifest.ts`
+2. Re-upload the regenerated manifest
 3. Verify shell loads correct MFE versions
 4. Investigate root cause
 
@@ -542,23 +512,21 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 
 ---
 
-### Scenario 3: CDN Outage
+### Scenario 3: Azure Storage Outage
 
 **Steps:**
 
-1. Confirm CDN provider status page
-2. If prolonged: switch CDN provider (update manifest URL environment variable)
+1. Confirm Azure Service Health status for the storage account's region
+2. If prolonged: users fall back to the cached manifest in localStorage (up to 24h TTL)
 3. If brief: wait for resolution, users use cached manifest
 
-**Downtime:** Depends on CDN SLA (typically <10 minutes)
+**Downtime:** Depends on Azure Storage SLA for the account's redundancy tier (typically well under the manifest's 24h client-side cache TTL)
 
 ---
 
 ## Open Questions
 
-1. **Which CDN provider?** (AWS CloudFront, Cloudflare, Netlify)
-   - **Decision needed by:** Phase 1
-   - **Impact:** Different upload scripts, pricing models
+1. ~~**Which CDN provider?**~~ **Resolved:** Azure Blob Storage (`tssmfestorage`), already provisioned by `azure-blob-deployment-pipeline`. No separate CDN/edge layer in this MVP; Azure Front Door/CDN fronting is a tracked future enhancement (ADR-0009 debt item A7).
 
 2. **Automatic version bumping?** (semantic-release integration)
    - **Decision needed by:** Phase 6
@@ -566,7 +534,7 @@ function manifestToConfig(manifest: Manifest): RemoteConfig {
 
 3. **Manifest versioning strategy?** (Single manifest vs per-environment)
    - **Decision needed by:** Phase 2
-   - **Impact:** Multiple manifests increase complexity but enable staging isolation
+   - **Impact:** Multiple manifests increase complexity but enable staging isolation; likely one `manifest.json` per container (`mfes-dev`, `mfes-prod`), mirroring the existing `remotes.config.<env>.json` split
 
 4. **MFE health checks?** (Ping endpoint before updating manifest)
    - **Decision needed by:** Phase 4

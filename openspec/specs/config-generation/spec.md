@@ -192,8 +192,8 @@ The system SHALL derive Module Federation scope from package.json name field.
 
 #### Scenario: Scope derived from scoped package name
 
-- **WHEN** package.json has `"name": "@mfe-runtine/mfe-widget"`
-- **THEN** generator SHALL derive scope as "mfeWidget" (camelCase, strip @mfe-runtine/ prefix)
+- **WHEN** package.json has `"name": "@mfe-runtime/mfe-widget"`
+- **THEN** generator SHALL derive scope as "mfeWidget" (camelCase, strip @mfe-runtime/ prefix)
 
 #### Scenario: Scope derived from unscoped package name
 
@@ -376,7 +376,7 @@ The system SHALL expose programmatic API for config generation in TypeScript.
 Example TypeScript usage:
 
 ```typescript
-import { generateConfig } from "@mfe-runtine/monorepo-tools";
+import { generateConfig } from "@mfe-runtime/monorepo-tools";
 
 const config = await generateConfig({
   environment: "production",
