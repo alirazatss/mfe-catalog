@@ -127,7 +127,7 @@ The system SHALL generate different entryUrl values based on target environment 
 
 - **WHEN** NODE_ENV=development
 - **THEN** generator SHALL create entryUrl as `http://localhost:{port}/assets/remoteEntry.js`
-- **AND** port SHALL be assigned from discovery (alphabetical order or package.json override)
+- **AND** port SHALL be resolved from the canonical local port map
 
 Example development config:
 

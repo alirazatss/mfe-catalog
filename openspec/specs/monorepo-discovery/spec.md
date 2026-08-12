@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This specification defines the monorepo discovery system that automatically scans the filesystem for micro-frontends following the `apps/mfes/mfe-*` naming convention. The system extracts metadata from package.json files, assigns development ports alphabetically, and derives Module Federation scopes while supporting custom overrides via the mfe configuration field.
+This specification defines the monorepo discovery system that automatically scans the filesystem for micro-frontends following the `apps/mfes/mfe-*` naming convention. The system extracts metadata from package.json files, resolves development ports from the canonical local port map, and derives Module Federation scopes while supporting custom overrides via the mfe configuration field.
 
 ## Requirements
 
@@ -46,37 +46,42 @@ The system SHALL read package.json from each discovered micro-frontend and extra
 
 ---
 
-### Requirement: Assign ports alphabetically
+### Requirement: Resolve ports from canonical local port map
 
-The system SHALL assign development ports alphabetically starting at 5174.
+The system SHALL resolve development ports from the canonical local port map.
 
-#### Scenario: First micro-frontend gets port 5174
+#### Scenario: Mapped ports are returned
 
-- **WHEN** only `apps/mfes/mfe-widget/` exists
-- **THEN** mfe-widget gets port 5174
+- **WHEN** the local port map resolves `mfe-dashboard` to `5174` and `mfe-widget` to `5175`
+- **AND** discovery runs with `apps/mfes/mfe-dashboard/` and `apps/mfes/mfe-widget/`
+- **THEN** discovery returns `mfe-dashboard` with port `5174`
+- **AND** discovery returns `mfe-widget` with port `5175`
 
-#### Scenario: Multiple micro-frontends get sequential ports
+#### Scenario: New app gets a resolved port
 
-- **WHEN** `apps/mfes/mfe-dashboard/` and `apps/mfes/mfe-widget/` exist
-- **THEN** mfe-dashboard gets port 5174 (alphabetically first)
-- **AND** mfe-widget gets port 5175
+- **WHEN** `apps/mfes/mfe-chart/` exists but has no resolved port entry
+- **AND** discovery runs
+- **THEN** the system SHALL assign an available local port to `mfe-chart`
+- **AND** the discovery result SHALL include the resolved port
 
 ---
 
-### Requirement: Support custom port override
+### Requirement: Support preferred port override
 
-The system SHALL allow micro-frontends to specify custom port via package.json mfe.port field.
+The system SHALL treat `package.json mfe.port` as a preferred local port and SHALL resolve an alternate available port when the preferred port is occupied.
 
-#### Scenario: Custom port respected
+#### Scenario: Preferred port is used when available
 
-- **WHEN** package.json contains `"mfe": { "port": 5200 }`
-- **THEN** MicroFrontend object has port 5200
+- **WHEN** package.json contains `{ "mfe": { "port": 5200 } }`
+- **AND** port `5200` is available
+- **THEN** discovery SHALL use port `5200`
 
-#### Scenario: Port conflict detected
+#### Scenario: Preferred port falls back when occupied
 
-- **WHEN** two micro-frontends specify same custom port
-- **THEN** discovery throws error indicating port conflict
-- **AND** error message includes conflicting port number
+- **WHEN** package.json contains `{ "mfe": { "port": 5200 } }`
+- **AND** port `5200` is already in use
+- **THEN** discovery SHALL assign another available port
+- **AND** the resolved port SHALL be reflected in the discovery result
 
 ---
 
@@ -182,27 +187,27 @@ The system SHALL read optional `mfe` field from package.json for micro-frontend-
 - **THEN** discovery SHALL extract scope as "customScope"
 - **AND** scope SHALL be used for Module Federation configuration
 
-#### Scenario: No mfe field uses defaults
+#### Scenario: No mfe field uses local resolution defaults
 
 - **WHEN** package.json does not contain `mfe` field
-- **THEN** discovery SHALL calculate port from alphabetical order
+- **THEN** discovery SHALL resolve the port through the canonical local port map
 - **AND** discovery SHALL derive scope from package name
 
-### Requirement: System SHALL assign development ports automatically
+### Requirement: System SHALL resolve development ports from local port map
 
-The system SHALL calculate development server ports for micro-frontends without explicit port config.
+The system SHALL resolve development server ports for micro-frontends from the canonical local port map.
 
-#### Scenario: Alphabetical port assignment
+#### Scenario: Mapped ports are used
 
-- **WHEN** discovering mfe-dashboard, mfe-widget (alphabetically)
-- **THEN** mfe-dashboard SHALL be assigned port 5174
-- **AND** mfe-widget SHALL be assigned port 5175
+- **WHEN** discovering mfe-dashboard and mfe-widget with resolved ports 5174 and 5175
+- **THEN** mfe-dashboard SHALL use port 5174
+- **AND** mfe-widget SHALL use port 5175
 
-#### Scenario: Port override respected
+#### Scenario: Preferred port override respected
 
 - **WHEN** mfe-widget specifies `{ "mfe": { "port": 5200 } }`
-- **THEN** mfe-widget SHALL use port 5200
-- **AND** alphabetical assignment SHALL skip port 5200 for other apps
+- **THEN** the system SHALL attempt to use port 5200 as the preferred port
+- **AND** the resolved port SHALL be recorded in the local port map
 
 #### Scenario: Port conflict detected
 

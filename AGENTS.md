@@ -14,3 +14,7 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
+
+## Learnings
+
+- [2026-08-12] `vp check` fails on .hbs templates (oxfmt parses them as TS) and pre-existing test failures exist in shell/events packages → baseline validation focuses on package-specific tests for changed areas (task 2.1, change local-port-map-for-mfe-development)
