@@ -1,19 +1,18 @@
 /**
- * Thin Shell — manifest fetching with retry and fallback.
+ * Thin Shell — manifest fetching with retry, fail-visible approach.
  *
- * MVP Architecture:
+ * Implements TSB-1: shell has no baked-in fallback remotes; manifest fetch failure propagates
+ * See openspec/changes/remote-config-environment-cleanup/specs/thin-shell-bootstrap/spec.md
+ *
+ * Architecture:
  * - Fetches `/remotes.config.json` (served by the shell itself) with exponential backoff (1s, 2s, 4s)
- * - If network fetch fails, falls back to the bundled FALLBACK_REMOTES configuration
- * - This dual-layer approach ensures resilience: the shell can load even if serving the
- *   static config file temporarily fails
- *
- * Future: In production, the URL can point to an external config service, and the fallback
- * becomes a true bootstrap configuration.
+ * - If all fetch attempts fail, rejects with error — no fallback
+ * - Bootstrap failure renders critical-error UI (no MFE mounts)
+ * - This ensures fetch failures are visible immediately, not masked by stale fallback config
  */
 
 import type { RemoteConfig } from "@mfe-runtime/remote-config";
 import { safeValidateRemoteConfig } from "@mfe-runtime/remote-config";
-import { FALLBACK_REMOTES } from "../config/remotes.js";
 
 const DEFAULT_URL = "/remotes.config.json";
 const RETRY_DELAYS_MS = [1000, 2000, 4000];
@@ -41,29 +40,35 @@ function logAttemptFailure(attempt: number, error: unknown): void {
   }
 }
 
-function logFallback(): void {
-  if (import.meta.env.DEV) {
-    console.warn(
-      "[shell] All manifest fetch attempts failed. Using fallback bundled configuration.",
-    );
-  }
+function logFinalFailure(error: unknown): void {
+  console.error(
+    "[shell] All manifest fetch attempts failed. Cannot bootstrap shell without remote config.",
+    error,
+  );
 }
 
-export async function fetchManifest(url: string = DEFAULT_URL): Promise<RemoteConfig | null> {
+export async function fetchManifest(url: string = DEFAULT_URL): Promise<RemoteConfig> {
+  let lastError: unknown;
+
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
     try {
       return await tryFetchManifest(url);
     } catch (error) {
+      lastError = error;
       const isLastAttempt = attempt === RETRY_DELAYS_MS.length;
       logAttemptFailure(attempt, error);
       if (isLastAttempt) {
-        logFallback();
-        return FALLBACK_REMOTES;
+        logFinalFailure(error);
+        throw new Error(
+          `Failed to fetch manifest after ${RETRY_DELAYS_MS.length + 1} attempts: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
       await sleep(RETRY_DELAYS_MS[attempt]);
     }
   }
-  return null;
+
+  // Unreachable, but TypeScript needs it
+  throw new Error(`Failed to fetch manifest: ${lastError}`);
 }
 
 function sleep(ms: number): Promise<void> {

@@ -52,11 +52,14 @@ describe("website runtime config", () => {
     window.history.replaceState(null, "", "/");
   });
 
-  it("falls back to bundled remotes when manifest fetch returns null", async () => {
-    mockedFetchManifest.mockResolvedValue(null);
+  it("propagates manifest fetch failure (TSB-1: no fallback)", async () => {
+    // Scenario: manifest.load rejects when fetchManifest rejects (no FALLBACK_REMOTES)
+    // WHEN fetchManifest rejects
+    // THEN manifest.load rejects (shell-runtime will call failureRenderer with critical scope)
+
+    mockedFetchManifest.mockRejectedValue(new Error("Network error"));
     const config = createWebsiteShellRuntimeConfig(mockAppConfig);
-    const manifest = await config.manifest.load();
-    expect(manifest).toEqual(expect.objectContaining({ features: expect.any(Object) }));
+    await expect(config.manifest.load()).rejects.toThrow("Network error");
   });
 
   it("redirects unauthenticated route failures to login with returnUrl", async () => {

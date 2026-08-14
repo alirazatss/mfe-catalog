@@ -68,10 +68,10 @@ Verification: `vp test` for `packages/monorepo-tools`; `pnpm exec tsx scripts/ge
 
 **Depends on:** none
 
-- [ ] 3.1 Rewrite `manifest.test.ts` first: fetch failure after retries rejects (no `FALLBACK_REMOTES` equality assertions); bootstrap failure path renders the critical-error template and mounts no MFE. (TSB-1) — skill: tester
-- [ ] 3.2 Delete `src/config/remotes.ts`; remove `FALLBACK_REMOTES` imports/uses in `manifest.ts` and `runtime-config.ts` so fetch failure propagates to the existing critical-error UI. (TSB-1) — skill: frontend-developer
-- [ ] 3.3 Apply the same removal to the shell generator templates under `turbo/generators/templates/shell/` so new shells scaffold without the fallback. (TSB-1) — skill: frontend-developer
-- [ ] 3.4 Add an integration test: manifest endpoint returning 500 → error UI visible via stable selector, zero remotes requested from baked-in URLs. (TSB-1) — skill: tester
+- [x] 3.1 Rewrite `manifest.test.ts` first: fetch failure after retries rejects (no `FALLBACK_REMOTES` equality assertions); bootstrap failure path renders the critical-error template and mounts no MFE. (TSB-1) — skill: tester
+- [x] 3.2 Delete `src/config/remotes.ts`; remove `FALLBACK_REMOTES` imports/uses in `manifest.ts` and `runtime-config.ts` so fetch failure propagates to the existing critical-error UI. (TSB-1) — skill: frontend-developer
+- [x] 3.3 Apply the same removal to the shell generator templates under `turbo/generators/templates/shell/` so new shells scaffold without the fallback. (TSB-1) — skill: frontend-developer
+- [x] 3.4 Add an integration test: manifest endpoint returning 500 → error UI visible via stable selector, zero remotes requested from baked-in URLs. (TSB-1) — skill: tester
 
 Verification: `vp test` for the shell; runtime integration suite passes with the fetch-failure scenario.
 

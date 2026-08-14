@@ -1,6 +1,8 @@
+// Implements TSB-1: shell has no baked-in fallback remotes; manifest fetch failure propagates
+// See openspec/changes/remote-config-environment-cleanup/specs/thin-shell-bootstrap/spec.md
+
 import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { fetchManifest } from "./manifest.js";
-import { FALLBACK_REMOTES } from "../config/remotes.js";
 
 const validManifest = {
   schemaVersion: "2.0.0",
@@ -53,45 +55,80 @@ describe("fetchManifest", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
-  it("returns fallback config after exhausting retries", async () => {
+  it("rejects after exhausting retries (TSB-1)", async () => {
+    // Scenario: Fetch failure after retries rejects (no FALLBACK_REMOTES)
+    // WHEN manifest fetch fails repeatedly
+    // THEN fetchManifest rejects with error
+
     globalThis.fetch = vi
       .fn()
       .mockImplementation(async () => new Response("boom", { status: 500 })) as any;
 
-    const promise = fetchManifest();
+    const promise = fetchManifest().catch((e) => e); // Catch to prevent unhandled rejection
     // 4 attempts total, 3 backoff waits: 1s + 2s + 4s
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
-    const manifest = await promise;
-    expect(manifest).toEqual(FALLBACK_REMOTES);
+
+    const result = await promise;
+    expect(result).toBeInstanceOf(Error);
   });
 
-  it("returns fallback config when response is invalid JSON", async () => {
+  it("rejects when response is invalid JSON (TSB-1)", async () => {
+    // Scenario: Invalid JSON response rejects instead of falling back
+    // WHEN manifest fetch returns invalid JSON
+    // THEN fetchManifest rejects with error
+
     globalThis.fetch = vi
       .fn()
       .mockImplementation(async () => new Response("not json", { status: 200 })) as any;
 
-    const promise = fetchManifest();
+    const promise = fetchManifest().catch((e) => e);
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
-    const manifest = await promise;
-    expect(manifest).toEqual(FALLBACK_REMOTES);
+
+    const result = await promise;
+    expect(result).toBeInstanceOf(Error);
   });
 
-  it("returns fallback config when JSON is valid but fails schema validation", async () => {
+  it("rejects on network error (TSB-1)", async () => {
+    // Scenario: Network error rejects instead of falling back
+    // WHEN network fetch throws
+    // THEN fetchManifest rejects with error
+
+    globalThis.fetch = vi.fn().mockImplementation(async () => {
+      throw new Error("Network error");
+    }) as any;
+
+    const promise = fetchManifest().catch((e) => e);
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(2000);
+    await vi.advanceTimersByTimeAsync(4000);
+
+    const result = await promise;
+    expect(result).toBeInstanceOf(Error);
+    expect((result as Error).message).toContain("Network error");
+  });
+
+  it("rejects when response fails schema validation (TSB-1)", async () => {
+    // Scenario: Valid JSON but invalid schema rejects
+    // WHEN manifest fetch returns JSON that fails schema validation
+    // THEN fetchManifest rejects with validation error
+
     globalThis.fetch = vi
       .fn()
       .mockImplementation(
         async () => new Response(JSON.stringify({ wrongShape: true }), { status: 200 }),
       ) as any;
 
-    const promise = fetchManifest();
+    const promise = fetchManifest().catch((e) => e);
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
-    const manifest = await promise;
-    expect(manifest).toEqual(FALLBACK_REMOTES);
+
+    const result = await promise;
+    expect(result).toBeInstanceOf(Error);
+    expect((result as Error).message).toContain("Manifest failed schema validation");
   });
 });

@@ -17,7 +17,7 @@ export interface ShellAppConfig {
 
 /**
  * Built-in fallback config for development mode.
- * Mirrors the FALLBACK_REMOTES pattern. Only used when fetch fails in dev.
+ * Only used when fetch fails in dev (not related to remote MFE config).
  */
 export const DEV_FALLBACK_CONFIG: AppConfig = {
   schemaVersion: "0.1.0",
