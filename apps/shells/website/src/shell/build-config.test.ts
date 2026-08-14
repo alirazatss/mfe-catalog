@@ -63,7 +63,7 @@ describe("Shell build config selection (ESRC-2)", () => {
 
     const configFiles = getDistConfigFiles();
     expect(configFiles).toEqual(["remotes.config.json"]);
-  });
+  }, 30000); // 30 second timeout for build tests
 
   it("should emit prod manifest when DEPLOY_ENV=prod (ESRC-2)", () => {
     // Scenario: Prod build emits prod manifest
@@ -85,7 +85,7 @@ describe("Shell build config selection (ESRC-2)", () => {
 
     const configFiles = getDistConfigFiles();
     expect(configFiles).toEqual(["remotes.config.json"]);
-  });
+  }, 30000); // 30 second timeout for build tests
 
   it("should fail build when DEPLOY_ENV references non-existent file (ESRC-2)", () => {
     // Scenario: Unknown environment fails the build
@@ -102,5 +102,5 @@ describe("Shell build config selection (ESRC-2)", () => {
     // Build should not have created dist/remotes.config.json
     const distConfigPath = join(distPath, "remotes.config.json");
     expect(existsSync(distConfigPath)).toBe(false);
-  });
+  }, 30000); // 30 second timeout for build tests
 });
