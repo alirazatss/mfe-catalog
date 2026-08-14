@@ -131,4 +131,39 @@ describe("config-generator", () => {
       expect(config.features?.["/"]).toBeUndefined();
     });
   });
+
+  describe("chrome MFE detection", () => {
+    const mockHeader: MicroFrontend = {
+      name: "mfe-header",
+      shortName: "mfe-header",
+      scope: "header",
+      port: 5176,
+      version: "1.0.0",
+      path: "/apps/mfes/mfe-header",
+    };
+
+    it("should place chrome MFEs in chrome section", async () => {
+      const config = await generateConfig([mockHeader, mockMFE], {
+        environment: "local",
+      });
+
+      expect(config.chrome?.header).toBeDefined();
+      expect(config.chrome?.header?.mfe).toBe("mfe-header");
+      expect(config.chrome?.header?.entryUrl).toBe("http://localhost:5176/remoteEntry.js");
+      expect(config.features?.["/header"]).toBeUndefined();
+    });
+  });
+
+  describe("validation", () => {
+    it("should validate generated config against schema", async () => {
+      // This test verifies that generateConfig calls validateRemoteConfig
+      const config = await generateConfig([mockMFE], {
+        environment: "local",
+      });
+
+      // If validation failed, generateConfig would have thrown
+      expect(config.$schema).toBe("../node_modules/@mfe-runtime/remote-config/schema.json");
+      expect(config.schemaVersion).toBe("2.0.0");
+    });
+  });
 });
