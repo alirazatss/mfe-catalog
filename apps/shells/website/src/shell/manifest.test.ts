@@ -64,13 +64,14 @@ describe("fetchManifest", () => {
       .fn()
       .mockImplementation(async () => new Response("boom", { status: 500 })) as any;
 
-    const promise = fetchManifest();
+    const promise = fetchManifest().catch((e) => e); // Catch to prevent unhandled rejection
     // 4 attempts total, 3 backoff waits: 1s + 2s + 4s
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
 
-    await expect(promise).rejects.toThrow();
+    const result = await promise;
+    expect(result).toBeInstanceOf(Error);
   });
 
   it("rejects when response is invalid JSON (TSB-1)", async () => {
@@ -82,12 +83,13 @@ describe("fetchManifest", () => {
       .fn()
       .mockImplementation(async () => new Response("not json", { status: 200 })) as any;
 
-    const promise = fetchManifest();
+    const promise = fetchManifest().catch((e) => e);
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
 
-    await expect(promise).rejects.toThrow();
+    const result = await promise;
+    expect(result).toBeInstanceOf(Error);
   });
 
   it("rejects on network error (TSB-1)", async () => {
@@ -99,12 +101,14 @@ describe("fetchManifest", () => {
       throw new Error("Network error");
     }) as any;
 
-    const promise = fetchManifest();
+    const promise = fetchManifest().catch((e) => e);
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
 
-    await expect(promise).rejects.toThrow();
+    const result = await promise;
+    expect(result).toBeInstanceOf(Error);
+    expect((result as Error).message).toContain("Network error");
   });
 
   it("rejects when response fails schema validation (TSB-1)", async () => {
@@ -118,11 +122,13 @@ describe("fetchManifest", () => {
         async () => new Response(JSON.stringify({ wrongShape: true }), { status: 200 }),
       ) as any;
 
-    const promise = fetchManifest();
+    const promise = fetchManifest().catch((e) => e);
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(2000);
     await vi.advanceTimersByTimeAsync(4000);
 
-    await expect(promise).rejects.toThrow("Manifest failed schema validation");
+    const result = await promise;
+    expect(result).toBeInstanceOf(Error);
+    expect((result as Error).message).toContain("Manifest failed schema validation");
   });
 });
