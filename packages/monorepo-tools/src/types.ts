@@ -80,8 +80,12 @@ export interface RemoteConfig {
  * Options for config generation
  */
 export interface ConfigGenerationOptions {
-  /** Environment: development or production */
-  environment: "development" | "production";
+  /** Environment: local (localhost dev) or production (deployed)
+   * Note: "development" is deprecated; use "local" instead
+   * Implements CG-1: environment mode 'local' replaces 'development'
+   * See openspec/changes/remote-config-environment-cleanup/specs/config-generation/spec.md
+   */
+  environment: "local" | "production" | "development";
   /** Git hash for versioning (production only) */
   gitHash?: string;
   /** Base URL for production deployments */
@@ -90,4 +94,9 @@ export interface ConfigGenerationOptions {
   outputPath?: string;
   /** Release channel (e.g., "release-4.10") for channel-specific URLs */
   channel?: string;
+  /** Root MFE designation — if set, this MFE gets route key "/" instead of its default basePath
+   * Implements CG-2: generator honors shell's root MFE designation
+   * See openspec/changes/remote-config-environment-cleanup/specs/config-generation/spec.md
+   */
+  rootMfe?: string;
 }

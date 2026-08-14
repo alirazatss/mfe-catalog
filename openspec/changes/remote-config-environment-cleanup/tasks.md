@@ -46,11 +46,11 @@ Verification: `vp test` for the shell package; manual `pnpm run dev` smoke check
 
 **Depends on:** none
 
-- [ ] 2.1 Write tests first: environment `local` yields `http://localhost:{port}/remoteEntry.js`; environment `development` throws with a message directing to `local`. (CG-1) — skills: tester, backend-developer
-- [ ] 2.2 Implement the `development` → `local` rename with the guided rejection; update all internal call sites and CLI flag docs. (CG-1) — skill: backend-developer
-- [ ] 2.3 Write tests then implement root MFE designation: designated MFE's route key becomes `"/"`, others keep default base paths, unknown designation throws naming the MFE. (CG-2) — skills: tester, backend-developer
-- [ ] 2.4 Wire `scripts/generate-config.ts` to write `apps/shells/website/remotes.config.local.json` for `--environment local` (schema-validated, ports from the local port map) and support `--dry-run` printing without writing. (CG-3) — skill: backend-developer
-- [ ] 2.5 Update `docs/manifest-generator.md`: `local` mode semantics, root MFE designation, local override workflow. (CG-1, CG-2, CG-3) — skill: backend-developer
+- [x] 2.1 Write tests first: environment `local` yields `http://localhost:{port}/remoteEntry.js`; environment `development` throws with a message directing to `local`. (CG-1) — skills: tester, backend-developer
+- [x] 2.2 Implement the `development` → `local` rename with the guided rejection; update all internal call sites and CLI flag docs. (CG-1) — skill: backend-developer
+- [x] 2.3 Write tests then implement root MFE designation: designated MFE's route key becomes `"/"`, others keep default base paths, unknown designation throws naming the MFE. (CG-2) — skills: tester, backend-developer
+- [x] 2.4 Wire `scripts/generate-config.ts` to write `apps/shells/website/remotes.config.local.json` for `--environment local` (schema-validated, ports from the local port map) and support `--dry-run` printing without writing. (CG-3) — skill: backend-developer
+- [x] 2.5 Update `docs/manifest-generator.md`: `local` mode semantics, root MFE designation, local override workflow. (CG-1, CG-2, CG-3) — skill: backend-developer
 
 Verification: `vp test` for `packages/monorepo-tools`; `pnpm exec tsx scripts/generate-config.ts --environment local --dry-run` prints a schema-valid config.
 
