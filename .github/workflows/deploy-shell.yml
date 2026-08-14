@@ -320,7 +320,7 @@ jobs:
     if: |
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      contains(github.event.head_commit.modified, format('{0}/public/remotes.config.prod.json', inputs.shell-path))
+      contains(github.event.head_commit.modified, format('{0}/config/remotes.config.prod.json', inputs.shell-path))
     runs-on: ubuntu-latest
     environment: production
     steps:

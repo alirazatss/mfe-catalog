@@ -333,8 +333,12 @@ pnpm dev:all
 
 1. Verify the MFE is running on its assigned port
 2. Check browser console for errors
-3. Inspect `apps/shells/website/public/remotes.config.json` to ensure the MFE is listed
-4. Restart both the shell and the MFE
+3. Generate a local override config for debugging:
+   ```bash
+   pnpm exec tsx scripts/generate-config.ts --environment local --shell website
+   ```
+4. Check `apps/shells/website/remotes.config.local.json` (if generated) or `config/remotes.config.dev.json`
+5. Restart both the shell and the MFE
 
 ### Tests Failing
 

@@ -1,8 +1,9 @@
 import { defineConfig } from "vite-plus";
 import { federation } from "@module-federation/vite";
-import { copyFileSync, existsSync, unlinkSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { getResolvedPort } from "@mfe-runtime/monorepo-tools";
+import type { Plugin } from "vite-plus";
 
 // Implements REQ-001, REQ-003, REQ-004: Use resolved port from canonical map
 // See openspec/changes/local-port-map-for-mfe-development/specs/local-port-mapping/spec.md
@@ -25,6 +26,42 @@ export default defineConfig({
     ],
   },
   plugins: [
+    // Implements ESRC-3: Serve local override manifest in dev mode
+    {
+      name: "serve-local-remote-config",
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url === "/remotes.config.json") {
+            const localOverride = resolve(__dirname, "remotes.config.local.json");
+            const devConfig = resolve(__dirname, "config/remotes.config.dev.json");
+
+            let configPath: string;
+            let source: string;
+
+            if (existsSync(localOverride)) {
+              configPath = localOverride;
+              source = "local override";
+              console.log("ℹ️ Local override active: remotes.config.local.json");
+            } else {
+              configPath = devConfig;
+              source = "dev config";
+            }
+
+            try {
+              const content = readFileSync(configPath, "utf-8");
+              res.setHeader("Content-Type", "application/json");
+              res.setHeader("X-Config-Source", source);
+              res.end(content);
+            } catch (error) {
+              res.statusCode = 500;
+              res.end(`Failed to load remote config from ${configPath}: ${error}`);
+            }
+          } else {
+            next();
+          }
+        });
+      },
+    } as Plugin,
     // Implements AAR-2: Copy app-config schema into dist
     {
       name: "copy-app-config-schema",
@@ -43,32 +80,22 @@ export default defineConfig({
         console.log(`✓ Copied app-config schema.json → dist/app-config.schema.json`);
       },
     },
-    // Implements SDP-Requirement-5: Copy env-specific remote config at build time
+    // Implements ESRC-1, ESRC-2: Copy env-specific remote config from config/ dir at build time
     {
       name: "copy-env-remote-config",
       closeBundle() {
-        const sourceFile = resolve(__dirname, `public/remotes.config.${DEPLOY_ENV}.json`);
+        const sourceFile = resolve(__dirname, `config/remotes.config.${DEPLOY_ENV}.json`);
         const destFile = resolve(__dirname, "dist/remotes.config.json");
 
         if (!existsSync(sourceFile)) {
           throw new Error(
             `Environment-specific remote config not found: ${sourceFile}\n` +
-              `DEPLOY_ENV=${DEPLOY_ENV} requires remotes.config.${DEPLOY_ENV}.json`,
+              `DEPLOY_ENV=${DEPLOY_ENV} requires config/remotes.config.${DEPLOY_ENV}.json`,
           );
         }
 
         copyFileSync(sourceFile, destFile);
         console.log(`✓ Copied remotes.config.${DEPLOY_ENV}.json → dist/remotes.config.json`);
-
-        // Remove env-specific configs from dist (they're copied by Vite's publicDir handling)
-        // We only want the selected remotes.config.json in the final artifact
-        const envConfigs = ["dev", "prod"];
-        for (const env of envConfigs) {
-          const envFile = resolve(__dirname, `dist/remotes.config.${env}.json`);
-          if (existsSync(envFile)) {
-            unlinkSync(envFile);
-          }
-        }
       },
     },
     federation({
