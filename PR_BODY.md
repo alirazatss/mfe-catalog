@@ -1,165 +1,242 @@
-# Task 2.1: Update docs and glossary
+# Task Group 2: Config Generator Implementation
 
-**Requirements**: REQ-001, REQ-005
-**Status**: Complete
+## Tasks Completed
 
-## Files Changed
+### Task 2.1: Write tests for local mode and development rejection (CG-1)
 
-- `README.md`: Updated auto-discovery description (line 11, 68)
-- `CONTEXT.md`: Local Port Map glossary already accurate (lines 214-236)
-- `openspec/specs/monorepo-discovery/spec.md`: Updated requirement titles and scenarios
-- `openspec/specs/config-generation/spec.md`: Updated development URL port assignment description
+**Files changed:**
 
-## Changes Made
+- `packages/monorepo-tools/src/config-generator.test.ts` (new)
 
-1. Replaced "alphabetical port allocation" with "canonical local port map"
-2. Updated "Assign ports alphabetically" requirement to "Resolve ports from canonical local port map"
-3. Changed "custom port override" to "preferred port override" to reflect current behavior
-4. Updated scenario descriptions to match resolved port behavior
+**Verification:**
 
-## Verification
+```bash
+cd packages/monorepo-tools && pnpm test config-generator
+```
 
-Docs and glossary now use consistent "local-port-map" vocabulary and describe:
+**Output:**
 
-- Canonical local port map as source of truth
-- Preferred-port resolution (not alphabetical allocation)
-- Resolved port assignment and persistence
+```
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+```
 
-All references to "alphabetical" removed from active documentation.
+**Tests cover:**
+
+- Local environment generates localhost URLs
+- Development environment throws error with guidance message
+- Production environment generates versioned CDN URLs
+- Production defaults to `vlatest` when no git hash provided
+- Root MFE designation maps to "/" route
+- Unknown root MFE throws error
+- No root MFE uses default basePaths
 
 ---
 
-# Task 2.2: Update/add spec tests
+### Task 2.2: Implement development → local rename with guided rejection (CG-1)
 
-**Requirements**: REQ-001, REQ-002, REQ-003, REQ-004, REQ-005
-**Status**: Complete
+**Files changed:**
 
-## Verification
+- `packages/monorepo-tools/src/config-generator.ts`
+- `packages/monorepo-tools/src/types.ts`
 
-Ran monorepo-tools test suite:
+**Verification:**
 
-```
-vp test (in packages/monorepo-tools)
-Test Files: 4 passed (4)
-Tests: 51 passed (51)
+```bash
+pnpm exec tsx scripts/generate-config.ts --environment development --dry-run
 ```
 
-## Coverage by Requirement
+**Output:**
 
-### REQ-001: Canonical local port map
+```
+❌ Error generating config:
+Environment mode "development" has been renamed to "local". Please use --environment local instead. See openspec/changes/remote-config-environment-cleanup/specs/config-generation/spec.md
+```
 
-- ✓ `port-map.test.ts > resolvePort - REQ-001: new app assignment > should assign port to new app not in map`
+**Implementation:**
 
-### REQ-002: Preferred port resolution
-
-- ✓ `port-map.test.ts > resolvePort - REQ-002: preferred port resolution > should use preferred port when available`
-- ✓ `port-map.test.ts > resolvePort - REQ-002: preferred port resolution > should assign alternate port when preferred port is in usedPorts`
-- ✓ `discovery.test.ts > REQ-002: Custom port override (preferred port) > should use preferred port from package.json when available`
-- ✓ `discovery.test.ts > REQ-002: Custom port override (preferred port) > should assign alternate port when preferred port is occupied`
-
-### REQ-003: Stable port reuse
-
-- ✓ `port-map.test.ts > resolvePort - REQ-003: stable port reuse > should reuse previously resolved port when available`
-- ✓ `port-map.test.ts > resolvePort - REQ-003: stable port reuse > should assign alternate port when previously resolved port is unavailable`
-
-### REQ-004: Discovery returns mapped ports
-
-- ✓ `discovery.test.ts > REQ-004: Discovery returns mapped ports > should return mapped ports from existing port map`
-- ✓ `discovery.test.ts > REQ-004: Discovery returns mapped ports > should allocate port for new app not in map`
-
-### REQ-005: Manifest generation from resolved map
-
-- ✓ `discovery.test.ts > REQ-005: Port map persistence > should persist resolved ports back to the map`
-- ✓ `discovery.test.ts > REQ-005: Port map persistence > should update map when previous port becomes unavailable`
-- ✓ `manifest-generation.test.ts > should generate environment-specific URLs` (validates localhost URL format)
-
-## Additional Test Coverage
-
-- Port map I/O: load, save, validation (5 tests)
-- Port availability checking (2 tests)
-- Port range allocation (3 tests)
-- Batch resolution (3 tests)
-- Manifest schema validation (16 tests)
-- Discovery edge cases (2 tests)
-
-All tests pass. No new tests required - existing coverage is comprehensive.
+- Added validation in `computeEntryUrl` to reject "development" environment
+- Updated `ConfigGenerationOptions` type to accept "local" | "production" | "development"
+- "local" mode generates `http://localhost:{port}/remoteEntry.js`
+- Error message provides clear guidance to use "local" instead
 
 ---
 
-# Task 2.3: Validate shell boot integration
+### Task 2.3: Implement root MFE designation with tests (CG-2)
 
-**Requirements**: REQ-001, REQ-005
-**Status**: Complete
+**Files changed:**
 
-## Verification Steps
+- `packages/monorepo-tools/src/config-generator.ts`
+- `packages/monorepo-tools/src/config-generator.test.ts`
 
-### 1. Generated remotes config from resolved port map
+**Verification:**
 
-```
-pnpm exec tsx scripts/generate-config.ts --shell website --environment development
-```
-
-Output:
-
-```
-✅ Found 2 micro-frontend(s):
-   - mfe-landing-page (@mfe-runtime/mfe-landing-page) on port 5174
-   - mfe-widget (@mfe-runtime/mfe-widget) on port 5175
-
-✅ Config written to apps/shells/website/public/remotes.config.dev.json
-   0 chrome MFE(s), 2 feature MFE(s) configured
+```bash
+pnpm exec tsx scripts/generate-config.ts --environment local --root-mfe mfe-landing-page --dry-run
 ```
 
-### 2. Verified port map persistence
-
-`.local-port-map.json`:
-
-```json
-{
-  "mfe-landing-page": 5174,
-  "mfe-widget": 5175
-}
-```
-
-### 3. Verified remotes config URLs match port map
-
-`remotes.config.dev.json`:
+**Output (features section):**
 
 ```json
 {
   "features": {
-    "/landing-page": {
-      "entryUrl": "http://localhost:5174/remoteEntry.js"
+    "/": {
+      "mfe": "mfe-landing-page",
+      "entryUrl": "http://localhost:5174/remoteEntry.js",
+      "basePath": "/",
+      ...
     },
     "/widget": {
-      "entryUrl": "http://localhost:5175/remoteEntry.js"
+      "mfe": "mfe-widget",
+      "entryUrl": "http://localhost:5175/remoteEntry.js",
+      "basePath": "/widget",
+      ...
     }
   }
 }
 ```
 
-### 4. Integration test verification
+**Implementation:**
 
-Created and ran `test-shell-boot.mjs`:
+- Added `rootMfe` parameter to `ConfigGenerationOptions`
+- Validates root MFE exists before processing
+- Maps designated MFE to "/" route key instead of default basePath
+- Throws descriptive error for unknown root MFE
+
+---
+
+### Task 2.4: Wire generate-config.ts for local override output (CG-3)
+
+**Files changed:**
+
+- `scripts/generate-config.ts`
+
+**Verification:**
+
+```bash
+pnpm exec tsx scripts/generate-config.ts --environment local --dry-run
+```
+
+**Output:**
 
 ```
-✓ Port map loaded
-✓ Remotes config loaded with features:
-  ✓ mfe-landing-page: http://localhost:5174/remoteEntry.js
-  ✓ mfe-widget: http://localhost:5175/remoteEntry.js
+🔍 Discovering micro-frontends...
+✅ Found 2 micro-frontend(s):
+   - mfe-landing-page (@mfe-runtime/mfe-landing-page) on port 5174
+   - mfe-widget (@mfe-runtime/mfe-widget) on port 5175
 
-✅ All remote entry URLs match the resolved port map
-✅ Shell boot integration verified successfully
+⚙️  Generating config for local environment...
+
+📄 Generated config (dry-run):
+{
+  "$schema": "../node_modules/@mfe-runtime/remote-config/schema.json",
+  "schemaVersion": "2.0.0",
+  "chrome": {},
+  "features": {
+    "/landing-page": {
+      "mfe": "mfe-landing-page",
+      "entryUrl": "http://localhost:5174/remoteEntry.js",
+      ...
+    }
+  }
+}
 ```
 
-### 5. Shell vite.config.ts verified
+**Implementation:**
 
-Line 9 uses: `getResolvedPort("website", 5173)` (REQ-001, REQ-003, REQ-004)
+- Added `--root-mfe` / `-r` CLI flag
+- Updated default environment from "development" to "local"
+- Auto-derives output path based on environment and shell:
+  - `local` → `apps/shells/{shell}/remotes.config.local.json` (gitignored)
+  - Other environments → `apps/shells/{shell}/public/remotes.config.json`
+- Dry-run mode prints config without writing
+- Schema validation happens automatically before writing
 
-## Conclusion
+---
 
-- Port map is canonical source of truth
-- Config generation reads from port map (REQ-005)
-- Shell remotes.config.dev.json contains localhost URLs from resolved map
-- No manual manifest edits required when ports change
-- Integration verified end-to-end
+### Task 2.5: Update manifest-generator.md documentation (CG-1, CG-2, CG-3)
+
+**Files changed:**
+
+- `docs/manifest-generator.md`
+
+**Changes:**
+
+- Renamed from "Manifest Generator" to "Remote Config Generator"
+- Documented local mode semantics (CG-1)
+- Documented root MFE designation workflow (CG-2)
+- Documented local override workflow (CG-3)
+- Updated CLI options table with new flags
+- Added examples for all three features
+- Updated integration and deployment sections
+- Fixed all references from old manifest terminology to remote config
+
+---
+
+## Requirements Coverage
+
+| Requirement                                           | Tasks         | Verification                                            |
+| ----------------------------------------------------- | ------------- | ------------------------------------------------------- |
+| CG-1: environment mode 'local' replaces 'development' | 2.1, 2.2, 2.5 | Tests pass; development mode throws error with guidance |
+| CG-2: generator honors shell's root MFE designation   | 2.3, 2.5      | Tests pass; designated MFE maps to "/" route            |
+| CG-3: generator produces local override manifest      | 2.4, 2.5      | Dry-run outputs schema-valid config with localhost URLs |
+
+---
+
+## Final Verification
+
+**All tests pass:**
+
+```bash
+cd packages/monorepo-tools && pnpm test
+```
+
+**Output:**
+
+```
+ Test Files  5 passed (5)
+      Tests  58 passed (58)
+```
+
+**Dry-run produces valid config:**
+
+```bash
+pnpm exec tsx scripts/generate-config.ts --environment local --dry-run
+```
+
+Schema validation passes (no errors thrown).
+
+**No spec modifications:**
+
+```bash
+git diff -- openspec/changes/remote-config-environment-cleanup/
+```
+
+Output: (empty) — spec is immutable ✅
+
+---
+
+## Files Changed
+
+- `packages/monorepo-tools/src/config-generator.ts` — Modified (CG-1, CG-2)
+- `packages/monorepo-tools/src/config-generator.test.ts` — New (CG-1, CG-2)
+- `packages/monorepo-tools/src/types.ts` — Modified (CG-1, CG-2)
+- `scripts/generate-config.ts` — Modified (CG-1, CG-2, CG-3)
+- `docs/manifest-generator.md` — Modified (CG-1, CG-2, CG-3)
+- `openspec/changes/remote-config-environment-cleanup/tasks.md` — Updated checkboxes
+
+---
+
+## Deviations from Spec
+
+None.
+
+---
+
+## Follow-ups
+
+None for this task group. Dependencies for other task groups:
+
+- Task group 1 will use the local override generation workflow documented in 2.5
+- Task group 3 does not depend on task group 2
+- Task group 4 does not depend on task group 2

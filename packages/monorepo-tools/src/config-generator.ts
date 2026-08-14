@@ -9,13 +9,14 @@ import type {
 /**
  * Compute entry URL for an MFE, with channel-based routing and dev fallback.
  *
- * Implements release-channel-deployments: config-generation requirement
+ * Implements CG-1: environment mode 'local' replaces 'development', old name rejected with guidance
+ * See: openspec/changes/remote-config-environment-cleanup/specs/config-generation/spec.md
  * See: openspec/changes/release-channel-deployments/specs/config-generation/spec.md
  */
 async function computeEntryUrl(
   mfe: MicroFrontend,
   context: {
-    environment: "development" | "production";
+    environment: "local" | "production" | "development";
     gitHash?: string;
     baseUrl?: string;
     channel?: string;
@@ -24,8 +25,17 @@ async function computeEntryUrl(
 ): Promise<string> {
   const { environment, baseUrl, channel, version } = context;
 
-  // Development environment: always use localhost
+  // Reject deprecated "development" mode with guidance (CG-1)
   if (environment === "development") {
+    throw new Error(
+      'Environment mode "development" has been renamed to "local". ' +
+        "Please use --environment local instead. " +
+        "See openspec/changes/remote-config-environment-cleanup/specs/config-generation/spec.md",
+    );
+  }
+
+  // Local environment: always use localhost (CG-1)
+  if (environment === "local") {
     return `http://localhost:${mfe.port}/remoteEntry.js`;
   }
 
@@ -79,17 +89,32 @@ async function checkBlobExists(url: string): Promise<boolean> {
  * - If yes, use the channel URL
  * - If no, fall back to <mfe>/dev/remoteEntry.js
  *
+ * Implements CG-2: generator honors shell's root MFE designation
+ * When rootMfe is provided, that MFE's route key becomes "/" instead of its default basePath.
+ *
  * See:
  * - openspec/changes/refactor-to-thin-shell/specs/thin-shell-bootstrap/spec.md
  * - openspec/changes/release-channel-deployments/specs/config-generation/spec.md
+ * - openspec/changes/remote-config-environment-cleanup/specs/config-generation/spec.md
  * - docs/adr/0004-chrome-mfe-pattern.md
  */
 export async function generateConfig(
   microFrontends: MicroFrontend[],
   options: ConfigGenerationOptions,
 ): Promise<RemoteConfig> {
-  const { environment, gitHash, baseUrl, channel } = options;
+  const { environment, gitHash, baseUrl, channel, rootMfe } = options;
   const version = gitHash || "latest";
+
+  // Validate root MFE designation if provided (CG-2)
+  if (rootMfe) {
+    const rootMfeExists = microFrontends.some((mfe) => mfe.shortName === rootMfe);
+    if (!rootMfeExists) {
+      throw new Error(
+        `Root MFE designation failed: no MFE named "${rootMfe}" found. ` +
+          `Available MFEs: ${microFrontends.map((m) => m.shortName).join(", ")}`,
+      );
+    }
+  }
 
   const chrome: NonNullable<RemoteConfig["chrome"]> = {};
   const features: NonNullable<RemoteConfig["features"]> = {};
@@ -113,7 +138,11 @@ export async function generateConfig(
         enabled: true,
       };
     } else {
-      const basePath = `/${stripMfePrefix(mfe.shortName)}`;
+      // Implements CG-2: designated root MFE gets route key "/"
+      const defaultBasePath = `/${stripMfePrefix(mfe.shortName)}`;
+      const routeKey = mfe.shortName === rootMfe ? "/" : defaultBasePath;
+      const basePath = routeKey; // basePath and routeKey are the same in the current schema
+
       const entry: FeatureMFEEntry = {
         mfe: mfe.shortName,
         entryUrl,
@@ -124,7 +153,7 @@ export async function generateConfig(
         requiredRoles: [],
         enabled: true,
       };
-      features[basePath] = entry;
+      features[routeKey] = entry;
     }
   }
 
