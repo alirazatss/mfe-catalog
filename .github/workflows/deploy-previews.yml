@@ -253,13 +253,13 @@ jobs:
           import { generatePreviewConfig } from './scripts/azure/generate-preview-config.ts';
 
           const shellName = process.env.SHELL_NAME ?? 'website';
-          const devConfig = JSON.parse(readFileSync(`apps/shells/${shellName}/public/remotes.config.dev.json`, 'utf-8'));
+          const devConfig = JSON.parse(readFileSync(`apps/shells/${shellName}/config/remotes.config.dev.json`, 'utf-8'));
           const changedMfes = JSON.parse(process.env.CHANGED_MFES ?? '[]');
           const prNumber = parseInt(process.env.PR_NUMBER ?? '0', 10);
           const baseChannel = process.env.BASE_CHANNEL || undefined;
 
           const previewConfig = await generatePreviewConfig(devConfig, changedMfes, prNumber, baseChannel);
-          writeFileSync(`apps/shells/${shellName}/public/remotes.config.json`, JSON.stringify(previewConfig, null, 2));
+          writeFileSync(`apps/shells/${shellName}/config/remotes.config.json`, JSON.stringify(previewConfig, null, 2));
           console.log('Generated preview config:', JSON.stringify(previewConfig, null, 2));
           console.log('Base channel:', baseChannel ?? '(none - main-target PR)');
           SCRIPT

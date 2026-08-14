@@ -448,7 +448,7 @@ jobs:
           VERSION="${{ needs.detect-tagged-mfe.outputs.version }}"
           MFE_NAME="${{ needs.detect-tagged-mfe.outputs.mfe_name }}"
           BRANCH="bots/pin-$MFE_NAME-v${VERSION}"
-          CONFIG_FILE="apps/shells/website/public/remotes.config.prod.json"
+          CONFIG_FILE="apps/shells/website/config/remotes.config.prod.json"
 
           # Get route path from remotes.config.prod.json
           ROUTE_PATH=$(jq -r --arg mfe "$MFE_NAME" '.features | to_entries[] | select(.value.entryUrl | contains($mfe)) | .key' "$CONFIG_FILE" | head -n1)
@@ -528,4 +528,4 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "A pull request has been opened to update the prod shell configuration." >> $GITHUB_STEP_SUMMARY
           echo "**Branch**: bots/pin-$MFE_NAME-v${VERSION}" >> $GITHUB_STEP_SUMMARY
-          echo "**File**: apps/shells/website/public/remotes.config.prod.json" >> $GITHUB_STEP_SUMMARY
+          echo "**File**: apps/shells/website/config/remotes.config.prod.json" >> $GITHUB_STEP_SUMMARY

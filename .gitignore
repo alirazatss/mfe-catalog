@@ -62,3 +62,7 @@ local-pr-preview-server.mjs
 
 # Canonical local port map (local development state)
 .local-port-map.json
+
+# Local override for remote config (ESRC-3)
+# Per-developer customization, generated via scripts/generate-config.ts --environment local
+**/remotes.config.local.json

@@ -26,8 +26,8 @@ on:
       - "packages/shell-runtime/**"
       - "packages/monorepo-tools/**"
       # Trigger on config changes (for config-only redeploys)
-      - "apps/shells/website/public/remotes.config.prod.json"
-      - "apps/shells/website/public/remotes.config.dev.json"
+      - "apps/shells/website/config/remotes.config.prod.json"
+      - "apps/shells/website/config/remotes.config.dev.json"
       # Trigger on this workflow itself
       - ".github/workflows/deploy-website.yml"
       # Trigger on the reusable workflow

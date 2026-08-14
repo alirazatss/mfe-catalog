@@ -26,12 +26,12 @@ Requirement IDs used below:
 
 **Depends on:** none
 
-- [ ] 1.1 Write build tests first: default build emits `dist/remotes.config.json` identical to the dev config and no other `remotes.config*.json`; `DEPLOY_ENV=prod` emits prod content; unknown `DEPLOY_ENV` fails naming the missing file. (ESRC-2) — skills: tester, frontend-developer
-- [ ] 1.2 Move `remotes.config.dev.json` / `remotes.config.prod.json` from `public/` to `config/`; rewrite `copy-env-remote-config` plugin to copy the selected file only (no deletion list). (ESRC-1, ESRC-2) — skill: frontend-developer
-- [ ] 1.3 Delete committed `public/remotes.config.json`; update `serve-local-remote-config` middleware to fall back to `config/remotes.config.dev.json` when `remotes.config.local.json` is absent, keeping the local-override-active log line. (ESRC-1, ESRC-3) — skill: frontend-developer
-- [ ] 1.4 Add middleware tests: local file present → served; absent → dev config served; assert `git check-ignore` passes for `apps/shells/website/remotes.config.local.json`. (ESRC-3) — skill: tester
-- [ ] 1.5 Grep repo (`.github/workflows`, scripts, docs) for `public/remotes.config` and update paths to `config/`; note the pending `azure-blob-deployment-pipeline` change delta that references the old prod path. (ESRC-1) — skill: frontend-developer
-- [ ] 1.6 Update `GETTING_STARTED.md` local-testing section: generate the local override via the generator, never edit env configs for local testing. (ESRC-3) — skill: frontend-developer
+- [x] 1.1 Write build tests first: default build emits `dist/remotes.config.json` identical to the dev config and no other `remotes.config*.json`; `DEPLOY_ENV=prod` emits prod content; unknown `DEPLOY_ENV` fails naming the missing file. (ESRC-2) — skills: tester, frontend-developer
+- [x] 1.2 Move `remotes.config.dev.json` / `remotes.config.prod.json` from `public/` to `config/`; rewrite `copy-env-remote-config` plugin to copy the selected file only (no deletion list). (ESRC-1, ESRC-2) — skill: frontend-developer
+- [x] 1.3 Delete committed `public/remotes.config.json`; update `serve-local-remote-config` middleware to fall back to `config/remotes.config.dev.json` when `remotes.config.local.json` is absent, keeping the local-override-active log line. (ESRC-1, ESRC-3) — skill: frontend-developer
+- [x] 1.4 Add middleware tests: local file present → served; absent → dev config served; assert `git check-ignore` passes for `apps/shells/website/remotes.config.local.json`. (ESRC-3) — skill: tester
+- [x] 1.5 Grep repo (`.github/workflows`, scripts, docs) for `public/remotes.config` and update paths to `config/`; note the pending `azure-blob-deployment-pipeline` change delta that references the old prod path. (ESRC-1) — skill: frontend-developer
+- [x] 1.6 Update `GETTING_STARTED.md` local-testing section: generate the local override via the generator, never edit env configs for local testing. (ESRC-3) — skill: frontend-developer
 
 Verification: `vp test` for the shell package; manual `pnpm run dev` smoke check that `/remotes.config.json` resolves both with and without the local file.
 
