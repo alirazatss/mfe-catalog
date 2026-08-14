@@ -7,7 +7,6 @@ import type {
   ShellRuntimeFailure,
 } from "@mfe-runtime/shell-runtime";
 import type { AppConfig } from "@mfe-runtime/app-config";
-import { FALLBACK_REMOTES } from "../config/remotes.js";
 import { userFromToken } from "./auth-helpers.js";
 import { setupAuthBridge } from "./auth-bridge.js";
 import { renderCriticalError } from "./critical-error.js";
@@ -79,8 +78,9 @@ export function createWebsiteShellRuntimeConfig(appConfig: AppConfig): ShellRunt
   return {
     manifest: {
       async load() {
-        const manifest = await fetchManifest();
-        return manifest ?? FALLBACK_REMOTES;
+        // Implements TSB-1: no fallback, fetch failure propagates
+        // If fetchManifest rejects, shell-runtime will call failureRenderer with critical scope
+        return await fetchManifest();
       },
     },
     auth: {
