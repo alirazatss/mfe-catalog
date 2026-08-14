@@ -447,3 +447,38 @@ We accepted **increased complexity** in exchange for:
 - **Better UX**: Graceful degradation instead of white screens
 - **Maintainability**: Clear error boundaries
 - **Observability**: Structured error reporting
+
+## Amendment (2026-08-14): Graceful Degradation is Per-MFE Only
+
+**Context**: The original implementation included whole-manifest substitution via `FALLBACK_REMOTES` constant when manifest fetch failed. This created a latent incident risk: production shell could silently load development MFE URLs on transient network failures.
+
+**Change**: Removed `FALLBACK_REMOTES` constant and manifest-level fallback logic (OpenSpec change: `remote-config-environment-cleanup`, task group 3). Manifest fetch failure now propagates to critical-error UI (fail-visible), not silent downgrade to dev environment.
+
+**Rationale**:
+- **Graceful degradation applies per-MFE** (original ADR intent): individual MFE load failures show slot-level error UI
+- **Whole-manifest substitution is NOT graceful degradation**: silently loading wrong environment is a security/compliance incident, not a UX improvement
+- **Fail-visible for bootstrap failures**: if manifest cannot be fetched, shell cannot know which MFEs to load → critical error UI is correct response
+
+**Updated failure behavior**:
+- **Scenario 4 (Manifest fetch fails)** - amended:
+  ```
+  User Experience:
+  - Try 4 times with exponential backoff (1s, 2s, 4s delays)
+  - If all attempts fail, show critical error page
+  - No cached manifest fallback (removed to prevent stale config incidents)
+  - User sees "Unable to load application" with reload button
+  
+  Technical:
+  - fetchManifest() rejects after retry exhaustion
+  - Shell bootstrap halts, renders critical-error template
+  - Zero MFEs mounted (no partial app state)
+  - Monitoring alert triggered (fetch failure is prod incident)
+  ```
+
+**Related changes**:
+- [ADR-0011 (Per-Customer Demo Deployments)](./0011-per-customer-demo-deployments.md) - Config overlays replace environment-specific fallback constants
+- OpenSpec change: `openspec/changes/remote-config-environment-cleanup/` (task groups 1-3)
+
+---
+
+**Last Amendment**: 2026-08-14

@@ -627,14 +627,14 @@ See [ADR-0009](./docs/adr/0009-azure-blob-deployment-pipeline.md) for full deplo
 2. **Slot-level failures** → Show fallback UI with retry button
 3. **Runtime errors** → React Error Boundaries per MFE
 4. **Auth failures** → Retry with backoff, then redirect to login
-5. **Manifest failures** → Retry with exponential backoff, fallback to cache
+5. **Manifest failures** → Retry with exponential backoff (4 attempts: 1s, 2s, 4s), then critical error (no fallback; updated 2026-08-14)
 
 **Failure scenarios:**
 
 - Header MFE fails → Sidebar/main still work, header shows retry
 - Feature MFE crashes → Chrome MFEs continue, feature shows error
 - Auth refresh fails → Auto-retry, then graceful logout with return URL
-- Manifest fetch fails → Try cache (24h), then critical error
+- Manifest fetch fails → Retry 4 times (1s, 2s, 4s backoff), then critical error page (no cached fallback; updated 2026-08-14 per ADR-0006 amendment)
 - Version mismatch → Slot error with technical details
 
 **Error API:**
