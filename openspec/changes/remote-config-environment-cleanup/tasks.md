@@ -85,9 +85,9 @@ Verification: `vp test` for the shell; runtime integration suite passes with the
 
 **Depends on:** none
 
-- [ ] 4.1 Write ADR-0011: per-customer demo deployments — config overlays over branches; standing parallel deployments reusing the preview pattern; overlays pin versioned immutable artifacts (never `sha-*`/`pr-*`, which expire per ADR-0010); app-config overlay is the flag source of truth, k8s env vars are transport; short-lived branch only for contractual exclusivity, retired after use. — skill: architect
-- [ ] 4.2 Amend ADR-0006 with a dated note: graceful degradation is per-MFE; whole-manifest substitution (`FALLBACK_REMOTES`) removed as a latent prod-loads-dev incident; link this change. — skill: architect
-- [ ] 4.3 Consistency pass over `CONTEXT.md` glossary (local vs dev, demo tier family) against ADR-0011 wording; fix drift only, no new terms. — skill: architect
+- [x] 4.1 Write ADR-0011: per-customer demo deployments — config overlays over branches; standing parallel deployments reusing the preview pattern; overlays pin versioned immutable artifacts (never `sha-*`/`pr-*`, which expire per ADR-0010); app-config overlay is the flag source of truth, k8s env vars are transport; short-lived branch only for contractual exclusivity, retired after use. — skill: architect
+- [x] 4.2 Amend ADR-0006 with a dated note: graceful degradation is per-MFE; whole-manifest substitution (`FALLBACK_REMOTES`) removed as a latent prod-loads-dev incident; link this change. — skill: architect
+- [x] 4.3 Consistency pass over `CONTEXT.md` glossary (local vs dev, demo tier family) against ADR-0011 wording; fix drift only, no new terms. — skill: architect
 
 Verification: ADRs cross-link correctly; no glossary/ADR contradiction on the terms `local`, `dev`, `demo`.
 
