@@ -106,4 +106,23 @@ describe("fetchManifest", () => {
 
     await expect(promise).rejects.toThrow();
   });
+
+  it("rejects when response fails schema validation (TSB-1)", async () => {
+    // Scenario: Valid JSON but invalid schema rejects
+    // WHEN manifest fetch returns JSON that fails schema validation
+    // THEN fetchManifest rejects with validation error
+
+    globalThis.fetch = vi
+      .fn()
+      .mockImplementation(
+        async () => new Response(JSON.stringify({ wrongShape: true }), { status: 200 }),
+      ) as any;
+
+    const promise = fetchManifest();
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(2000);
+    await vi.advanceTimersByTimeAsync(4000);
+
+    await expect(promise).rejects.toThrow("Manifest failed schema validation");
+  });
 });
