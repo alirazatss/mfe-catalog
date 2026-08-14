@@ -182,14 +182,27 @@ A **deployment stage** representing stability/testing level.
 
 - `dev` - Development builds, latest changes
 - `sst` - Staging/pre-production testing
-- `demo` - Customer demos, stable builds
+- `demo` - Customer demos; not a single deployment but a **family of per-customer demo deployments**
 - `prod` - Production, customer-facing
+
+**Demo tier specifics:**
+
+- Each customer demo is a standing, isolated deployment (parallel, not serially reused)
+- Customer demos differ by configuration and branding only; they share mainline code
+- A demo diverging in actual code is the exception, lives on a short-lived branch, and is retired after use
 
 **Properties:**
 
 - Each shell has ALL four environments (separate K8s clusters)
 - MFEs deploy to CDN with environment-specific paths
 - Shell manifest points to environment-specific MFE versions
+
+**Not an environment: `local`**
+
+- `local` - a developer's own machine; remotes resolve to localhost dev servers
+- Nothing is deployed and no shared infrastructure is involved
+- Tooling and file names use `local` to mean "this machine only", never a deployment stage
+- `dev` always means the deployed shared dev environment, not local development
 
 ---
 
