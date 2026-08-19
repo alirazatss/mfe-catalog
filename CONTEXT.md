@@ -278,6 +278,90 @@ A **commit-addressable dev build** deployed to `sha-<short>/` paths for reproduc
 
 ---
 
+### SST Build
+
+An **immutable system test candidate** promoted for QA sign-off with a frozen artifact set.
+
+**Canonical ID Format:**
+
+```
+<release-train>-<build-number>-<short-sha>-<manifest-hash>
+```
+
+**Example:** `4.10-12-a1b2c3d-9f84ab21`
+
+**Properties:**
+
+- Immutable (once promoted, artifact set is frozen)
+- Exactly one SST Build is globally active for sign-off at any time
+- Multiple release branches may have promoted SST Builds, but only one is active
+- Promotion requires release manager or designated lead authority
+- Failed builds are retired (not patched); fixes produce new SST Build N+1
+- Evidence bundle retained for minimum 180 days
+
+**Evidence Bundle Includes:**
+
+- Manifest snapshot
+- Resolved artifact URLs
+- Approver record
+- Test report
+- Promotion timestamp
+
+**Use Cases:**
+
+- QA sign-off validation against a reproducible artifact set
+- Compliance audits requiring build provenance
+- Rollback to last known good system test state
+
+**Lifecycle:**
+
+1. Release manager promotes a release-branch commit as SST Build
+2. Canonical ID generated and evidence bundle persisted
+3. Marked as active global sign-off target (previous active build retired)
+4. QA validates against frozen artifacts
+5. If blocker found, fix creates new SST Build N+1
+6. On success, SST Build artifacts inform production release
+
+**Contrast with SST Integration:** SST Build is frozen; SST Integration continues to evolve with backports.
+
+**Introduced in:** `openspec/changes/sst-build-governance/`
+
+---
+
+### SST Integration
+
+The **mutable release-channel stream** that continues to receive backported fixes independently from any active SST Build.
+
+**Properties:**
+
+- Mutable (floating pointer, continuously updated)
+- Lives on release branch (e.g., `release-4.10`)
+- Receives ongoing backports and merges
+- Updates do NOT mutate any active SST Build
+- Represents "latest stable" on the release channel
+
+**Relationship to SST Build:**
+
+- SST Integration evolves continuously as fixes are backported
+- Active SST Build remains frozen at a specific commit/manifest
+- When a new SST Build is promoted, it snapshots current SST Integration state
+
+**Example:**
+
+- Active SST Build: `4.10-12-a1b2c3d-9f84ab21` (frozen)
+- SST Integration: `release-4.10` branch (receives new commits)
+- New commit backported → SST Integration updates, SST Build unchanged
+
+**Use Cases:**
+
+- Development and testing of backported fixes on release branch
+- Continuous integration validation before next SST Build promotion
+- Release branch stability tracking
+
+**Introduced in:** `openspec/changes/sst-build-governance/`
+
+---
+
 ### Preview Deployment
 
 A **PR-scoped isolated dev environment** for pre-merge verification.
