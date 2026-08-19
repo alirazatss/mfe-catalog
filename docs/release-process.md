@@ -358,6 +358,9 @@ This evidence ensures reproducibility and supports compliance audits.
 - [ ] Record approver and timestamp
 - [ ] Mark as active global sign-off target (retire previous active build)
 - [ ] Persist evidence bundle with 180-day retention
+- [ ] **Verification**: Query metadata store to confirm exactly one active SST Build globally
+- [ ] **Verification**: Confirm evidence bundle accessible via canonical ID
+- [ ] **Verification**: Audit log entry created with approver, timestamp, and canonical ID
 
 **Replacement** (blocker remediation):
 
@@ -365,12 +368,57 @@ This evidence ensures reproducibility and supports compliance audits.
 - [ ] Increment build number (N+1)
 - [ ] Promote new SST Build following promotion checklist
 - [ ] Retire previous active SST Build (do not modify in place)
+- [ ] **Verification**: Retired SST Build N status = 'retired', evidence bundle preserved
+- [ ] **Verification**: New SST Build N+1 status = 'active', canonical ID = `<release-train>-<N+1>-<new-sha>-<new-hash>`
+- [ ] **Verification**: Both SST Build N and N+1 exist in metadata store
+- [ ] **Verification**: Audit log includes retirement reason for SST Build N
 
 **Retirement**:
 
 - [ ] Mark SST Build as retired in tracking system
 - [ ] Preserve evidence bundle (180-day retention still applies)
 - [ ] Update active sign-off target to new SST Build if replacement exists
+- [ ] **Verification**: Evidence bundle remains accessible for 180 days post-retirement
+- [ ] **Verification**: Lifecycle policy enforces minimum 180-day retention for sst-builds/\* prefix
+- [ ] **Verification**: Retired SST Build cannot be reactivated or modified
+
+### Verification Commands (Stub)
+
+**Query active SST Build** (TODO: Implement with metadata store):
+
+```bash
+# TODO: Replace with actual metadata store query
+# az storage table query \
+#   --account-name tssmfestorage \
+#   --table-name SSTBuilds \
+#   --filter "PartitionKey eq 'release-4.10' and status eq 'active'"
+echo "⚠️  STUB: Query active SST Build for release-4.10"
+```
+
+**Retrieve evidence bundle** (TODO: Implement with Azure Blob Storage):
+
+```bash
+# TODO: Replace with actual evidence bundle retrieval
+# CANONICAL_ID="4.10-12-a1b2c3d-9f84ab21"
+# az storage blob download \
+#   --account-name tssmfestorage \
+#   --container-name sst-evidence \
+#   --name "sst-builds/${CANONICAL_ID}/evidence.json" \
+#   --file "evidence-${CANONICAL_ID}.json"
+echo "⚠️  STUB: Retrieve evidence bundle for canonical ID"
+```
+
+**Verify 180-day retention policy** (TODO: Implement with lifecycle policy check):
+
+```bash
+# TODO: Replace with actual lifecycle policy verification
+# az storage account management-policy show \
+#   --account-name tssmfestorage \
+#   --query "policy.rules[?definition.filters.prefixMatch==['sst-builds/']]"
+echo "⚠️  STUB: Verify 180-day retention policy for sst-builds/ prefix"
+```
+
+See: `scripts/azure/SST_BUILD_IMPLEMENTATION.md` for full production implementation guide.
 
 ## References
 
