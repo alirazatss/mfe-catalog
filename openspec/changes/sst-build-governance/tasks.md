@@ -48,15 +48,15 @@ Requirement IDs used below:
 
 **Depends on:** task group 1 (policy terminology and constraints finalized)
 
-- [ ] 2.1 Add guardrail logic that prevents active SST Build artifact mutation during release-branch deploys.
+- [x] 2.1 Add guardrail logic that prevents active SST Build artifact mutation during release-branch deploys.
   - Requirements: SSTG-4, SDP-1
   - Owner: backend-developer
   - Verification: Workflow test or dry-run demonstrates integration updates do not overwrite active SST Build artifacts.
-- [ ] 2.2 Add promotion metadata capture for shell SST Build records (canonical ID + manifest snapshot reference).
+- [x] 2.2 Add promotion metadata capture for shell SST Build records (canonical ID + manifest snapshot reference).
   - Requirements: SDP-2, SSTG-6
   - Owner: backend-developer
   - Verification: Promotion run emits canonical ID and manifest reference in logs/artifacts.
-- [ ] 2.3 Add authorization check hooks for promotion step (release manager or designated lead only).
+- [x] 2.3 Add authorization check hooks for promotion step (release manager or designated lead only).
   - Requirements: SSTG-3
   - Owner: backend-developer
   - Verification: Unauthorized actor simulation is denied with auditable message.

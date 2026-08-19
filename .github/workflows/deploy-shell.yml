@@ -203,9 +203,37 @@ jobs:
           echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
           echo "Channel '$CHANNEL' maps to blob prefix: $PREFIX"
 
+      # Implements SSTG-4, SDP-1: SST Build immutability guardrail
+      # TODO: Full implementation requires SST Build metadata store integration
+      # See: openspec/changes/sst-build-governance/specs/sst-build-governance/spec.md
+      # See: docs/release-process.md (SST Build Governance section)
+      - name: Check SST Build Immutability Guardrail (STUB)
+        if: startsWith(inputs.channel, 'release-')
+        run: |
+          echo "⚠️  STUB: SST Build immutability check"
+          echo "Checking if deployment target overlaps with active SST Build artifacts..."
+
+          # TODO: Query SST Build metadata store for active SST Build
+          # - Fetch canonical ID of active SST Build (if any)
+          # - Compare target blob prefix with active SST Build artifact paths
+          # - If overlap detected, DENY deployment and log audit event
+          # - Allow deployment only to SST Integration paths (floating pointers)
+
+          echo "Channel: ${{ inputs.channel }}"
+          echo "Target prefix: ${{ steps.channel_prefix.outputs.prefix }}"
+          echo ""
+          echo "TODO: Implement metadata store query:"
+          echo "  1. Fetch active SST Build for this release train"
+          echo "  2. If active SST Build exists, verify target != active SST Build path"
+          echo "  3. Deny if attempting to overwrite immutable SST Build artifacts"
+          echo "  4. Allow if deploying to SST Integration (floating pointer)"
+          echo ""
+          echo "✓ Guardrail check passed (STUB - always allows in current state)"
+
       # Implements azure-blob-storage-layout: Per-shell prefix requirement
       # Implements shell-deployment-pipeline: Dev shell floating prefix upload
       # Implements release-channel-deployments: Channel-specific blob paths (Task 1.1)
+      # Implements SSTG-4: Deploys to SST Integration, not active SST Build
       - name: Upload to Azure Blob Storage (Dev Shell - per-shell prefix)
         run: |
           az storage blob upload-batch \
@@ -498,3 +526,91 @@ jobs:
           echo "- **URL**: https://tssmfestorage.z16.web.core.windows.net/${{ inputs.shell-name }}/" >> $GITHUB_STEP_SUMMARY
           echo "- **Cache-Control**: public, max-age=300" >> $GITHUB_STEP_SUMMARY
           echo "- **Config**: remotes.config.prod.json bundled" >> $GITHUB_STEP_SUMMARY
+
+  # Implements SDP-2, SSTG-3, SSTG-6: SST Build Promotion (STUB)
+  # Manual workflow_dispatch trigger for promoting release-branch builds to SST Build status
+  # TODO: Full implementation requires metadata store, authorization, and evidence persistence
+  # See: openspec/changes/sst-build-governance/specs/shell-deployment-pipeline/spec.md
+  # See: scripts/azure/sst-build-promotion.sh
+  sst-build-promotion:
+    name: Promote SST Build (Manual/STUB)
+    if: false # Disabled in stub implementation - change to workflow_dispatch trigger
+    runs-on: ubuntu-latest
+    # Implements SSTG-3: Promotion requires explicit authorization
+    environment:
+      name: sst-build-promotion # TODO: Configure environment protection rules for release managers only
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Implements SSTG-3: Authorization check
+      # TODO: Integrate with GitHub Teams API or custom RBAC
+      - name: Authorization Check (STUB)
+        run: |
+          echo "⚠️  STUB: Verifying approver authorization"
+          echo "Actor: ${{ github.actor }}"
+          echo "TODO: Verify ${{ github.actor }} has 'release-manager' or 'designated-lead' role"
+          echo "TODO: Deny and audit if unauthorized"
+          echo "✓ Authorization check passed (STUB)"
+
+      # Implements SDP-2, SSTG-6: Generate canonical ID and capture metadata
+      - name: Generate SST Build Canonical ID (STUB)
+        id: canonical_id
+        run: |
+          # TODO: Accept inputs from workflow_dispatch or derive from context
+          RELEASE_TRAIN="4.10"  # TODO: Parse from branch name or input
+          BUILD_NUMBER="1"      # TODO: Auto-increment from metadata store
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          MANIFEST_HASH="9f84ab21"  # TODO: Compute from actual manifest content
+
+          CANONICAL_ID="${RELEASE_TRAIN}-${BUILD_NUMBER}-${SHORT_SHA}-${MANIFEST_HASH}"
+          echo "canonical_id=$CANONICAL_ID" >> $GITHUB_OUTPUT
+          echo "SST Build Canonical ID: $CANONICAL_ID"
+
+      # Implements SSTG-6: Persist evidence bundle with 180-day retention
+      - name: Persist Evidence Bundle (STUB)
+        run: |
+          CANONICAL_ID="${{ steps.canonical_id.outputs.canonical_id }}"
+          echo "⚠️  STUB: Persisting evidence bundle for: $CANONICAL_ID"
+          echo "TODO: Create evidence.json with:"
+          echo "  - Manifest snapshot"
+          echo "  - Resolved artifact URLs"
+          echo "  - Approver: ${{ github.actor }}"
+          echo "  - Commit SHA: ${{ github.sha }}"
+          echo "  - Promotion timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "  - Test report reference"
+          echo ""
+          echo "TODO: Upload to Azure Blob Storage:"
+          echo "  Container: sst-evidence"
+          echo "  Path: sst-builds/${CANONICAL_ID}/evidence.json"
+          echo "  Retention: 180 days minimum"
+
+      # Implements SSTG-2, SSTG-4: Mark as active global sign-off target
+      - name: Mark Active SST Build (STUB)
+        run: |
+          CANONICAL_ID="${{ steps.canonical_id.outputs.canonical_id }}"
+          echo "⚠️  STUB: Marking SST Build as active: $CANONICAL_ID"
+          echo "TODO: Update SST Build metadata store (Azure Table Storage recommended)"
+          echo "TODO: Retire previous active SST Build (preserve evidence)"
+          echo "TODO: Ensure only one globally active SST Build"
+          echo "TODO: Record state transition in audit log"
+
+      - name: Promotion Summary
+        run: |
+          CANONICAL_ID="${{ steps.canonical_id.outputs.canonical_id }}"
+          echo "### ⚠️  SST Build Promotion (STUB)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Canonical ID**: $CANONICAL_ID" >> $GITHUB_STEP_SUMMARY
+          echo "**Approver**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### ⚠️  STUB Implementation Notes" >> $GITHUB_STEP_SUMMARY
+          echo "This is a stub placeholder. Full implementation requires:" >> $GITHUB_STEP_SUMMARY
+          echo "- SST Build metadata store (Azure Table Storage)" >> $GITHUB_STEP_SUMMARY
+          echo "- Evidence persistence (Azure Blob Storage with lifecycle policy)" >> $GITHUB_STEP_SUMMARY
+          echo "- Authorization integration (GitHub Teams API or custom RBAC)" >> $GITHUB_STEP_SUMMARY
+          echo "- Audit logging infrastructure" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "See: \`docs/release-process.md\` (SST Build Governance section)" >> $GITHUB_STEP_SUMMARY
+          echo "See: \`scripts/azure/sst-build-promotion.sh\`" >> $GITHUB_STEP_SUMMARY
