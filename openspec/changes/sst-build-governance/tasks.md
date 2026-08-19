@@ -92,15 +92,15 @@ Requirement IDs used below:
 
 **Depends on:** task group 2 (shell guardrails), task group 3 (MFE guardrails)
 
-- [ ] 4.1 Add integration tests for one-active-sign-off behavior with concurrent release-branch movement.
+- [x] 4.1 Add integration tests for one-active-sign-off behavior with concurrent release-branch movement.
   - Requirements: SSTG-2, SSTG-4
   - Owner: tester
   - Verification: Test suite demonstrates active SST Build immutability while integration advances.
-- [ ] 4.2 Add integration tests for blocker remediation flow producing SST Build N+1.
+- [x] 4.2 Add integration tests for blocker remediation flow producing SST Build N+1.
   - Requirements: SSTG-5
   - Owner: tester
   - Verification: Test shows failed build N remains immutable and promotion creates build N+1.
-- [ ] 4.3 Add operational checklist for promotion, replacement, and retirement actions.
+- [x] 4.3 Add operational checklist for promotion, replacement, and retirement actions.
   - Requirements: SSTG-3, SSTG-6
   - Owner: team-lead
   - Verification: Checklist is present and references authoritative workflow steps.
