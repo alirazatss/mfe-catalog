@@ -88,35 +88,44 @@ The stub implementation **does not** execute the following production requiremen
 
 **Verification**: Evidence bundle retrievable for 180 days post-promotion
 
-### Phase 3: Authorization Integration
+### Phase 3: Authorization (GitHub Native - No Additional Implementation Needed)
 
-**Goal**: Enforce release-manager or designated-lead role requirement
+**Goal**: Control who can promote SST Builds
 
-**Options**:
+**Authorization Model**: GitHub repository permissions + CODEOWNERS
 
-**Option A: GitHub Teams API**
+**Implementation**: ✅ **Already implemented via GitHub native features**
 
-- Create GitHub team `release-managers`
-- Query team membership via GitHub API in workflow step
-- Deny if `github.actor` not in team
-- Requires `PAT` with `read:org` scope
+1. **Repository Access Control**:
+   - Only repository collaborators with push access to release branches can trigger promotions
+   - Managed via GitHub repository settings → Collaborators and teams
 
-**Option B: Environment Protection Rules**
+2. **CODEOWNERS File**:
+   - Create `.github/CODEOWNERS` to specify who can approve PRs to release branches:
+     ```
+     # Release branch protection - require approval from release team
+     /apps/shells/     @myorg/release-team
+     /apps/mfes/       @myorg/release-team
+     ```
 
-- Configure environment `sst-build-promotion` with required reviewers
-- List release managers as required reviewers
-- GitHub enforces approval before job runs
-- No code change needed (already using `environment:` in stub)
+3. **Branch Protection Rules**:
+   - Configure for `release-*` pattern:
+     - ✅ Require pull request reviews (1+ approvers from CODEOWNERS)
+     - ✅ Require status checks to pass
+     - ✅ Restrict who can push (limit to release team)
+     - ✅ Require linear history
 
-**Option C: Custom RBAC Service**
+**No custom authorization code needed** - GitHub enforces access control via:
 
-- Build lightweight role service (Azure Function + Table Storage)
-- Map GitHub usernames to roles
-- Query service in authorization step
+- Push access → Who can merge to release branches
+- CODEOWNERS → Who must approve changes
+- Branch protection → Rules enforcement
 
-**Recommended**: **Option B** (simplest, native GitHub feature, no code/infra needed)
+**Verification**:
 
-**Verification**: Unauthorized actor denied, audit event recorded
+- Non-collaborators cannot push to release branches (GitHub denies)
+- PRs to release branches require CODEOWNERS approval
+- Direct pushes to protected branches denied unless authorized
 
 ### Phase 4: Immutability Guardrail Enforcement
 

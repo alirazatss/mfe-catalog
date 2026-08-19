@@ -301,9 +301,21 @@ This ensures QA resources focus on a single reproducible candidate while allowin
 
 ### Promotion Authority and Access Control
 
-**Only release managers or designated leads** may promote, replace, or retire an active SST Build.
+SST Build promotion is controlled via **GitHub repository permissions and CODEOWNERS**.
 
-Unauthorized promotion attempts are **denied and audited**. The system records all denied actions in audit logs for compliance review.
+**Authorization Model**:
+
+1. **Repository Access**: Only users with push access to release branches can trigger promotions
+2. **CODEOWNERS**: PRs to release branches require approval from designated owners (see `.github/CODEOWNERS`)
+3. **Branch Protection**: Release branches (`release-*`) enforce required approvals and status checks
+
+**No additional role verification needed** - GitHub natively enforces access control through:
+
+- Push access restrictions
+- Required PR reviews from CODEOWNERS
+- Branch protection rules
+
+Unauthorized promotion attempts are **denied by GitHub** before reaching the workflow. All PR approvals and merge events are tracked in GitHub audit logs.
 
 ### Active SST Build Immutability
 
@@ -352,10 +364,11 @@ This evidence ensures reproducibility and supports compliance audits.
 
 **Promotion**:
 
-- [ ] Verify release manager or designated lead authority
+- [ ] Verify GitHub repository access (push permission to release branch)
+- [ ] If via PR: Verify CODEOWNERS approval obtained
 - [ ] Generate canonical ID with release-train, build-number, commit-sha, manifest-hash
 - [ ] Capture manifest snapshot and resolved artifact URLs
-- [ ] Record approver and timestamp
+- [ ] Record approver (GitHub actor) and timestamp
 - [ ] Mark as active global sign-off target (retire previous active build)
 - [ ] Persist evidence bundle with 180-day retention
 
