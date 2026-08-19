@@ -275,9 +275,106 @@ git push origin release-4.10
 
 **Manual backport**: See "Manual backport (on conflict)" above.
 
+## SST Build Governance
+
+### Terminology
+
+The system uses precise terminology to distinguish between mutable and immutable release artifacts:
+
+- **SST Build**: An immutable system test candidate promoted for QA sign-off. Once promoted, the artifact set is frozen and cannot be modified.
+- **SST Integration**: The mutable release-channel stream that continues to receive backported fixes and evolves independently from any active SST Build.
+
+Release and QA records MUST use these qualified terms. Plain "SST" without a qualifier is ambiguous and prohibited in handoff documentation.
+
+### One Active SST Build for Sign-Off
+
+Multiple release branches may maintain independent SST Build queues, but **exactly one SST Build is globally active for sign-off** at any point in time.
+
+**Example**:
+
+- `release-4.10` has promoted SST Build `4.10-12-a1b2c3d-9f84ab21`
+- `release-4.11` has promoted SST Build `4.11-03-e5f6789-3a21cd98`
+- Only one of these is marked as the **active global sign-off target** for QA validation
+- The other remains non-active until explicitly promoted to active status
+
+This ensures QA resources focus on a single reproducible candidate while allowing parallel release preparation.
+
+### Promotion Authority and Access Control
+
+**Only release managers or designated leads** may promote, replace, or retire an active SST Build.
+
+Unauthorized promotion attempts are **denied and audited**. The system records all denied actions in audit logs for compliance review.
+
+### Active SST Build Immutability
+
+Once an SST Build is active, it remains **frozen and immutable**. Ongoing backports and merges to the release branch update **SST Integration** but do NOT mutate the active SST Build.
+
+**Example**:
+
+- Active SST Build: `4.10-12-a1b2c3d-9f84ab21`
+- New commits merge into `release-4.10`
+- Deployment updates **SST Integration** artifacts
+- SST Build `4.10-12-a1b2c3d-9f84ab21` **remains unchanged**
+
+### Blocker Remediation: N+1 Build Policy
+
+If validation finds a blocker, the fix flow produces a **new SST Build (N+1)** and promotes it. The previously active SST Build remains immutable and is retired from active sign-off without modification.
+
+**Workflow**:
+
+1. Active SST Build `N` fails validation with a blocker
+2. Fix is merged to main and backported to the release branch
+3. Release manager promotes a **new SST Build `N+1`**
+4. SST Build `N` is retired (not patched in place)
+
+This ensures every SST Build is reproducible and traceable.
+
+### SST Build Identity and Evidence
+
+Every promoted SST Build publishes a **canonical identifier** with the format:
+
+```
+<release-train>-<build-number>-<short-sha>-<manifest-hash>
+```
+
+**Example**: `4.10-12-a1b2c3d-9f84ab21`
+
+Each SST Build retains an **evidence bundle** for at least **180 days**, containing:
+
+- Manifest snapshot
+- Resolved artifact URLs
+- Approver record
+- Test report
+
+This evidence ensures reproducibility and supports compliance audits.
+
+### Operational Checklist for SST Build Actions
+
+**Promotion**:
+
+- [ ] Verify release manager or designated lead authority
+- [ ] Generate canonical ID with release-train, build-number, commit-sha, manifest-hash
+- [ ] Capture manifest snapshot and resolved artifact URLs
+- [ ] Record approver and timestamp
+- [ ] Mark as active global sign-off target (retire previous active build)
+- [ ] Persist evidence bundle with 180-day retention
+
+**Replacement** (blocker remediation):
+
+- [ ] Verify blocker is documented and fix is merged/backported
+- [ ] Increment build number (N+1)
+- [ ] Promote new SST Build following promotion checklist
+- [ ] Retire previous active SST Build (do not modify in place)
+
+**Retirement**:
+
+- [ ] Mark SST Build as retired in tracking system
+- [ ] Preserve evidence bundle (180-day retention still applies)
+- [ ] Update active sign-off target to new SST Build if replacement exists
+
 ## References
 
-- **Spec**: `openspec/changes/release-channel-deployments/`
+- **Spec**: `openspec/changes/release-channel-deployments/`, `openspec/changes/sst-build-governance/`
 - **Workflows**: `.github/workflows/deploy-shell.yml`, `.github/workflows/deploy-mfes-turbo.yml`, `.github/workflows/backport.yml`
 - **Config generation**: `scripts/generate-config.ts`, `packages/monorepo-tools/src/config-generator.ts`
 - **Lifecycle policy**: `scripts/azure/lifecycle-policy.json`
