@@ -61,6 +61,24 @@
           "prefixMatch": ["mfes-dev/*/release-", "dev-shell/*/release-"]
         }
       }
+    },
+    {
+      "enabled": false,
+      "name": "delete-sst-evidence-after-180-days",
+      "type": "Lifecycle",
+      "definition": {
+        "actions": {
+          "baseBlob": {
+            "delete": {
+              "daysAfterModificationGreaterThan": 180
+            }
+          }
+        },
+        "filters": {
+          "blobTypes": ["blockBlob"],
+          "prefixMatch": ["sst-builds/"]
+        }
+      }
     }
   ]
 }
