@@ -237,8 +237,40 @@ jobs:
           echo "skip_dev_upload=$SKIP_DEV_UPLOAD" >> $GITHUB_OUTPUT
           echo "Channel '$CHANNEL' → floating: $FLOATING_PATH, SHA base: $SHA_BASE"
 
+      # Implements SSTG-4, MDP-1: SST Build immutability guardrail for MFE artifacts
+      # TODO: Full implementation requires SST Build metadata store integration
+      # See: openspec/changes/sst-build-governance/specs/mfe-deployment-pipeline/spec.md
+      # See: scripts/azure/SST_BUILD_IMPLEMENTATION.md
+      - name: Check SST Build Immutability Guardrail for MFEs (STUB)
+        if: startsWith(needs.compute-channel.outputs.channel, 'release-')
+        run: |
+          echo "⚠️  STUB: SST Build immutability check for MFE artifacts"
+          echo "Checking if MFE deployment target overlaps with active SST Build referenced artifacts..."
+
+          # TODO: Query SST Build metadata store for active SST Build
+          # - Fetch canonical ID of active SST Build (if any)
+          # - Retrieve evidence bundle containing MFE artifact manifest
+          # - Compare target MFE path with active SST Build referenced artifacts
+          # - If overlap detected, DENY deployment and log audit event
+          # - Allow deployment only to SST Integration paths (floating pointers)
+
+          echo "MFE: ${{ matrix.mfe }}"
+          echo "Channel: ${{ needs.compute-channel.outputs.channel }}"
+          echo "Target floating path: ${{ steps.channel_paths.outputs.floating_path }}"
+          echo "Target SHA base: ${{ steps.channel_paths.outputs.sha_base }}"
+          echo ""
+          echo "TODO: Implement metadata store query:"
+          echo "  1. Fetch active SST Build for this release train"
+          echo "  2. If active SST Build exists, retrieve MFE artifact manifest from evidence bundle"
+          echo "  3. Verify target MFE != active SST Build referenced MFE artifact"
+          echo "  4. Deny if attempting to overwrite immutable SST Build MFE artifacts"
+          echo "  5. Allow if deploying to SST Integration (floating pointer)"
+          echo ""
+          echo "✓ Guardrail check passed (STUB - always allows in current state)"
+
       # Floating pointer upload (dev/ for dev channel, release-X.Y/ for release channels)
       # Implements release-channel-deployments: Leave dev/ untouched on release runs (Task 2.2)
+      # Implements SSTG-4: Deploys to SST Integration, not active SST Build MFE artifacts
       - name: Upload to Azure Blob Storage (Floating Path)
         run: |
           az storage blob upload-batch \
@@ -529,3 +561,94 @@ jobs:
           echo "A pull request has been opened to update the prod shell configuration." >> $GITHUB_STEP_SUMMARY
           echo "**Branch**: bots/pin-$MFE_NAME-v${VERSION}" >> $GITHUB_STEP_SUMMARY
           echo "**File**: apps/shells/website/config/remotes.config.prod.json" >> $GITHUB_STEP_SUMMARY
+
+  # Implements MDP-2, SSTG-6: MFE Evidence Persistence for SST Builds (STUB)
+  # Manual workflow_dispatch trigger for capturing MFE artifact manifest per SST Build
+  # TODO: Full implementation requires metadata store and evidence bundle integration
+  # See: openspec/changes/sst-build-governance/specs/mfe-deployment-pipeline/spec.md
+  # See: scripts/azure/SST_BUILD_IMPLEMENTATION.md
+  mfe-evidence-persistence:
+    name: Persist MFE Evidence for SST Build (Manual/STUB)
+    if: false # Disabled in stub implementation - change to workflow_dispatch trigger
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Implements MDP-2: Resolve MFE artifact list for SST Build
+      - name: Resolve MFE Artifact List (STUB)
+        id: resolve_artifacts
+        run: |
+          echo "⚠️  STUB: Resolving MFE artifact URLs for SST Build promotion"
+
+          # TODO: Accept SST Build canonical ID from input or derive from context
+          CANONICAL_ID="4.10-12-a1b2c3d-9f84ab21" # Stub value
+
+          # TODO: Parse shell manifest (remotes.config.json) to extract MFE references
+          # TODO: For each MFE, resolve current deployed URL on release channel
+          # TODO: Capture list of resolved artifact URLs with commit SHAs
+
+          echo "canonical_id=$CANONICAL_ID" >> $GITHUB_OUTPUT
+          echo "SST Build Canonical ID: $CANONICAL_ID"
+          echo ""
+          echo "TODO: Resolve MFE artifacts from shell manifest:"
+          echo "  1. Read shell manifest for release channel (e.g., release-4.10)"
+          echo "  2. Extract MFE entry URLs"
+          echo "  3. Resolve to specific artifact paths (e.g., mfe-widget/release-4.10/sha-xyz/)"
+          echo "  4. Capture commit SHAs for each MFE"
+          echo "  5. Generate artifact manifest JSON"
+
+      # Implements SSTG-6: Persist MFE artifact manifest with 180-day retention
+      - name: Persist MFE Artifact Manifest to Evidence Bundle (STUB)
+        run: |
+          CANONICAL_ID="${{ steps.resolve_artifacts.outputs.canonical_id }}"
+          echo "⚠️  STUB: Persisting MFE artifact manifest for: $CANONICAL_ID"
+          echo "TODO: Create mfe-artifacts.json with:"
+          echo "  - MFE name → artifact URL mapping"
+          echo "  - Commit SHA per MFE"
+          echo "  - Resolved timestamp"
+          echo "  - Shell manifest snapshot reference"
+          echo ""
+          echo "TODO: Upload to Azure Blob Storage:"
+          echo "  Container: sst-evidence"
+          echo "  Path: sst-builds/${CANONICAL_ID}/mfe-artifacts.json"
+          echo "  Retention: 180 days minimum (linked to evidence bundle lifecycle)"
+          echo ""
+          echo "TODO: Link artifact manifest to SST Build evidence bundle"
+          echo "  Update evidence.json with mfe_artifacts_path reference"
+
+      # Implements SSTG-6: Apply 180-day retention policy
+      - name: Verify 180-Day Retention Policy (STUB)
+        run: |
+          echo "⚠️  STUB: Verifying 180-day retention policy for SST evidence"
+          echo "TODO: Ensure Azure Blob Storage lifecycle policy configured:"
+          echo "  Container: sst-evidence"
+          echo "  Rule: Delete blobs older than 180 days"
+          echo "  Scope: sst-builds/* prefix"
+          echo ""
+          echo "TODO: Verify lifecycle policy exists:"
+          echo "  az storage account management-policy show \\"
+          echo "    --account-name tssmfestorage \\"
+          echo "    --query 'policy.rules[?definition.filters.prefixMatch==['sst-builds/']]'"
+          echo ""
+          echo "Expected policy:"
+          echo "  - daysAfterModificationGreaterThan: 180"
+          echo "  - enableAutoTierToHotFromCool: false"
+          echo "  - Delete: true"
+
+      - name: Evidence Persistence Summary
+        run: |
+          CANONICAL_ID="${{ steps.resolve_artifacts.outputs.canonical_id }}"
+          echo "### ⚠️  MFE Evidence Persistence (STUB)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**SST Build**: $CANONICAL_ID" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### ⚠️  STUB Implementation Notes" >> $GITHUB_STEP_SUMMARY
+          echo "This is a stub placeholder. Full implementation requires:" >> $GITHUB_STEP_SUMMARY
+          echo "- MFE artifact manifest generation from shell manifest" >> $GITHUB_STEP_SUMMARY
+          echo "- Evidence bundle integration (link to SST Build evidence.json)" >> $GITHUB_STEP_SUMMARY
+          echo "- Azure Blob Storage lifecycle policy (180-day retention)" >> $GITHUB_STEP_SUMMARY
+          echo "- Integration with SST Build promotion workflow" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "See: \`scripts/azure/SST_BUILD_IMPLEMENTATION.md\` (Phase 2: Evidence Persistence)" >> $GITHUB_STEP_SUMMARY

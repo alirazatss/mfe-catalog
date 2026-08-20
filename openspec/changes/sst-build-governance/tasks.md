@@ -70,15 +70,15 @@ Requirement IDs used below:
 
 **Depends on:** task group 1 (policy terminology and constraints finalized)
 
-- [ ] 3.1 Add guardrail logic that prevents active SST Build referenced MFE artifacts from mutation during release deploys.
+- [x] 3.1 Add guardrail logic that prevents active SST Build referenced MFE artifacts from mutation during release deploys.
   - Requirements: SSTG-4, MDP-1
   - Owner: backend-developer
   - Verification: Workflow validation confirms integration updates do not overwrite active SST Build referenced artifacts.
-- [ ] 3.2 Persist resolved MFE artifact list per promoted SST Build and link it to canonical ID.
+- [x] 3.2 Persist resolved MFE artifact list per promoted SST Build and link it to canonical ID.
   - Requirements: MDP-2, SSTG-6
   - Owner: backend-developer
   - Verification: Promotion output includes resolvable evidence pointer keyed by SST Build ID.
-- [ ] 3.3 Apply 180-day retention policy for SST evidence bundle paths.
+- [x] 3.3 Apply 180-day retention policy for SST evidence bundle paths.
   - Requirements: SSTG-6, MDP-2
   - Owner: backend-developer
   - Verification: Lifecycle configuration and docs demonstrate minimum 180-day retention.
